@@ -28,10 +28,6 @@ const faqItems = [
     q: "Is there an age limit?",
     a: "We recommend ages 10 and up get the most out of the experience, but we're flexible — especially if there are younger players with older family members. Players 15 and under require adult accompaniment.",
   },
-  {
-    q: "Are these private shows with just our group?",
-    a: "Yes, your show will be private with just the group you bring. Every show has one dedicated game show host and one tech/producer facilitating your amazing show.",
-  },
 ];
 
 export function FAQSection() {

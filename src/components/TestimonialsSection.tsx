@@ -59,68 +59,11 @@ const featured: Testimonial = {
   accent: "#147EFF",
 };
 
-const testimonials: Testimonial[] = [
-  {
-    name: "Karthik Rao",
-    role: "Corporate Team Building",
-    avatar: AVATARS[1],
-    rating: 5,
-    quote:
-      "Best team-building activity we've ever done. Three different game shows, real Challenge Points, and a champion crowned at the end. The whole office is still talking about it.",
-    accent: "#FC19ED",
-  },
-  {
-    name: "Lakshmi Menon",
-    role: "Family Celebration",
-    avatar: AVATARS[2],
-    rating: 5,
-    quote:
-      "Came here for my 55th birthday with the whole family and it was so much fun! You really do feel like you're in the game show. We're already planning to defend our spot on the Champions Wall of Fame.",
-    accent: "#22D3A5",
-  },
-  {
-    name: "Rohan Verma",
-    role: "Friends' Night Out",
-    avatar: AVATARS[0],
-    rating: 5,
-    quote:
-      "Booked it on a whim with my college crew and it was an absolute riot. Fast rounds, hilarious host, non-stop laughing. Easily the most fun ₹800 each I've ever spent.",
-    accent: "#FFB020",
-  },
-  {
-    name: "Priya Nair",
-    role: "Bachelorette Party",
-    avatar: AVATARS[1],
-    rating: 5,
-    quote:
-      "We did the bachelorette show and the bride could not stop laughing. Themed questions, a private host just for us, and so many photos. 10/10 would recommend to any squad.",
-    accent: "#A855F7",
-  },
-  {
-    name: "Aditya Sharma",
-    role: "Sports Club Outing",
-    avatar: AVATARS[2],
-    rating: 5,
-    quote:
-      "Brought our cricket club here for an off-season hangout. The team battle got way more competitive than any of us expected. Pure adrenaline and a great time.",
-    accent: "#147EFF",
-  },
-  {
-    name: "Sneha Iyer",
-    role: "School Trip Organizer",
-    avatar: AVATARS[0],
-    rating: 5,
-    quote:
-      "Took 40 students for an end-of-year trip and the kids show was perfect — safe, hosted, and genuinely exciting. The Challenge Points kept every single one of them engaged.",
-    accent: "#FC19ED",
-  },
-];
-
 const stats = [
   { end: 4.9, decimals: 1, suffix: "", label: "Average rating" },
   { end: 10, decimals: 0, suffix: "K+", label: "Players hosted" },
   { end: 1200, decimals: 0, suffix: "+", label: "Champions crowned" },
-  { end: 100, decimals: 0, suffix: "%", label: "Private shows" },
+  { end: 3, decimals: 0, suffix: "", label: "Live game shows" },
 ];
 
 function Stars({ rating, className }: { rating: number; className?: string }) {
@@ -137,81 +80,8 @@ function Stars({ rating, className }: { rating: number; className?: string }) {
   );
 }
 
-function MiniCard({ t }: { t: Testimonial }) {
-  return (
-    <figure
-      className="group relative flex w-[300px] shrink-0 flex-col gap-4 rounded-3xl border border-white/10 bg-gradient-to-b from-[#1c1c1f] to-[#141416] p-6 transition-colors duration-300 hover:border-white/25 md:w-[360px]"
-      style={{ boxShadow: "0 16px 40px rgba(0,0,0,0.35)" }}
-    >
-      {/* accent glow on hover */}
-      <span
-        className="pointer-events-none absolute -inset-px rounded-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-        style={{
-          background: `radial-gradient(120% 80% at 50% 0%, ${t.accent}22 0%, transparent 60%)`,
-        }}
-        aria-hidden="true"
-      />
-      <div className="relative flex items-center justify-between">
-        <Stars rating={t.rating} className="flex gap-0.5" />
-        <Quote size={26} style={{ color: t.accent }} className="opacity-60" />
-      </div>
-      <blockquote className="relative text-[15px] leading-relaxed text-white/85">
-        {t.quote}
-      </blockquote>
-      <figcaption className="relative mt-auto flex items-center gap-3 pt-2">
-        <span
-          className="block h-11 w-11 shrink-0 overflow-hidden rounded-full p-[2px]"
-          style={{ background: `linear-gradient(135deg, ${t.accent}, transparent)` }}
-        >
-          <Image
-            src={t.avatar}
-            alt={t.name}
-            width={44}
-            height={44}
-            className="h-full w-full rounded-full object-cover"
-          />
-        </span>
-        <span className="flex flex-col">
-          <span className="text-sm font-semibold text-white">{t.name}</span>
-          <span className="text-xs text-white/50">{t.role}</span>
-        </span>
-      </figcaption>
-    </figure>
-  );
-}
-
-function MarqueeRow({
-  items,
-  direction,
-}: {
-  items: Testimonial[];
-  direction: "left" | "right";
-}) {
-  // Duplicate the list so the loop is seamless (translate -50%).
-  const loop = [...items, ...items];
-  return (
-    <div className="marquee-row relative overflow-hidden">
-      {/* edge fades */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-black to-transparent md:w-28" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-black to-transparent md:w-28" />
-      <div
-        className={
-          "flex w-max gap-5 " +
-          (direction === "left" ? "animate-marquee-left" : "animate-marquee-right")
-        }
-      >
-        {loop.map((t, i) => (
-          <MiniCard key={`${t.name}-${i}`} t={t} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export function TestimonialsSection() {
   const activeAccent = featured.accent;
-  const firstRow = testimonials.slice(0, 3);
-  const secondRow = testimonials.slice(3, 6);
 
   return (
     <section className="relative overflow-hidden bg-black py-20 md:py-28">
@@ -319,11 +189,6 @@ export function TestimonialsSection() {
           </figure>
         </div>
 
-        {/* Marquee wall */}
-        <div className="mt-14 flex flex-col gap-5">
-          <MarqueeRow items={firstRow} direction="left" />
-          <MarqueeRow items={secondRow} direction="right" />
-        </div>
       </div>
     </section>
   );

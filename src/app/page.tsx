@@ -4,7 +4,6 @@ import { WhyHyderabadSection } from "@/components/WhyHyderabadSection";
 import { AboutSection } from "@/components/AboutSection";
 import { GameRoomsSection } from "@/components/GameRoomsSection";
 import { LiveShowSection } from "@/components/LiveShowSection";
-import { MomentsGallery } from "@/components/MomentsGallery";
 import { TeamBuildingSection } from "@/components/TeamBuildingSection";
 import { FAQSection } from "@/components/FAQSection";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
@@ -12,6 +11,7 @@ import { PricingSection } from "@/components/PricingSection";
 import { LocationSection } from "@/components/LocationSection";
 import { Footer } from "@/components/Footer";
 import { ScrollProgress } from "@/components/ScrollProgress";
+import { WhatsAppChat } from "@/components/WhatsAppChat";
 
 export default function Home() {
   return (
@@ -22,7 +22,6 @@ export default function Home() {
       <WhyHyderabadSection />
       <AboutSection />
       <LiveShowSection />
-      <MomentsGallery />
       <GameRoomsSection />
       <TeamBuildingSection />
       <TestimonialsSection />
@@ -30,6 +29,7 @@ export default function Home() {
       <FAQSection />
       <LocationSection />
       <Footer />
+      <WhatsAppChat />
     </main>
   );
 }

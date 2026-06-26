@@ -8,14 +8,18 @@ import {
   Users,
   Trophy,
   Sparkles,
+  ArrowUpRight,
+  Volume2,
+  Zap,
 } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
+import Link from "next/link";
 
 const features = [
-  { icon: Mic, label: "A real live host", text: "A charismatic emcee runs your entire show, MC-style." },
-  { icon: Lightbulb, label: "Studio lights & music", text: "Stage lighting and a soundtrack that make it feel like TV." },
-  { icon: Gauge, label: "Real-time scoring", text: "Points flash up live as your teams battle it out." },
-  { icon: Bell, label: "Buzzers & props", text: "Smash the buzzer first — game-show props in every round." },
+  { icon: Mic, label: "A host runs the room", text: "No awkward instructions—your host keeps every round moving." },
+  { icon: Lightbulb, label: "A proper studio setup", text: "Lights, music and a stage built to make your group feel on-air." },
+  { icon: Gauge, label: "Your score is live", text: "Every answer changes the board. Everyone knows who is ahead." },
+  { icon: Bell, label: "Everyone gets a moment", text: "Fast buzzers, team choices and games designed for the full group." },
 ];
 
 const steps = [
@@ -57,7 +61,7 @@ function BroadcastFrame() {
 
         {/* Stage area */}
         <div
-          className="relative px-6 py-9"
+          className="game-show-stage relative overflow-hidden px-6 py-9"
           style={{
             background:
               "radial-gradient(ellipse 70% 60% at 50% 0%, rgba(124,92,252,0.25), transparent 60%), linear-gradient(180deg, #141417, #0b0b0d)",
@@ -72,6 +76,13 @@ function BroadcastFrame() {
             }}
             aria-hidden="true"
           />
+
+          <div className="pointer-events-none absolute left-5 top-5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-white/40">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#22D3A5]" /> Studio Cam 01
+          </div>
+          <div className="pointer-events-none absolute right-5 top-5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-white/40">
+            <Volume2 size={12} /> Applause 92%
+          </div>
 
           {/* Scoreboard — teams pick their own name & colour */}
           <div className="relative grid grid-cols-2 gap-3">
@@ -99,11 +110,31 @@ function BroadcastFrame() {
             </div>
           </div>
 
+          <div className="relative mt-3 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.15em] text-white/45">
+            <span>Live scoreboard</span>
+            <span className="flex items-center gap-1.5 text-[#FF8B9C]"><span className="h-1.5 w-1.5 rounded-full bg-[#FF2E4D]" /> Neck and neck</span>
+          </div>
+
+          <div className="relative mt-3 flex items-center gap-3">
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/10">
+              <span className="score-race score-race-gold block h-full w-[82%] rounded-full" />
+            </div>
+            <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/45 text-[10px] font-black italic text-white">VS</span>
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/10">
+              <span className="score-race score-race-mint block h-full w-[76%] rounded-full" />
+            </div>
+          </div>
+
           {/* Buzzer prompt */}
           <div className="relative mt-5 flex items-center justify-center">
-            <span className="animate-shine relative overflow-hidden rounded-full bg-[#FFD23F] px-6 py-2.5 text-sm font-extrabold uppercase tracking-wide text-black">
+            <span className="studio-buzzer animate-shine relative overflow-hidden rounded-full bg-[#FFD23F] px-7 py-3 text-sm font-extrabold uppercase tracking-wide text-black">
               Buzz in now!
             </span>
+          </div>
+
+          <div className="relative mt-6 flex items-center justify-between border-t border-white/10 pt-4 text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
+            <span className="flex items-center gap-1.5"><Zap size={12} className="text-[#FFD23F]" /> Double points live</span>
+            <span>Question 07 of 10</span>
           </div>
         </div>
 
@@ -119,6 +150,11 @@ function BroadcastFrame() {
             <span className="font-bold text-white">Your Host:</span> &ldquo;Fingers on
             buzzers… here&rsquo;s the question!&rdquo;
           </span>
+        </div>
+        <div className="broadcast-ticker overflow-hidden border-t border-white/10 bg-white/[0.03] py-2">
+          <p className="ticker-track whitespace-nowrap text-[10px] font-bold uppercase tracking-[0.16em] text-white/50">
+            Live from Hyderabad &nbsp;•&nbsp; Team Tigers take the lead &nbsp;•&nbsp; Double points in play &nbsp;•&nbsp; Who will make the champions wall? &nbsp;•&nbsp;
+          </p>
         </div>
       </div>
     </div>
@@ -177,10 +213,18 @@ export function LiveShowSection() {
 
           <Reveal delay={140}>
             <p className="mt-4 max-w-[520px] text-base text-white/65 md:text-lg">
-              Step under the studio lights, hear your name on the mic, smash the buzzer
-              and watch your score flash up live. A real host, real lighting, real music
-              — it&apos;s a genuine TV-style game show, and you&apos;re the star.
+              This is a fully hosted live game show for your group—not an arcade and not
+              a screen you stand around watching. Arrive with your people; we put you in
+              teams, run the rounds, light the stage and crown the winners.
             </p>
+          </Reveal>
+
+          <Reveal delay={180}>
+            <div className="mt-6 flex flex-wrap gap-2.5">
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/75">4–15 players</span>
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/75">3 live games</span>
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/75">One champion team</span>
+            </div>
           </Reveal>
 
           {/* Feature pills */}
@@ -209,6 +253,23 @@ export function LiveShowSection() {
               );
             })}
           </div>
+
+          <Reveal delay={180}>
+            <Link
+              href="#tickets"
+              className="animate-shine group relative mt-9 inline-flex items-center gap-2 overflow-hidden rounded-full bg-white px-6 py-3.5 text-sm font-extrabold text-black transition-transform hover:scale-[1.03]"
+            >
+              Put your team on the scoreboard
+              <ArrowUpRight size={17} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </Link>
+          </Reveal>
+
+          <Reveal delay={240}>
+            <div className="mt-5 max-w-[520px] rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+              <p className="text-sm font-bold text-white">Your ticket gets your group the full show.</p>
+              <p className="mt-1 text-sm leading-relaxed text-white/60">Bring the people you want to celebrate with. We handle the host, games, scorekeeping and big finish—you show up ready to play.</p>
+            </div>
+          </Reveal>
         </div>
 
         {/* Broadcast frame */}
@@ -237,8 +298,14 @@ export function LiveShowSection() {
                     <Icon size={22} />
                   </span>
                   <span
-                    className="absolute right-6 top-5 text-5xl font-extrabold text-white/5"
-                    style={{ fontFamily: "var(--font-display)" }}
+                    className="animate-step-glow absolute right-6 top-5 bg-clip-text text-5xl font-extrabold text-transparent"
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      backgroundImage:
+                        "linear-gradient(135deg, #1FA2FF, #7C5CFC, #FF35E5)",
+                      WebkitBackgroundClip: "text",
+                      animationDelay: `${i * 1}s`,
+                    }}
                   >
                     {i + 1}
                   </span>

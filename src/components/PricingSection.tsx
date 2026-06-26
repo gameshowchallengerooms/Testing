@@ -101,9 +101,9 @@ export function PricingSection() {
           </p>
 
           {/* Day toggle */}
-          <div className="relative mt-8 inline-flex rounded-full border border-white/15 bg-white/5 p-1 backdrop-blur">
+          <div className="relative mt-8 grid w-full max-w-md grid-cols-2 rounded-full border border-white/15 bg-white/5 p-1 backdrop-blur">
             <span
-              className="absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full transition-transform duration-300 ease-out"
+              className="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full transition-transform duration-300 ease-out"
               style={{
                 background: "linear-gradient(135deg, #7C5CFC, #C77DBA)",
                 transform: day === "weekday" ? "translateX(0)" : "translateX(100%)",
@@ -113,7 +113,7 @@ export function PricingSection() {
             <button
               onClick={() => setDay("weekday")}
               className={cn(
-                "relative z-10 rounded-full px-6 py-2.5 text-sm font-semibold transition-colors md:px-8",
+                "relative z-10 rounded-full px-4 py-2.5 text-center text-sm font-semibold transition-colors",
                 day === "weekday" ? "text-white" : "text-white/60 hover:text-white"
               )}
             >
@@ -122,7 +122,7 @@ export function PricingSection() {
             <button
               onClick={() => setDay("weekend")}
               className={cn(
-                "relative z-10 rounded-full px-6 py-2.5 text-sm font-semibold transition-colors md:px-8",
+                "relative z-10 rounded-full px-4 py-2.5 text-center text-sm font-semibold transition-colors",
                 day === "weekend" ? "text-white" : "text-white/60 hover:text-white"
               )}
             >

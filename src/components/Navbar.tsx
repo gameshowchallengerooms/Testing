@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -15,6 +15,7 @@ const navLinks = [
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,16 +30,23 @@ export function Navbar() {
     };
   }, []);
 
+  // Lock body scroll while the mobile menu is open.
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
+
   return (
     <>
       {/* State 1: Full Nav (scroll position 0) */}
       <nav
         className={cn(
-          "fixed top-0 left-0 right-0 z-50 flex items-start transition-all duration-300 ease-in-out",
+          "fixed top-0 left-0 right-0 z-50 flex items-start px-4 py-4 transition-all duration-300 ease-in-out md:px-10",
           scrolled ? "pointer-events-none opacity-0" : "opacity-100"
         )}
         style={{
-          padding: "16px 40px",
           height: 90,
           gap: 20,
         }}
@@ -69,8 +77,8 @@ export function Navbar() {
           {/* Spacer */}
           <div className="flex-1" />
 
-          {/* Nav Links */}
-          <div className="flex items-center" style={{ gap: 8 }}>
+          {/* Nav Links — hidden on mobile, shown from md up */}
+          <div className="hidden items-center md:flex" style={{ gap: 8 }}>
             {navLinks.map((link) => (
               <Link
                 key={link.label}
@@ -90,10 +98,10 @@ export function Navbar() {
             ))}
           </div>
 
-          {/* Book Now CTA */}
+          {/* Book Now CTA — hidden on mobile, shown from md up */}
           <Link
             href="#tickets"
-            className="flex flex-shrink-0 items-center text-white transition-opacity hover:opacity-90"
+            className="hidden flex-shrink-0 items-center text-white transition-opacity hover:opacity-90 md:flex"
             style={{
               background: "black",
               borderRadius: 33,
@@ -117,6 +125,16 @@ export function Navbar() {
               <ArrowUpRight className="text-white" size={18} strokeWidth={2.5} />
             </span>
           </Link>
+
+          {/* Hamburger — mobile only */}
+          <button
+            type="button"
+            onClick={() => setMenuOpen(true)}
+            aria-label="Open menu"
+            className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-black text-white transition-opacity hover:opacity-90 md:hidden"
+          >
+            <Menu size={22} strokeWidth={2.5} />
+          </button>
         </div>
       </nav>
 
@@ -175,6 +193,71 @@ export function Navbar() {
           </span>
         </Link>
       </nav>
+
+      {/* Mobile menu overlay */}
+      <div
+        className={cn(
+          "fixed inset-0 z-[60] flex flex-col bg-black/95 backdrop-blur-lg transition-opacity duration-300 ease-in-out md:hidden",
+          menuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+        )}
+      >
+        <div className="flex items-center justify-between px-4 py-4">
+          <Link href="/" onClick={() => setMenuOpen(false)} className="flex-shrink-0">
+            <Image
+              src="/images/logo.png"
+              alt="Game Show Challenge Rooms"
+              width={186}
+              height={120}
+              className="h-11 w-auto"
+            />
+          </Link>
+          <button
+            type="button"
+            onClick={() => setMenuOpen(false)}
+            aria-label="Close menu"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+          >
+            <X size={22} strokeWidth={2.5} />
+          </button>
+        </div>
+
+        <nav className="flex flex-1 flex-col justify-center gap-3 px-6">
+          {navLinks.map((link) => (
+            <Link
+              key={link.label}
+              href={link.href}
+              onClick={() => setMenuOpen(false)}
+              className="rounded-2xl bg-white/[0.06] px-6 py-4 text-xl font-semibold text-white transition-colors hover:bg-white/[0.12]"
+              style={{ fontFamily: "Inter, sans-serif" }}
+            >
+              {link.label}
+            </Link>
+          ))}
+
+          <Link
+            href="#tickets"
+            onClick={() => setMenuOpen(false)}
+            className="mt-4 flex items-center justify-center gap-3 rounded-full px-6 py-4 text-lg font-bold text-white transition-transform hover:scale-[1.02]"
+            style={{
+              background: "linear-gradient(135deg, #147EFF, #7C5CFC, #FC19ED)",
+              fontFamily: "Inter, sans-serif",
+            }}
+          >
+            Book Your Show
+            <span
+              className="flex items-center justify-center"
+              style={{
+                background: "rgba(0,0,0,0.35)",
+                borderRadius: "50%",
+                width: 32,
+                height: 32,
+              }}
+            >
+              <ArrowUpRight className="text-white" size={18} strokeWidth={2.5} />
+            </span>
+          </Link>
+        </nav>
+      </div>
     </>
   );
 }

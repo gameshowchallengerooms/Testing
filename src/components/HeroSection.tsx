@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Star, Play } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /** A single clean strip of marquee bulbs that chase across (top & bottom). */
@@ -62,6 +62,13 @@ export function HeroSection() {
         <span className="beam beam-right" />
       </div>
 
+      {/* Broad premiere-style camera washes. These illuminate the stage from
+          different directions rather than drawing visible dots on the screen. */}
+      <div className="pointer-events-none absolute inset-0 z-[3] overflow-hidden" aria-hidden="true">
+        <span className="paparazzi-wash paparazzi-wash-left" />
+        <span className="paparazzi-wash paparazzi-wash-right" />
+      </div>
+
       {/* Marquee bulb strips */}
       <BulbStrip className="absolute left-0 right-0 top-5 z-[2] hidden px-10 md:flex" />
       <BulbStrip className="absolute bottom-5 left-0 right-0 z-[2] hidden px-10 md:flex" />
@@ -113,7 +120,7 @@ export function HeroSection() {
           group will be talking about for years.
         </p>
 
-        {/* ONE primary CTA + a soft 'watch' link */}
+        {/* ONE primary CTA */}
         <div className="hero-enter hero-enter-6 mt-9 flex flex-col items-center gap-5 sm:flex-row">
           <Link
             href="#tickets"
@@ -123,46 +130,13 @@ export function HeroSection() {
               boxShadow: "0 18px 50px rgba(124,92,252,0.55)",
             }}
           >
-            Get On The Show
+            Put Me On The Show
             <ArrowRight
               size={20}
               strokeWidth={2.5}
               className="transition-transform group-hover:translate-x-1"
             />
           </Link>
-          <Link
-            href="#live"
-            className="inline-flex items-center gap-2.5 text-base font-semibold text-white/85 transition-colors hover:text-white"
-          >
-            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/10 backdrop-blur">
-              <Play size={15} className="ml-0.5 fill-white text-white" />
-            </span>
-            See what it&apos;s like
-          </Link>
-        </div>
-
-        {/* Proof + scarcity, right where they decide */}
-        <div className="hero-enter hero-enter-7 mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-white/80">
-          <span className="flex items-center gap-2">
-            <span className="flex">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} size={15} className="fill-[#FFD23F] text-[#FFD23F]" />
-              ))}
-            </span>
-            <span className="font-semibold text-white">4.9</span> from real guests
-          </span>
-          <span className="hidden h-4 w-px bg-white/20 sm:block" />
-          <span>
-            <span className="font-semibold text-white">10,000+</span> already played
-          </span>
-          <span className="hidden h-4 w-px bg-white/20 sm:block" />
-          <span className="flex items-center gap-1.5 font-medium text-[#FFD23F]">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FFD23F] opacity-75" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#FFD23F]" />
-            </span>
-            Only a few private shows a day
-          </span>
         </div>
       </div>
     </header>

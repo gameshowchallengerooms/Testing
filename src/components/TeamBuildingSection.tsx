@@ -37,7 +37,7 @@ const addOns = [
   {
     icon: Cake,
     title: "Add the Celebration Room",
-    text: "Book our private Celebration Room to cut a cake and keep the party going after the final buzzer.",
+    text: "Add the Celebration Room to cut a cake and keep the party going after the final buzzer.",
   },
   {
     icon: Music,
@@ -149,7 +149,7 @@ export function TeamBuildingSection() {
               <p className="mt-3 text-base text-white/60">
                 Mid-show, the host stops the game and the entire room celebrates{" "}
                 <span className="font-semibold text-white">your</span> special moment —
-                then add our private{" "}
+                then add our{" "}
                 <span className="font-semibold text-white">Celebration Room</span> to cut a
                 cake after the final buzzer.
               </p>

@@ -1,31 +1,37 @@
 "use client";
 
 import Link from "next/link";
-import { MapPin, Navigation, Clock, Users } from "lucide-react";
+import { MapPin, Navigation, Clock, Users, Mail, Phone } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 
 const ADDRESS =
   "4th Floor, Survey No. 1, Khajaguda - Nanakramguda Rd, Khajaguda, Hyderabad, Telangana 500104";
 const DIRECTIONS_URL = "https://maps.app.goo.gl/MZfvdmxwBTa3NPj29";
-// Keyless Google Maps embed driven by the address query.
-const MAP_EMBED_URL = `https://www.google.com/maps?q=${encodeURIComponent(
-  ADDRESS
-)}&output=embed`;
+// Real venue coordinates resolved from the Google Maps listing.
+const LAT = 17.4192577;
+const LNG = 78.3753142;
+
+// When a Maps Embed API key is set, use the official place embed — it renders
+// the verified business card (name, logo, rating, photos). Otherwise fall back
+// to the basic keyless coordinate embed.
+const MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY;
+const MAP_EMBED_URL = MAPS_KEY
+  ? `https://www.google.com/maps/embed/v1/place?key=${MAPS_KEY}&q=Game+Show+Challenge+Rooms,+Khajaguda,+Hyderabad&center=${LAT},${LNG}&zoom=16`
+  : `https://maps.google.com/maps?q=${LAT},${LNG}&z=17&hl=en&output=embed`;
 
 const facts = [
   { icon: Users, label: "Groups of 4–15 players" },
   { icon: Clock, label: "Open 7 days a week" },
-  { icon: MapPin, label: "Khajaguda, Hyderabad" },
 ];
 
 // Approximate driving distances from well-known Hyderabad spots.
 const landmarks = [
-  { name: "Gachibowli", dist: "3 km" },
-  { name: "HITEC City", dist: "5 km" },
-  { name: "Financial District", dist: "6 km" },
-  { name: "Jubilee Hills", dist: "8 km" },
-  { name: "Banjara Hills", dist: "11 km" },
-  { name: "Hi-Tech City Metro", dist: "6 km" },
+  { name: "Gachibowli", dist: "0.5 km" },
+  { name: "Nanakramguda", dist: "1 km" },
+  { name: "Financial District", dist: "2 km" },
+  { name: "HITEC City", dist: "3 km" },
+  { name: "Jubilee Hills", dist: "5 km" },
+  { name: "Banjara Hills", dist: "7 km" },
 ];
 
 export function LocationSection() {
@@ -60,7 +66,7 @@ export function LocationSection() {
               className="text-3xl font-medium leading-tight tracking-tight text-white md:text-[48px] md:leading-[1.06]"
               style={{ fontFamily: "var(--font-display)", letterSpacing: "-1.5px" }}
             >
-              Your stage is in{" "}
+              Your stage is{" "}
               <span
                 style={{
                   background: "linear-gradient(90deg, #147EFF, #FC19ED)",
@@ -69,7 +75,7 @@ export function LocationSection() {
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                Khajaguda
+                ready &amp; waiting
               </span>
             </h2>
           </Reveal>
@@ -149,6 +155,26 @@ export function LocationSection() {
               </Link>
             </div>
           </Reveal>
+
+          {/* Contact */}
+          <Reveal delay={260}>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:gap-6">
+              <Link
+                href="tel:+919000187731"
+                className="flex items-center gap-2 text-sm font-medium text-white/80 transition-colors hover:text-white"
+              >
+                <Phone size={16} className="text-[#B49BFF]" />
+                +91 90001 87731
+              </Link>
+              <Link
+                href="mailto:gameshowchallengerooms@gmail.com"
+                className="flex items-center gap-2 text-sm font-medium text-white/80 transition-colors hover:text-white"
+              >
+                <Mail size={16} className="text-[#B49BFF]" />
+                gameshowchallengerooms@gmail.com
+              </Link>
+            </div>
+          </Reveal>
         </div>
 
         {/* Right: map */}
@@ -158,11 +184,26 @@ export function LocationSection() {
               title="Game Show Challenge Rooms location on Google Maps"
               src={MAP_EMBED_URL}
               className="absolute inset-0 h-full w-full"
-              style={{ border: 0, filter: "grayscale(0.2) contrast(1.05)" }}
+              style={{
+                border: 0,
+                // Keep the real listing card clean; only stylise the basic fallback map.
+                filter: MAPS_KEY ? undefined : "grayscale(0.2) contrast(1.05)",
+              }}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               allowFullScreen
             />
+
+            {/* Directions pill anchored to the map (this one is clickable) */}
+            <Link
+              href={DIRECTIONS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-bold text-black shadow-lg transition-transform hover:scale-105"
+            >
+              <Navigation size={13} />
+              Directions
+            </Link>
           </div>
         </Reveal>
       </div>

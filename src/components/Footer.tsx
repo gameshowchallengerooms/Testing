@@ -1,4 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
+import { Mail, Phone } from "lucide-react";
 
 function FacebookIcon() {
   return (
@@ -27,6 +29,65 @@ function XIcon() {
 export function Footer() {
   return (
     <footer className="flex w-full flex-col items-center gap-6 bg-black px-5 pb-7 pt-20">
+      {/* SEO copy — real, crawlable text covering long-tail and hyper-local terms.
+          Visible and on-brand (not hidden) so it counts for ranking. */}
+      <div className="flex w-full max-w-[1100px] flex-col items-center border-t border-white/10 pb-10 pt-12 text-center">
+        <Image
+          src="/images/logo.png"
+          alt="Game Show Challenge Rooms"
+          width={186}
+          height={120}
+          className="mb-5 h-12 w-auto"
+        />
+        <h2 className="mb-4 text-xl font-bold text-white md:text-2xl">
+          Hyderabad&apos;s #1 Live Game Show Experience
+        </h2>
+        <p className="mx-auto max-w-[820px] text-sm leading-relaxed text-white/55">
+          Looking for fun things to do in Hyderabad with friends, family or
+          coworkers? Game Show Challenge Rooms is a real live game show — host,
+          studio lights and buzzers — for groups of 4 to 15 players. It&apos;s the
+          perfect indoor activity for{" "}
+          <span className="text-white/75">corporate team building</span>,{" "}
+          <span className="text-white/75">birthday parties</span>,{" "}
+          <span className="text-white/75">bachelorette and bachelor parties</span>,
+          kitty parties, school and college trips, office outings and family
+          celebrations. A fresh alternative to escape rooms, mystery rooms and
+          trivia nights.
+        </p>
+        <p className="mx-auto mt-4 max-w-[820px] text-sm leading-relaxed text-white/45">
+          Right in the heart of Gachibowli&apos;s office hub and serving all of
+          Hyderabad &amp; Secunderabad — Nanakramguda, Financial District, HITEC City,
+          Madhapur, Manikonda, Raidurg, Kokapet, Kondapur, Jubilee Hills, Banjara Hills
+          and nearby areas — plus virtual game shows on Zoom and on-site roadshows we
+          bring to your venue.
+        </p>
+        <p className="mx-auto mt-4 max-w-[820px] text-sm leading-relaxed text-white/45">
+          If you&apos;re searching for the best things to do in Hyderabad, the best
+          entertainment in Hyderabad, or fun weekend activities and unique places to
+          hang out, this is it. Step under the studio lights, smash the buzzer and
+          become the star of your own live game show — an unforgettable group outing
+          you can&apos;t get anywhere else in the city.
+        </p>
+      </div>
+
+      {/* Contact */}
+      <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-6">
+        <Link
+          href="mailto:gameshowchallengerooms@gmail.com"
+          className="flex items-center gap-2 text-sm font-medium text-white/80 transition-colors hover:text-white"
+        >
+          <Mail size={16} className="text-[#B49BFF]" />
+          gameshowchallengerooms@gmail.com
+        </Link>
+        <Link
+          href="tel:+919000187731"
+          className="flex items-center gap-2 text-sm font-medium text-white/80 transition-colors hover:text-white"
+        >
+          <Phone size={16} className="text-[#B49BFF]" />
+          +91 90001 87731
+        </Link>
+      </div>
+
       <span className="text-sm font-normal text-white">Social</span>
 
       <div className="flex items-center gap-4">

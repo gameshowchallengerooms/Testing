@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 function WordReveal({
@@ -70,9 +71,22 @@ export function AboutSection() {
       id="about"
       className={cn(
         "w-full flex flex-col items-center",
-        "px-5 py-10 md:px-10 md:py-20"
+        "px-5 pb-10 pt-0 md:px-10 md:pb-20 md:pt-0"
       )}
     >
+      {/* Decorative game-show icon strip (buzzer · wheel · podium · mic · trophy · winners) */}
+      <div className="mb-8 flex w-full justify-center md:mb-12">
+        <Image
+          src="/images/gameshowItems.png"
+          alt=""
+          aria-hidden="true"
+          width={545}
+          height={170}
+          className="h-auto w-full max-w-[560px] opacity-90"
+          priority={false}
+        />
+      </div>
+
       <div className="w-full max-w-[1200px]">
         <div className="mb-6 flex items-center gap-4">
           <span className="block h-[2px] w-[60px] bg-white/50" />
@@ -110,49 +124,6 @@ export function AboutSection() {
           )}
         />
 
-        {/* Two signature formats */}
-        <div className="grid gap-5 md:grid-cols-2">
-          {[
-            {
-              name: "Classic Showdowns",
-              desc: "Buzzer-smashing trivia and brain-teasers where the smartest, fastest team is crowned champion.",
-              accent: "#147EFF",
-            },
-            {
-              name: "Primetime Showdowns",
-              desc: "Our highest-energy format — quick-fire rounds plus 60-second Time Rush skill challenges that get everyone off their seats.",
-              accent: "#FC19ED",
-            },
-          ].map((f) => (
-            <div
-              key={f.name}
-              className="group relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[#161618] to-[#0e0e10] p-7 transition-colors hover:border-white/25"
-            >
-              <span
-                className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                style={{
-                  background: `radial-gradient(120% 60% at 50% 0%, ${f.accent}22, transparent 60%)`,
-                }}
-                aria-hidden="true"
-              />
-              <span
-                className="relative mb-4 inline-block rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-black"
-                style={{ background: f.accent }}
-              >
-                Signature Format
-              </span>
-              <h3
-                className="relative mb-2 text-2xl font-bold text-white md:text-3xl"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                {f.name}
-              </h3>
-              <p className="relative text-base leading-relaxed text-white/65">
-                {f.desc}
-              </p>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );

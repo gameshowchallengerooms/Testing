@@ -1,9 +1,35 @@
+import { Navbar } from "@/components/Navbar";
+import { HeroSection } from "@/components/HeroSection";
+import { WhyHyderabadSection } from "@/components/WhyHyderabadSection";
+import { AboutSection } from "@/components/AboutSection";
+import { GameRoomsSection } from "@/components/GameRoomsSection";
+import { LiveShowSection } from "@/components/LiveShowSection";
+import { MomentsGallery } from "@/components/MomentsGallery";
+import { TeamBuildingSection } from "@/components/TeamBuildingSection";
+import { FAQSection } from "@/components/FAQSection";
+import { TestimonialsSection } from "@/components/TestimonialsSection";
+import { PricingSection } from "@/components/PricingSection";
+import { LocationSection } from "@/components/LocationSection";
+import { Footer } from "@/components/Footer";
+import { ScrollProgress } from "@/components/ScrollProgress";
+
 export default function Home() {
   return (
-    <main className="flex min-h-screen items-center justify-center">
-      <p className="text-muted-foreground">
-        Clone target not yet built. Run <code className="font-mono text-foreground">/clone-website</code> to start.
-      </p>
+    <main className="relative min-h-screen bg-black">
+      <ScrollProgress />
+      <Navbar />
+      <HeroSection />
+      <WhyHyderabadSection />
+      <AboutSection />
+      <LiveShowSection />
+      <MomentsGallery />
+      <GameRoomsSection />
+      <TeamBuildingSection />
+      <TestimonialsSection />
+      <PricingSection />
+      <FAQSection />
+      <LocationSection />
+      <Footer />
     </main>
   );
 }

@@ -7,9 +7,12 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
-  --font-heading: var(--font-sans);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-inter-display), ui-sans-serif, system-ui, sans-serif;
+  --font-gamestorii: var(--font-gamestorii), sans-serif;
+  --font-tight: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, monospace;
+  --font-heading: var(--font-display);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,72 +52,40 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #1a1a1a;
+  --card-foreground: #ffffff;
+  --popover: #1a1a1a;
+  --popover-foreground: #ffffff;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #1f1f1f;
+  --secondary-foreground: #ffffff;
+  --muted: #262626;
+  --muted-foreground: #a3a3a3;
+  --accent: #262626;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: rgba(255, 255, 255, 0.3);
+  --chart-1: #3b82f6;
+  --chart-2: #a855f7;
+  --chart-3: #ec4899;
+  --chart-4: #f97316;
+  --chart-5: #22c55e;
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* Gamestorii custom colors */
+  --gs-blue: #4A7DFF;
+  --gs-pink: #E06BAA;
+  --gs-purple: #8B5CF6;
+  --gs-gradient-hero: linear-gradient(90deg, #6B8DD6 0%, #8B6FC0 50%, #E06BAA 100%);
+  --gs-gradient-pricing: linear-gradient(135deg, #7C5CFC 0%, #C77DBA 50%, #E8A0BF 100%);
+  --gs-nav-bg: rgba(30, 30, 30, 0.6);
+  --gs-card-bg: #1a1a1a;
+  --gs-card-border: rgba(255, 255, 255, 0.08);
 }
 
 @layer base {
@@ -122,9 +93,401 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-[var(--background)] text-[var(--foreground)];
+    font-family: var(--font-sans);
   }
   html {
-    @apply font-sans;
+    font-family: var(--font-sans);
+    scroll-behavior: smooth;
+  }
+}
+
+/* Word-by-word reveal animation for text sections */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+/* Testimonials marquee */
+@keyframes marquee-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-marquee-left {
+  animation: marquee-left 45s linear infinite;
+}
+
+.animate-marquee-right {
+  animation: marquee-right 45s linear infinite;
+}
+
+.marquee-row:hover .animate-marquee-left,
+.marquee-row:hover .animate-marquee-right {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-left,
+  .animate-marquee-right {
+    animation: none;
+  }
+}
+
+/* Soft pulsing glow for the spotlight testimonial */
+@keyframes spotlight-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-spotlight-pulse {
+  animation: spotlight-pulse 4s ease-in-out infinite;
+}
+
+/* Sweeping stage spotlight beams (real swinging-light motion) */
+@keyframes beam-sweep-left {
+  0%,
+  100% {
+    transform: rotate(-18deg);
+    opacity: 0.55;
+  }
+  50% {
+    transform: rotate(14deg);
+    opacity: 0.9;
+  }
+}
+
+@keyframes beam-sweep-right {
+  0%,
+  100% {
+    transform: rotate(16deg);
+    opacity: 0.5;
+  }
+  50% {
+    transform: rotate(-12deg);
+    opacity: 0.85;
+  }
+}
+
+.beam {
+  position: absolute;
+  top: -10%;
+  width: 60%;
+  height: 130%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  filter: blur(6px);
+}
+
+.beam-left {
+  left: -5%;
+  transform-origin: top center;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 210, 63, 0.35) 0%,
+    rgba(255, 210, 63, 0.08) 45%,
+    transparent 75%
+  );
+  clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
+  animation: beam-sweep-left 7s ease-in-out infinite;
+}
+
+.beam-right {
+  right: -5%;
+  transform-origin: top center;
+  background: linear-gradient(
+    to bottom,
+    rgba(20, 126, 255, 0.32) 0%,
+    rgba(20, 126, 255, 0.08) 45%,
+    transparent 75%
+  );
+  clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
+  animation: beam-sweep-right 8s ease-in-out infinite;
+}
+
+.beam-center {
+  left: 20%;
+  width: 60%;
+  transform-origin: top center;
+  background: linear-gradient(
+    to bottom,
+    rgba(252, 25, 237, 0.22) 0%,
+    rgba(252, 25, 237, 0.05) 50%,
+    transparent 78%
+  );
+  clip-path: polygon(44% 0, 56% 0, 92% 100%, 8% 100%);
+  animation: beam-sweep-left 9s ease-in-out infinite reverse;
+}
+
+/* Slow drifting gradient backdrop */
+@keyframes gradient-drift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient-drift {
+  background-size: 200% 200%;
+  animation: gradient-drift 12s ease infinite;
+}
+
+/* Marquee bulbs chasing around the rim */
+@keyframes bulb-chase {
+  0%,
+  100% {
+    opacity: 1;
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+  50% {
+    opacity: 0.25;
+    filter: none;
+  }
+}
+
+.animate-bulb {
+  animation: bulb-chase 1.2s ease-in-out infinite;
+}
+
+/* Slow floating bob for decorative elements */
+@keyframes float-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+.animate-float {
+  animation: float-bob 6s ease-in-out infinite;
+}
+
+/* Animated conic gradient ring */
+@keyframes ring-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-ring-rotate {
+  animation: ring-rotate 8s linear infinite;
+}
+
+/* Shine sweep across buttons/badges */
+@keyframes shine-sweep {
+  0% {
+    transform: translateX(-120%) skewX(-20deg);
+  }
+  100% {
+    transform: translateX(220%) skewX(-20deg);
+  }
+}
+
+.animate-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
+  transform: translateX(-120%) skewX(-20deg);
+  animation: shine-sweep 3.5s ease-in-out infinite;
+}
+
+/* Home-page motion system: entrance choreography is transform/opacity based so it
+   stays on the compositor while the stage background keeps moving. */
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 26px, 0) scale(0.98);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.hero-enter {
+  animation: hero-enter 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-enter-1 { animation-delay: 120ms; }
+.hero-enter-2 { animation-delay: 210ms; }
+.hero-enter-3 { animation-delay: 350ms; }
+.hero-enter-4 { animation-delay: 430ms; }
+.hero-enter-5 { animation-delay: 520ms; }
+.hero-enter-6 { animation-delay: 610ms; }
+.hero-enter-7 { animation-delay: 700ms; }
+
+.scroll-progress {
+  --scroll-progress: 0;
+  transform: scaleX(var(--scroll-progress));
+  transform-origin: left center;
+  background: linear-gradient(90deg, #147eff 0%, #7c5cfc 48%, #fc19ed 100%);
+  box-shadow: 0 0 16px rgba(124, 92, 252, 0.9);
+  will-change: transform;
+}
+
+/* Cinematic line reveal: a clipped wipe + lift, one line after another */
+@keyframes line-reveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.6em, 0);
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    clip-path: inset(0 0 -10% 0);
+  }
+}
+
+.line-reveal {
+  display: block;
+  opacity: 0;
+  animation: line-reveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Premium title sequence: each character is masked by its line, then resolves
+   through depth rather than bouncing. Motion drives these transforms directly. */
+.cinematic-headline {
+  perspective: 900px;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+}
+
+.cinematic-text-line {
+  display: block;
+  overflow: clip;
+  white-space: nowrap;
+}
+
+.cinematic-text-word,
+.cinematic-text-character {
+  display: inline-block;
+}
+
+.cinematic-text-word {
+  white-space: nowrap;
+}
+
+.cinematic-text-character {
+  transform-style: preserve-3d;
+  will-change: transform, opacity, filter;
+}
+
+/* The 'switches on like a TV' flicker for the punch line */
+@keyframes tv-on {
+  0% {
+    opacity: 0;
+    filter: brightness(4) blur(3px);
+    transform: scale(1.04);
+  }
+  8% {
+    opacity: 1;
+  }
+  10% {
+    opacity: 0.2;
+  }
+  14% {
+    opacity: 1;
+    filter: brightness(2.2) blur(1px);
+  }
+  18% {
+    opacity: 0.4;
+  }
+  22% {
+    opacity: 1;
+    filter: brightness(1) blur(0);
+    transform: scale(1);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+    transform: scale(1);
+  }
+}
+
+.tv-on {
+  animation: tv-on 1.1s ease-out 0.6s both;
+}
+
+/* Slow ken-burns drift for hero background media */
+@keyframes ken-burns {
+  0% {
+    transform: scale(1.12) translate3d(0, 0, 0);
+  }
+  100% {
+    transform: scale(1.22) translate3d(-1.5%, -1.5%, 0);
+  }
+}
+
+.animate-ken-burns {
+  animation: ken-burns 18s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-bulb,
+  .animate-float,
+  .animate-ring-rotate,
+  .animate-gradient-drift,
+  .beam-left,
+  .beam-right,
+  .beam-center,
+  .animate-shine::after {
+    animation: none;
+  }
+
+  .hero-enter,
+  .cinematic-headline,
+  .cinematic-text-character,
+  .line-reveal,
+  .tv-on,
+  .animate-ken-burns {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    filter: none;
+    clip-path: none;
   }
 }

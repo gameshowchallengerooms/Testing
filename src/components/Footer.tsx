@@ -118,7 +118,9 @@ export function Footer() {
       </div>
 
       <Link
-        href="/terms-and-conditions"
+        href="/privacy-policy"
+        target="_blank"
+        rel="noopener noreferrer"
         className="text-sm font-normal text-white transition-opacity hover:underline hover:opacity-80"
       >
         Privacy Policy

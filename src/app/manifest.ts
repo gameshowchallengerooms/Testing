@@ -14,13 +14,18 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ["entertainment", "events", "lifestyle"],
     icons: [
       {
-        src: "/seo/apple-touch-icon.png",
+        // The file actually 180×180 on disk. (apple-touch-icon.png is only
+        // 64×64 despite its name, which is what triggered the manifest
+        // "resource size is not correct" warning.)
+        src: "/seo/favicon-32.png",
         sizes: "180x180",
         type: "image/png",
       },
       {
+        // logo.png is 1497×966, not square — declare its true dimensions so the
+        // manifest size assertion matches the resource.
         src: "/images/logo.png",
-        sizes: "512x512",
+        sizes: "1497x966",
         type: "image/png",
         purpose: "any",
       },

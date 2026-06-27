@@ -2,10 +2,15 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { Plus, X, ArrowUpRight } from "lucide-react";
+import { Plus, X, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Reveal } from "@/components/Reveal";
+import {
+  WhatsAppGlyph,
+  whatsappHref,
+  PHONE_NUMBER,
+  PHONE_DISPLAY,
+} from "@/components/WhatsAppChat";
 
 const faqItems = [
   {
@@ -22,7 +27,7 @@ const faqItems = [
   },
   {
     q: "Do I need to book in advance?",
-    a: "Yes, you will need to book 1-3 days in advance. Showtimes are subject to availability and city/location.",
+    a: "Yes — we recommend booking upfront, ideally 1-3 days in advance, as slots fill up fast due to high demand. Spot bookings are only possible if a slot is available, so to be safe please book ahead. Showtimes are subject to availability and city/location.",
   },
   {
     q: "Is there an age limit?",
@@ -159,13 +164,35 @@ export function FAQSection() {
                   Grab your crew, pick a slot, and let&apos;s get you in the game show.
                 </p>
               </div>
-              <Link
-                href="#tickets"
-                className="inline-flex shrink-0 items-center gap-2 rounded-full bg-black/30 px-7 py-4 text-base font-bold text-white transition-colors hover:bg-black/50"
-              >
-                Book Your Show
-                <ArrowUpRight size={18} />
-              </Link>
+
+              {/* Two ways to reach us — chat on WhatsApp or call straight away. */}
+              <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:shrink-0">
+                <a
+                  href={whatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Chat with us on WhatsApp"
+                  className="group inline-flex items-center justify-center gap-2.5 rounded-full bg-white px-7 py-4 text-base font-bold text-[#7C5CFC] shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-transform hover:scale-[1.04]"
+                >
+                  <span className="text-[#25D366]">
+                    <WhatsAppGlyph size={20} />
+                  </span>
+                  Chat
+                </a>
+                <a
+                  href={`tel:${PHONE_NUMBER}`}
+                  aria-label={`Call us at ${PHONE_DISPLAY}`}
+                  className="group inline-flex flex-col items-center justify-center rounded-full bg-white px-7 py-3 text-[#7C5CFC] shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-transform hover:scale-[1.04]"
+                >
+                  <span className="inline-flex items-center gap-2 text-base font-bold leading-tight">
+                    <Phone size={18} strokeWidth={2.6} />
+                    Talk to us
+                  </span>
+                  <span className="text-xs font-semibold text-[#7C5CFC]/70">
+                    {PHONE_DISPLAY}
+                  </span>
+                </a>
+              </div>
             </div>
           </Reveal>
         </div>

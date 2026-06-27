@@ -1,3 +1,8 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
+
 /**
  * Floating WhatsApp Business chat widget.
  *
@@ -5,14 +10,26 @@
  * enquire/book in one tap. The number is configurable via
  * NEXT_PUBLIC_WHATSAPP_NUMBER (digits only, with country code, e.g. 919000187731)
  * and falls back to the business number used elsewhere on the site.
+ *
+ * The FAB stays hidden until the visitor has scrolled past the "What is Game
+ * Show Challenge Rooms" (#about) section, then fades in.
  */
-const WHATSAPP_NUMBER =
+export const WHATSAPP_NUMBER =
   process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "") || "919000187731";
+
+/** Tel-dialable phone number and its display form, shared across the site. */
+export const PHONE_NUMBER = "+919000187731";
+export const PHONE_DISPLAY = "+91 90001 87731";
 
 const PREFILLED_MESSAGE =
   "Hi! I'd like to know more about Game Show Challenge Rooms and book a show.";
 
-function WhatsAppGlyph({ size = 30 }: { size?: number }) {
+/** Pre-filled WhatsApp chat link, reusable wherever we offer "Chat with us". */
+export const whatsappHref = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+  PREFILLED_MESSAGE
+)}`;
+
+export function WhatsAppGlyph({ size = 30 }: { size?: number }) {
   return (
     <svg
       width={size}
@@ -27,17 +44,48 @@ function WhatsAppGlyph({ size = 30 }: { size?: number }) {
 }
 
 export function WhatsAppChat() {
-  const href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-    PREFILLED_MESSAGE
-  )}`;
+  // Reveal the FAB only after the visitor scrolls past the #about section
+  // ("What is Game Show Challenge Rooms").
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const about = document.getElementById("about");
+    if (!about) {
+      // No about section on this page — show the FAB normally. Defer the state
+      // update to a microtask so we don't setState synchronously inside the
+      // effect body (which would trigger a cascading render).
+      const id = requestAnimationFrame(() => setVisible(true));
+      return () => cancelAnimationFrame(id);
+    }
+
+    const check = () => {
+      // Visible once the bottom of the about section has scrolled above the
+      // top of the viewport (i.e. the user is past it).
+      setVisible(about.getBoundingClientRect().bottom <= 0);
+    };
+    check();
+    window.addEventListener("scroll", check, { passive: true });
+    window.addEventListener("resize", check);
+    return () => {
+      window.removeEventListener("scroll", check);
+      window.removeEventListener("resize", check);
+    };
+  }, []);
 
   return (
     <a
-      href={href}
+      href={whatsappHref}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with us on WhatsApp"
-      className="fixed bottom-5 right-5 z-50 flex items-center gap-3 rounded-full bg-[#25D366] py-3.5 pl-3.5 pr-4 text-white shadow-[0_10px_30px_rgba(37,211,102,0.45)] transition-colors hover:bg-[#20bd5a] md:bottom-7 md:right-7"
+      aria-hidden={!visible}
+      tabIndex={visible ? 0 : -1}
+      className={cn(
+        "fixed bottom-5 right-5 z-50 flex items-center gap-3 rounded-full bg-[#25D366] py-3.5 pl-3.5 pr-4 text-white shadow-[0_10px_30px_rgba(37,211,102,0.45)] transition-all duration-300 hover:bg-[#20bd5a] md:bottom-7 md:right-7",
+        visible
+          ? "translate-y-0 opacity-100"
+          : "pointer-events-none translate-y-4 opacity-0"
+      )}
     >
       <WhatsAppGlyph size={28} />
       <span className="hidden text-sm font-bold sm:inline">Chat with us</span>

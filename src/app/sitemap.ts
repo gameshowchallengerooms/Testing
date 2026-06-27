@@ -27,7 +27,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     })),
     {
-      url: `${SITE_URL}/terms-and-conditions`,
+      url: `${SITE_URL}/privacy-policy`,
       lastModified,
       changeFrequency: "yearly",
       priority: 0.3,

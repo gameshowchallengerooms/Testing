@@ -218,7 +218,9 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: "/seo/ZrnSOoqkPD3fRzQY8ti5PBxhnc.png",
-    apple: "/seo/apple-touch-icon.png",
+    // The real 180×180 asset. apple-touch-icon.png is mislabeled (it's 64×64),
+    // so Apple touch icons should point at the genuinely 180px file.
+    apple: "/seo/favicon-32.png",
   },
   other: {
     "geo.region": "IN-TG",
@@ -387,7 +389,7 @@ const faqPage = {
     },
     {
       q: "Do I need to book in advance?",
-      a: "Yes, you will need to book 1-3 days in advance. Showtimes are subject to availability and city/location.",
+      a: "Yes — we recommend booking upfront, ideally 1-3 days in advance, as slots fill up fast due to high demand. Spot bookings are only possible if a slot is available, so to be safe please book ahead. Showtimes are subject to availability and city/location.",
     },
     {
       q: "Is there an age limit?",

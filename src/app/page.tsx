@@ -1,6 +1,5 @@
 import { Navbar } from "@/components/Navbar";
 import { HeroSection } from "@/components/HeroSection";
-import { WhyHyderabadSection } from "@/components/WhyHyderabadSection";
 import { AboutSection } from "@/components/AboutSection";
 import { GameRoomsSection } from "@/components/GameRoomsSection";
 import { LiveShowSection } from "@/components/LiveShowSection";
@@ -19,7 +18,6 @@ export default function Home() {
       <ScrollProgress />
       <Navbar />
       <HeroSection />
-      <WhyHyderabadSection />
       <AboutSection />
       <LiveShowSection />
       <GameRoomsSection />

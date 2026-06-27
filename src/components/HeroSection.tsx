@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { RotatingShowName } from "@/components/RotatingShowName";
 
 /** A single clean strip of marquee bulbs that chase across (top & bottom). */
 function BulbStrip({ className }: { className?: string }) {
@@ -89,7 +90,7 @@ export function HeroSection() {
         {/* THE statement */}
         <h1 className="font-[var(--font-display)] font-black uppercase text-white">
           <span className="hero-enter hero-enter-2 block text-[20px] font-bold leading-tight tracking-[0.01em] text-white/75 md:text-[32px]">
-            All your life, you watched it on TV.
+            All your life, you watched <RotatingShowName /> on TV.
           </span>
           <span
             className={cn(
@@ -107,7 +108,7 @@ export function HeroSection() {
           >
             Tonight, you&apos;re
             <br />
-            on the show.
+            the contestant.
           </span>
         </h1>
 

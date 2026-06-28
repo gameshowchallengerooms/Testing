@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 function WordReveal({
@@ -74,19 +73,6 @@ export function AboutSection() {
         "px-5 pb-10 pt-0 md:px-10 md:pb-20 md:pt-0"
       )}
     >
-      {/* Decorative game-show icon strip (buzzer · wheel · podium · mic · trophy · winners) */}
-      <div className="mb-8 flex w-full justify-center md:mb-12">
-        <Image
-          src="/images/gameshowItems.png"
-          alt=""
-          aria-hidden="true"
-          width={545}
-          height={170}
-          className="h-auto w-full max-w-[560px] opacity-90"
-          priority={false}
-        />
-      </div>
-
       <div className="w-full max-w-[1200px]">
         <div className="mb-6 flex items-center gap-4">
           <span className="block h-[2px] w-[60px] bg-white/50" />

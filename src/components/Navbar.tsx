@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 const navLinks = [
   { label: "Game Shows", href: "#games" },
-  { label: "Team Building", href: "#team-building" },
+  { label: "Team Building", href: "/team-building", newTab: true },
   { label: "Pricing", href: "#tickets" },
   { label: "Location", href: "#location" },
 ] as const;
@@ -83,6 +83,9 @@ export function Navbar() {
               <Link
                 key={link.label}
                 href={link.href}
+                {...("newTab" in link && link.newTab
+                  ? { target: "_blank", rel: "noopener noreferrer" }
+                  : {})}
                 className="whitespace-nowrap text-white transition-colors hover:text-white/80"
                 style={{
                   background: "rgba(40, 40, 40, 0.8)",
@@ -226,6 +229,9 @@ export function Navbar() {
             <Link
               key={link.label}
               href={link.href}
+              {...("newTab" in link && link.newTab
+                ? { target: "_blank", rel: "noopener noreferrer" }
+                : {})}
               onClick={() => setMenuOpen(false)}
               className="rounded-2xl bg-white/[0.06] px-6 py-4 text-xl font-semibold text-white transition-colors hover:bg-white/[0.12]"
               style={{ fontFamily: "Inter, sans-serif" }}

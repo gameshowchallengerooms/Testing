@@ -98,7 +98,8 @@
   }
   html {
     font-family: var(--font-sans);
-    scroll-behavior: smooth;
+    /* Smooth scrolling is handled by Lenis (see SmoothScroll.tsx). CSS
+       scroll-behavior:smooth fights Lenis, so it's intentionally omitted. */
   }
 }
 

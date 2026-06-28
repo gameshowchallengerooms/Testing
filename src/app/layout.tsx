@@ -1,18 +1,11 @@
 import type { Metadata } from "next";
-import { Inter, Caveat } from "next/font/google";
+import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { SmoothScroll } from "@/components/SmoothScroll";
 
 const inter = Inter({
   variable: "--font-inter",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
-// Handwritten chalk font for the "three rounds" chalkboard scene.
-const caveat = Caveat({
-  variable: "--font-chalk",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
@@ -423,7 +416,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${gamestoriiRegular.variable} ${interDisplay.variable} ${interTight.variable} ${caveat.variable} h-full antialiased`}
+      className={`${inter.variable} ${gamestoriiRegular.variable} ${interDisplay.variable} ${interTight.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-black text-white">
         <script

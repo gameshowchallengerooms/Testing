@@ -11,7 +11,6 @@
   --font-display: var(--font-inter-display), ui-sans-serif, system-ui, sans-serif;
   --font-gamestorii: var(--font-gamestorii), sans-serif;
   --font-tight: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
-  --font-chalk: var(--font-chalk), "Comic Sans MS", cursive;
   --font-mono: ui-monospace, monospace;
   --font-heading: var(--font-display);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -598,168 +597,73 @@
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
-   Chalkboard "three rounds" scene
-   A dark slate board where a hand draws three doodles (buzzer → spinner →
-   trophy) in sequence, each joined by a chalk arrow to its handwritten label,
-   then a final stroke connects into the writing. The board surface, chalk
-   grain and the rough stroke texture live here; the draw SEQUENCING is driven
-   by motion in <ChalkRounds /> so it scrubs/staggers as the section enters.
+   "The Show, drawn by hand" sketch scene
+   A dark sketchpad where an unseen hand inks the whole pitch — title, three
+   format clusters (clock + round dots + name), and a finale star — line by line
+   as you scroll, with a pen (✍) riding the tip of the stroke being drawn. The
+   surface texture + ink stroke look live here; the draw SEQUENCING is driven by
+   motion in <ShowRounds /> via each path's scroll-scrubbed `pathLength`.
    ─────────────────────────────────────────────────────────────────────────── */
 
-/* The slate surface: deep green-black with a faint felt/noise grain and the
-   ghost of a thousand erased lessons (the classic chalkboard smear). */
-.chalkboard {
-  position: relative;
-  background-color: #14211c;
+/* The sketchpad surface: near-black with a faint paper grain + a soft top glow
+   so the start isn't flat black. */
+.sketchpad {
+  background-color: #07070a;
   background-image:
-    radial-gradient(ellipse 80% 55% at 30% 18%, rgba(255, 255, 255, 0.045), transparent 70%),
-    radial-gradient(ellipse 70% 60% at 78% 82%, rgba(255, 255, 255, 0.035), transparent 72%),
-    radial-gradient(circle at 50% 50%, #1b2c25 0%, #111b16 100%);
-  box-shadow:
-    inset 0 0 120px rgba(0, 0, 0, 0.55),
-    inset 0 2px 0 rgba(255, 255, 255, 0.04);
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(124, 92, 252, 0.12), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 50% 100%, rgba(252, 25, 237, 0.06), transparent 65%);
   isolation: isolate;
 }
 
-/* Eraser smears — broad soft horizontal swipes that catch the light, the
-   tell-tale sign of a real board. Animated drift so it feels alive. */
-.chalkboard::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(101deg, transparent 0%, rgba(255, 255, 255, 0.028) 18%, transparent 34%),
-    linear-gradient(94deg, transparent 40%, rgba(255, 255, 255, 0.022) 58%, transparent 74%),
-    linear-gradient(88deg, transparent 60%, rgba(220, 240, 230, 0.02) 80%, transparent 96%);
-  mix-blend-mode: screen;
-  opacity: 0.8;
-  animation: chalk-smear 14s ease-in-out infinite alternate;
-}
-
-/* Fine chalk dust grain layered over everything for tactile texture. */
-.chalkboard::after {
+/* Fine paper grain layered over everything for a tactile, hand-sketched feel. */
+.sketchpad::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
   background-image: radial-gradient(rgba(255, 255, 255, 0.5) 0.5px, transparent 0.6px);
   background-size: 3px 3px;
-  opacity: 0.04;
+  opacity: 0.03;
   mix-blend-mode: screen;
 }
 
-@keyframes chalk-smear {
-  0% {
-    transform: translateX(-1.5%) scale(1.02);
-    opacity: 0.7;
-  }
-  100% {
-    transform: translateX(1.5%) scale(1.05);
-    opacity: 0.9;
-  }
-}
-
-/* Handwritten chalk text — soft white, faint glow, hand-drawn font, with a
-   gentle texture mask so the letters look pressed from a chalk stick. */
-.chalk-ink {
-  font-family: var(--font-chalk), "Comic Sans MS", cursive;
-  color: #f4f7f2;
-  text-shadow:
-    0 0 1px rgba(255, 255, 255, 0.55),
-    0 1px 10px rgba(180, 220, 200, 0.18);
-  -webkit-font-smoothing: antialiased;
-}
-
-/* The drawn chalk strokes (SVG paths). `pathLength` is normalised to 1 by
-   motion, so dasharray/offset of 1 gives a clean draw-on. The filter roughens
-   the edge so it reads as chalk, not a vector line. */
-.chalk-stroke {
+/* The inked strokes (SVG paths). `pathLength` is normalised to 1 by motion, so
+   a clean 0→1 draw-on works without manual dasharray maths. The rough filter
+   gives the line a slightly hand-drawn wobble; a faint bloom lifts it off the
+   dark pad. */
+.ink {
   fill: none;
-  stroke: #eef3ec;
+  stroke: #f4f7f2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: url(#chalk-rough);
-  /* subtle bloom so strokes glow against the slate */
-  -webkit-filter: drop-shadow(0 0 1.5px rgba(210, 240, 225, 0.35));
+  filter: url(#ink-rough);
+  -webkit-filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.25));
 }
 
-.chalk-stroke-dim {
-  stroke: #cfe0d6;
-  opacity: 0.92;
+.ink-dim {
+  stroke: rgba(244, 247, 242, 0.55);
 }
 
-/* Accent chalk — a warm "coloured chalk" for the finale / highlights. */
-.chalk-gold {
-  stroke: #ffe39a;
-  -webkit-filter: drop-shadow(0 0 2px rgba(255, 210, 63, 0.5));
+/* Gradient-stroked highlights for the title underline + finale. */
+.ink-champ {
+  stroke: url(#grad-champ);
+  -webkit-filter: drop-shadow(0 0 4px rgba(124, 92, 252, 0.45));
 }
 
-.chalk-ink-gold {
-  font-family: var(--font-chalk), "Comic Sans MS", cursive;
-  color: #ffe39a;
-  text-shadow: 0 0 10px rgba(255, 210, 63, 0.35);
+.ink-finale {
+  stroke: url(#grad-finale);
+  -webkit-filter: drop-shadow(0 0 5px rgba(255, 210, 63, 0.5));
 }
 
-/* ── Coloured chalk per show format ──────────────────────────────────────────
-   Each format gets its own stick of coloured chalk so the title reads at a
-   glance: cool mint for the short Classic, warm amber for Prime Classic, and a
-   hot rose for the long Prime Time finale-night. Both a stroke variant (for
-   SVG doodles) and an ink variant (for the handwritten titles) are provided. */
-.chalk-mint {
-  stroke: #8ff0c4;
-  -webkit-filter: drop-shadow(0 0 2px rgba(110, 230, 180, 0.5));
-}
-.chalk-ink-mint {
-  font-family: var(--font-chalk), "Comic Sans MS", cursive;
-  color: #8ff0c4;
-  text-shadow: 0 0 10px rgba(110, 230, 180, 0.4);
-}
-
-.chalk-amber {
-  stroke: #ffc46b;
-  -webkit-filter: drop-shadow(0 0 2px rgba(255, 175, 60, 0.55));
-}
-.chalk-ink-amber {
-  font-family: var(--font-chalk), "Comic Sans MS", cursive;
-  color: #ffc46b;
-  text-shadow: 0 0 10px rgba(255, 175, 60, 0.4);
-}
-
-.chalk-rose {
-  stroke: #ff8fb0;
-  -webkit-filter: drop-shadow(0 0 2px rgba(255, 110, 150, 0.55));
-}
-.chalk-ink-rose {
-  font-family: var(--font-chalk), "Comic Sans MS", cursive;
-  color: #ff8fb0;
-  text-shadow: 0 0 10px rgba(255, 110, 150, 0.4);
-}
-
-/* The chalk-stick "nib" that rides the tip of the currently-drawing stroke —
-   a tiny glowing dab of chalk dust, plus a faint trailing puff. */
-.chalk-nib {
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.85));
-}
-
-/* Idle flicker on finished writing so the board feels lit by a fluorescent
-   tube, never perfectly static. */
-@keyframes chalk-flicker {
-  0%, 92%, 100% { opacity: 1; }
-  94% { opacity: 0.86; }
-  96% { opacity: 0.97; }
-  98% { opacity: 0.9; }
-}
-
-.chalk-flicker {
-  animation: chalk-flicker 6.5s steps(1, end) infinite;
+/* A soft glowing spark under the pen nib, so the tip looks "live" as it draws. */
+.pen-spark {
+  fill: #fff;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.9));
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .chalkboard::before {
-    animation: none;
-  }
-  .chalk-flicker {
-    animation: none;
+  .sketchpad::after {
+    opacity: 0.02;
   }
 }

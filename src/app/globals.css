@@ -11,6 +11,10 @@
   --font-display: var(--font-inter-display), ui-sans-serif, system-ui, sans-serif;
   --font-gamestorii: var(--font-gamestorii), sans-serif;
   --font-tight: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
+  /* Apple system-font stack — renders REAL SF Pro on Apple devices (where the
+     "Apple look" is judged), with Inter as the cross-platform fallback. */
+  --font-apple: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    var(--font-inter), "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, monospace;
   --font-heading: var(--font-display);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -607,12 +611,94 @@
 
 /* The sketchpad surface: near-black with a faint paper grain + a soft top glow
    so the start isn't flat black. */
+/* Surface uses a SOFT dark (#121316), not pure black — research on dark-mode
+   readability shows pure black (#000) maximises glare and "halation" (the halo
+   around text for readers with astigmatism), tiring the eyes. ~#121212 keeps a
+   strong ~15:1 contrast with off-white text while being far easier to read for
+   sustained copy. */
 .sketchpad {
-  background-color: #07070a;
+  background-color: #121316;
   background-image:
     radial-gradient(ellipse 80% 50% at 50% 0%, rgba(124, 92, 252, 0.12), transparent 60%),
     radial-gradient(ellipse 60% 50% at 50% 100%, rgba(252, 25, 237, 0.06), transparent 65%);
   isolation: isolate;
+}
+
+/* ── Readable dark-mode text tokens (research-backed) ────────────────────────
+   • Body = off-white #ECEDEF (not pure #FFF, which glares on dark).
+   • Muted = #AEB0B6 — still clears WCAG AA (~4.5:1) on the soft-dark surface,
+     unlike the too-dim white/50–55 we had before.
+   • Body copy gets 1.6 line-height for comfortable sustained reading. */
+.read-body {
+  color: #ecedef;
+  line-height: 1.6;
+}
+.read-muted {
+  color: #aeb0b6;
+}
+.read-strong {
+  color: #f6f7f9;
+}
+
+/* ── Apple "system light" surface (the recap panel) ──────────────────────────
+   Authentic Apple HIG light tokens + the system font stack, with the antialiased
+   smoothing Apple uses on its marketing pages so SF Pro renders crisp. */
+.apple-light {
+  font-family: var(--font-apple);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #1d1d1f; /* primary ink */
+}
+/* Apple's large titles: heavy negative tracking + tight leading. SF Pro Display
+   Semibold (600) on Apple devices; Inter needs ~650 to match SF's optical weight,
+   so we bump to 700 for the cross-platform fallback parity. */
+.apple-title {
+  font-family: var(--font-apple);
+  font-weight: 700;
+  color: #1d1d1f;
+  letter-spacing: -0.016em;
+  line-height: 1.0625;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+.apple-subtle {
+  font-family: var(--font-apple);
+  color: #6e6e73; /* secondary text */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.apple-tertiary {
+  font-family: var(--font-apple);
+  color: #86868b; /* tertiary text */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+/* Apple pill button (full-radius, blue), as used for primary CTAs. */
+.apple-btn {
+  font-family: var(--font-apple);
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 1.2;
+  border-radius: 980px;
+  padding: 11px 21px;
+  background: #0071e3;
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease;
+}
+.apple-btn:hover {
+  background: #0077ed;
+}
+/* Apple text link with chevron ("Learn more ›"). */
+.apple-link {
+  font-family: var(--font-apple);
+  font-size: 17px;
+  color: #0066cc;
+  -webkit-font-smoothing: antialiased;
+}
+.apple-link:hover {
+  text-decoration: underline;
 }
 
 /* Fine paper grain layered over everything for a tactile, hand-sketched feel. */

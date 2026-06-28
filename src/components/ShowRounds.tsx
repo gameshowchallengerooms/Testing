@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, Check } from "lucide-react";
+import { ArrowDown, Check } from "lucide-react";
 import {
   motion,
   useScroll,
@@ -31,7 +31,7 @@ import {
  * decorative stroke ever crosses a label.
  */
 
-const TRACK_VIEWPORTS = 9; // screens of scroll the whole story spans
+const TRACK_VIEWPORTS = 7; // screens of scroll the whole story spans
 
 /* ── Content ─────────────────────────────────────────────────────────────── */
 
@@ -43,8 +43,10 @@ interface Show {
   bestFor: string;
   pitch: string;
   features: string[];
-  /** accent solid + gradient identity */
+  /** bright accent — for fills, icons, the dark-stage beats */
   accent: string;
+  /** darker, WCAG-safe variant of the accent for TEXT/CTA on the white recap */
+  ink: string;
   gradient: string;
   popular?: boolean;
 }
@@ -54,48 +56,54 @@ interface Show {
 const shows: Show[] = [
   {
     label: "Prime Time",
-    tag: "The full experience",
-    value: "5 huge rounds across 75 unforgettable minutes",
-    bestFor: "For groups who came to go all in.",
+    tag: "Go all in.",
+    value: "5 huge rounds · 75 unforgettable minutes",
+    bestFor: "For crews who want the full, no-limits night.",
     pitch:
       "The complete journey — lights up, buzzers blazing, every round bigger than the last, building to a finale you'll talk about for weeks. This is the one you came all this way for.",
     features: ["Buzzer face-offs", "Wheel-of-fortune spins", "Head-to-head grand finale"],
     accent: "#FC19ED",
+    ink: "#B5179E",
     gradient: "linear-gradient(135deg, #7C5CFC, #FC19ED)",
   },
   {
     label: "Prime Classic",
-    tag: "Most booked",
-    value: "4 packed rounds across a perfect hour",
-    bestFor: "For crews who want the sweet spot.",
+    tag: "Most booked.",
+    value: "4 packed rounds · a perfect hour",
+    bestFor: "The sweet spot most groups choose.",
     pitch:
       "The crowd favourite for a reason — all the buzzers, laughs and rivalry, dialled to just the right length. Maximum fun, zero filler.",
     features: ["Buzzer face-offs", "Team rivalry rounds", "Champion crowning"],
     accent: "#FFD23F",
+    ink: "#9A6A00",
     gradient: "linear-gradient(135deg, #FFD23F, #FFB020)",
     popular: true,
   },
   {
     label: "The Classic",
-    tag: "Quick & punchy",
-    value: "3 fast rounds across 45 electric minutes",
-    bestFor: "For first-timers & tight schedules.",
+    tag: "Quick & electric.",
+    value: "3 fast rounds · 45 electric minutes",
+    bestFor: "Perfect first taste — big thrill, less time.",
     pitch:
       "Short on time, big on energy — a sharp, fast-paced taste of the studio with all the buzzers and bragging rights baked in. Walk in curious, walk out a champion.",
     features: ["Lightning buzzer rounds", "Live studio thrills", "Champion crowning"],
     accent: "#22D3A5",
+    ink: "#0E7C5A",
     gradient: "linear-gradient(135deg, #22D3A5, #14B8A6)",
   },
 ];
 
-/* Each beat owns a slice of the 0→1 scroll timeline. Intro + 3 shows + payoff. */
-const INTRO_SPAN: [number, number] = [0.0, 0.12];
+/* Each beat owns a slice of the 0→1 scroll timeline:
+   intro → 3 shows → RECAP (all three together) → payoff/CTA into pricing. */
+const INTRO_SPAN: [number, number] = [0.0, 0.1];
 const SHOW_SPANS: [number, number][] = [
-  [0.14, 0.4],
-  [0.42, 0.62],
-  [0.64, 0.84],
+  [0.12, 0.34],
+  [0.36, 0.54],
+  [0.56, 0.72],
 ];
-const PAYOFF_SPAN: [number, number] = [0.86, 1];
+// The recap (all three shows together) is the FINAL beat — it draws in and then
+// holds to the end of the track, after which the page scrolls on into pricing.
+const RECAP_SPAN: [number, number] = [0.74, 1];
 
 function slice([a, b]: [number, number], from: number, to: number): [number, number] {
   return [a + (b - a) * from, a + (b - a) * to];
@@ -163,13 +171,30 @@ export function ShowRounds() {
 
   const hintOpacity = useTransform(p, [0, 0.04], [1, 0]);
 
+  // As the RECAP (the three shows together) arrives, the scene transitions to an
+  // Apple "system light" soft gradient — dark neon stage → calm light panel — so
+  // the final comparison reads like a clean, premium Apple page before pricing.
+  // (The intro + per-show beats stay dark; only the recap turns light.)
+  const lightBg = useTransform(
+    p,
+    [RECAP_SPAN[0], RECAP_SPAN[0] + 0.08],
+    [
+      "linear-gradient(180deg, #0c0d10 0%, #0c0d10 100%)",
+      // Apple's light comparison sections sit on #f5f5f7 with white cards above.
+      "linear-gradient(180deg, #fbfbfd 0%, #f5f5f7 100%)",
+    ]
+  );
+  // The ambient neon ink fades out as the panel goes light (it belongs to the
+  // dark stage); a subtle scroll hint colour also flips.
+  const inkOpacity = useTransform(p, [RECAP_SPAN[0], RECAP_SPAN[0] + 0.08], [0.18, 0]);
+
   if (reduce) return <StaticFallback />;
 
   return (
     <section ref={sectionRef} className="relative w-full bg-black" style={{ height: trackHeight }}>
-      <div
+      <motion.div
         className="sketchpad sticky top-0 flex w-full items-center justify-center overflow-hidden"
-        style={{ height: "100svh", minHeight: "560px" }}
+        style={{ height: "100svh", minHeight: "560px", background: lightBg }}
       >
         {/* Shared SVG defs (rough-ink filter + gradients) defined ONCE — filter
             and gradient refs resolve document-wide by id, so we avoid duplicate
@@ -179,9 +204,8 @@ export function ShowRounds() {
         </svg>
 
         {/* LAYER 1 (art-back): one ambient ink flourish, far behind the text and
-            heavily dimmed — it never crosses a label because the copy sits on its
-            own scrim above it. */}
-        <BackdropArt p={p} />
+            heavily dimmed — fades out as the panel turns light for the recap. */}
+        <BackdropArt p={p} inkOpacity={inkOpacity} />
 
         {/* LAYER 2 (DOM text): all beats stack centred and cross-fade in place. */}
         <div className="relative z-10 mx-auto w-full max-w-[1080px] px-6">
@@ -189,7 +213,7 @@ export function ShowRounds() {
           {shows.map((show, i) => (
             <ShowBeat key={show.label} show={show} span={SHOW_SPANS[i]} p={p} />
           ))}
-          <PayoffBeat p={p} />
+          <RecapBeat p={p} />
         </div>
 
         <motion.div
@@ -198,7 +222,7 @@ export function ShowRounds() {
         >
           Scroll
         </motion.div>
-      </div>
+      </motion.div>
     </section>
   );
 }
@@ -222,11 +246,12 @@ function SketchDefs() {
 /** A single, large, dim flourish that lives BEHIND everything and slowly draws
  *  across the whole scroll. Low opacity + heavy blur so it's pure ambience and
  *  can never hurt legibility (research §1: art-back layer + scrim above). */
-function BackdropArt({ p }: { p: MotionValue<number> }) {
+function BackdropArt({ p, inkOpacity }: { p: MotionValue<number>; inkOpacity: MotionValue<number> }) {
   return (
-    <svg
+    <motion.svg
       viewBox="0 0 1200 800"
-      className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-[0.18]"
+      className="pointer-events-none absolute inset-0 z-0 h-full w-full"
+      style={{ opacity: inkOpacity }}
       fill="none"
       aria-hidden="true"
       preserveAspectRatio="xMidYMid slice"
@@ -246,7 +271,7 @@ function BackdropArt({ p }: { p: MotionValue<number> }) {
         className="ink ink-champ"
         width={4}
       />
-    </svg>
+    </motion.svg>
   );
 }
 
@@ -266,9 +291,9 @@ function IntroBeat({ p }: { p: MotionValue<number> }) {
   const style = useBeatStyle(p, INTRO_SPAN);
   return (
     <motion.div className="absolute inset-x-6 top-1/2 -translate-y-1/2 text-center" style={style}>
-      <p className="text-sm font-semibold uppercase tracking-[0.32em] text-white/55">Choose your show</p>
+      <p className="text-sm font-semibold uppercase tracking-[0.32em] read-muted">Choose your show</p>
       <h2
-        className="mx-auto mt-4 max-w-[16ch] text-4xl font-medium leading-[1.05] tracking-tight text-white md:text-7xl"
+        className="read-strong mx-auto mt-4 max-w-[16ch] text-4xl font-medium leading-[1.05] tracking-tight md:text-7xl"
         style={{ fontFamily: "var(--font-display)", letterSpacing: "-2px" }}
       >
         One unforgettable night,{" "}
@@ -283,7 +308,7 @@ function IntroBeat({ p }: { p: MotionValue<number> }) {
           your way.
         </span>
       </h2>
-      <p className="mx-auto mt-5 max-w-[42ch] text-base text-white/65 md:text-lg">
+      <p className="read-body mx-auto mt-5 max-w-[42ch] text-base md:text-lg">
         Three separate live shows — pick the one that fits your crew. Each builds
         to the same big finish: one champion, one night you&apos;ll never forget.
       </p>
@@ -311,8 +336,9 @@ function ShowBeat({ show, span, p }: { show: Show; span: [number, number]; p: Mo
 
   return (
     <motion.div className="absolute inset-x-6 top-1/2 -translate-y-1/2" style={style}>
-      {/* scrim pad behind copy so any ambient backdrop ink stays readable */}
-      <div className="mx-auto max-w-[760px] rounded-[2rem] bg-black/55 px-6 py-8 text-center backdrop-blur-sm md:px-10 md:py-10">
+      {/* scrim pad behind copy so any ambient backdrop ink stays readable —
+          soft-dark (not pure black) at high opacity for a calm reading surface */}
+      <div className="mx-auto max-w-[760px] rounded-[2rem] bg-[#121316]/75 px-6 py-8 text-center backdrop-blur-sm md:px-10 md:py-10">
         {/* tag */}
         <motion.span
           className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold uppercase tracking-wide"
@@ -338,22 +364,22 @@ function ShowBeat({ show, span, p }: { show: Show; span: [number, number]; p: Mo
         </svg>
 
         {/* value line */}
-        <motion.p className="mt-4 text-lg font-semibold text-white md:text-2xl" style={value}>
+        <motion.p className="read-strong mt-4 text-lg font-semibold md:text-2xl" style={value}>
           {show.value}
         </motion.p>
-        <motion.p className="mt-1 text-sm uppercase tracking-[0.18em] md:text-base" style={{ color: show.accent, ...value }}>
+        <motion.p className="mt-1 text-sm font-semibold uppercase tracking-[0.18em] md:text-base" style={{ color: show.accent, ...value }}>
           {show.bestFor}
         </motion.p>
 
         {/* pitch */}
-        <motion.p className="mx-auto mt-5 max-w-[52ch] text-base leading-relaxed text-white/75 md:text-lg" style={pitch}>
+        <motion.p className="read-body mx-auto mt-5 max-w-[52ch] text-base md:text-lg" style={pitch}>
           {show.pitch}
         </motion.p>
 
         {/* features */}
         <motion.ul className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3" style={pitch}>
           {show.features.map((f) => (
-            <li key={f} className="flex items-center gap-2 text-sm text-white/80 md:text-base">
+            <li key={f} className="read-body flex items-center gap-2 text-sm md:text-base">
               <span
                 className="flex h-5 w-5 items-center justify-center rounded-full"
                 style={{ background: `${show.accent}22`, color: show.accent }}
@@ -378,49 +404,100 @@ function useWriteOn(p: MotionValue<number>, [a, b]: [number, number]) {
   return { opacity, y, filter };
 }
 
-function PayoffBeat({ p }: { p: MotionValue<number> }) {
-  const style = useBeatStyleEnd(p, PAYOFF_SPAN);
-  const line = useWriteOn(p, slice(PAYOFF_SPAN, 0.0, 0.4));
-  const ctaOpacity = useTransform(p, slice(PAYOFF_SPAN, 0.4, 0.7), [0, 1], { clamp: true });
-  const ctaY = useTransform(p, slice(PAYOFF_SPAN, 0.4, 0.7), [20, 0], { clamp: true });
+/** RECAP — after walking through each show, bring ALL THREE back together so the
+ *  group can compare at a glance and make the call, then nudge down to pricing.
+ *  The three mini-cards stagger in (Prime Time first / highlighted). */
+function RecapBeat({ p }: { p: MotionValue<number> }) {
+  // Final beat: fade IN and HOLD (no fade-out) so it stays put as you scroll on
+  // into the pricing section right below.
+  const style = useBeatStyleEnd(p, RECAP_SPAN);
+  const heading = useWriteOn(p, slice(RECAP_SPAN, 0.04, 0.2));
 
   return (
-    <motion.div className="absolute inset-x-6 top-1/2 -translate-y-1/2 text-center" style={style}>
+    <motion.div
+      className="apple-light absolute inset-x-4 top-1/2 max-h-[94svh] -translate-y-1/2 overflow-y-auto py-6 text-center md:inset-x-6"
+      style={style}
+    >
+      {/* Apple large title: near-black ink, heavy weight, tight tracking. */}
       <motion.h2
-        className="mx-auto max-w-[20ch] text-3xl font-medium leading-tight tracking-tight text-white md:text-5xl"
-        style={{ fontFamily: "var(--font-display)", letterSpacing: "-1.5px", ...line }}
+        className="apple-title px-4 text-[34px] leading-[1.05] md:text-[72px]"
+        style={{ letterSpacing: "-0.02em", ...heading }}
       >
-        Whichever show you choose, you walk out with one{" "}
-        <span
-          style={{
-            background: "linear-gradient(90deg,#FFD23F,#FC19ED)",
-            WebkitBackgroundClip: "text",
-            backgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          champion
-        </span>{" "}
-        — and a night your group will never forget.
+        Which show is yours?
       </motion.h2>
-      <motion.div className="mt-8 flex flex-col items-center" style={{ opacity: ctaOpacity, y: ctaY }}>
-        <Link
-          href="https://gameshowchallengerooms.com/"
-          className="inline-flex items-center gap-2 rounded-full px-8 py-4 text-base font-bold text-white transition-transform hover:scale-[1.04]"
-          style={{ background: "linear-gradient(135deg, #7C5CFC, #FC19ED)" }}
-        >
-          Book your show
-          <ArrowUpRight size={18} />
-        </Link>
-        <p className="mt-3 text-sm text-white/55">
-          From <span className="font-semibold text-white">₹750</span>/head, taxes in — shows book out fast.
-        </p>
-      </motion.div>
+      <motion.p
+        className="apple-subtle mx-auto mt-4 max-w-[46ch] px-4 text-[19px] md:text-[30px]"
+        style={{ fontFamily: "var(--font-apple)", letterSpacing: "-0.012em", lineHeight: 1.25, ...heading }}
+      >
+        Three unforgettable shows. Pick yours, gather your crew, and walk out a champion.
+      </motion.p>
+
+      {/* Apple comparison grid: borderless, shadowless, centred columns that
+          share the panel — separated by whitespace, not card chrome. On mobile
+          they stack with a hairline between each. */}
+      <div className="mx-auto mt-10 grid max-w-[1000px] gap-x-6 gap-y-10 px-2 md:mt-16 md:grid-cols-3">
+        {shows.map((s, i) => {
+          // Stagger the three in early in the span, then hold for the rest.
+          const cardAt = slice(RECAP_SPAN, 0.16 + i * 0.08, 0.3 + i * 0.08);
+          return <RecapCard key={s.label} show={s} at={cardAt} p={p} />;
+        })}
+      </div>
     </motion.div>
   );
 }
 
-/* Payoff beat only needs to fade IN (it's the end), so a dedicated style. */
+/** One Apple comparison COLUMN (not a boxed card): borderless and shadowless,
+ *  centred text, a small colour dot, the name, a one-line summary, a hairline
+ *  divider, then the spec list — exactly Apple's product line-up grid. */
+function RecapCard({ show, at, p }: { show: Show; at: [number, number]; p: MotionValue<number> }) {
+  const style = useWriteOn(p, at);
+  return (
+    <motion.div className="apple-light flex flex-col items-center text-center" style={style}>
+      {/* Colour dot — Apple's tiny finish swatch above the name. */}
+      <span
+        className="h-2.5 w-2.5 rounded-full"
+        style={{ background: show.accent, boxShadow: `0 0 0 1px ${show.ink}44` }}
+        aria-hidden
+      />
+
+      {/* Name — Apple bold title. */}
+      <h3 className="apple-title mt-5 text-[32px] md:text-[40px]">{show.label}</h3>
+
+      {/* One-line summary (the "tag"), secondary ink — like Apple's tagline. */}
+      <p className="apple-subtle mt-2 text-[19px] md:text-[21px]" style={{ lineHeight: 1.3 }}>
+        {show.tag}
+      </p>
+
+      {/* "From / value" block — Apple puts a price-style line here. */}
+      <p className="mt-7 text-[17px] font-semibold md:text-[19px]" style={{ color: "#1d1d1f", letterSpacing: "-0.01em" }}>
+        {show.value}
+      </p>
+
+      {/* Hairline divider, full column width — Apple's signature separator. */}
+      <span className="mt-8 block h-px w-full" style={{ background: "#d2d2d7" }} aria-hidden />
+
+      {/* "Best for" caption, then the spec list — centred, calm secondary ink. */}
+      <p className="apple-tertiary mt-8 text-[15px]">{show.bestFor}</p>
+      <ul className="mt-4 space-y-3">
+        {show.features.map((f) => (
+          <li key={f} className="apple-subtle text-[18px]" style={{ lineHeight: 1.45 }}>
+            {f}
+          </li>
+        ))}
+      </ul>
+
+      {/* Apple CTA: blue text link, first-person + action verb (research: first-
+          person phrasing lifts CTR ~94%) with a genuine-urgency micro-line. */}
+      <Link href="#tickets" className="apple-link mt-8 inline-flex items-center gap-1 font-normal text-[19px]!">
+        Book this show
+        <span aria-hidden className="text-[21px] leading-none">›</span>
+      </Link>
+      <span className="apple-tertiary mt-2 text-[13px]">From ₹750/head · slots fill fast</span>
+    </motion.div>
+  );
+}
+
+/* The final beat fades IN and holds (no fade-out), so a dedicated style. */
 function useBeatStyleEnd(p: MotionValue<number>, [a, b]: [number, number]) {
   const opacity = useTransform(p, [a, a + (b - a) * 0.25], [0, 1], { clamp: true });
   const y = useTransform(p, [a, a + (b - a) * 0.3], [44, 0], { clamp: true });
@@ -433,9 +510,9 @@ function StaticFallback() {
     <section className="relative w-full overflow-hidden bg-black px-5 py-20 md:px-10 md:py-28">
       <div className="mx-auto max-w-[1080px]">
         <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.32em] text-white/55">Choose your show</p>
+          <p className="read-muted text-sm font-semibold uppercase tracking-[0.32em]">Choose your show</p>
           <h2
-            className="mx-auto mt-4 max-w-[18ch] text-3xl font-medium leading-tight tracking-tight text-white md:text-5xl"
+            className="read-strong mx-auto mt-4 max-w-[18ch] text-3xl font-medium leading-tight tracking-tight md:text-5xl"
             style={{ fontFamily: "var(--font-display)", letterSpacing: "-1.5px" }}
           >
             One unforgettable night,{" "}
@@ -450,7 +527,7 @@ function StaticFallback() {
               your way.
             </span>
           </h2>
-          <p className="mx-auto mt-4 max-w-[46ch] text-base text-white/65 md:text-lg">
+          <p className="read-body mx-auto mt-4 max-w-[46ch] text-base md:text-lg">
             Three separate live shows — pick the one that fits your crew. Each builds
             to one champion and one night you&apos;ll never forget.
           </p>
@@ -481,50 +558,31 @@ function StaticFallback() {
               <h3 className="mt-4 text-3xl font-bold" style={{ fontFamily: "var(--font-display)", color: s.accent }}>
                 {s.label}
               </h3>
-              <p className="mt-2 text-base font-semibold text-white">{s.value}</p>
-              <p className="mt-1 text-sm uppercase tracking-[0.16em]" style={{ color: s.accent }}>{s.bestFor}</p>
-              <p className="mt-3 text-sm leading-relaxed text-white/70">{s.pitch}</p>
-              <ul className="mt-4 space-y-2">
+              <p className="read-strong mt-2 text-[15px] font-semibold">{s.value}</p>
+              <p className="mt-1 text-sm font-semibold uppercase tracking-[0.16em]" style={{ color: s.accent }}>{s.bestFor}</p>
+              <p className="read-body mt-3 text-[15px]">{s.pitch}</p>
+              <ul className="mt-4 space-y-2.5 border-t border-white/10 pt-4">
                 {s.features.map((f) => (
-                  <li key={f} className="flex items-center gap-2 text-sm text-white/80">
-                    <Check size={14} strokeWidth={3} style={{ color: s.accent }} />
+                  <li key={f} className="read-body flex items-center gap-2 text-[15px]">
+                    <Check size={15} strokeWidth={3} style={{ color: s.accent }} />
                     {f}
                   </li>
                 ))}
               </ul>
+              <Link
+                href="#tickets"
+                className="mt-5 inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-bold transition-transform hover:scale-[1.03]"
+                style={
+                  s.popular
+                    ? { background: s.accent, color: "#0b0b0d" }
+                    : { border: `1px solid ${s.accent}66`, color: s.accent }
+                }
+              >
+                See prices
+                <ArrowDown size={15} />
+              </Link>
             </div>
           ))}
-        </div>
-
-        <div className="mt-12 text-center">
-          <p
-            className="mx-auto max-w-[24ch] text-2xl font-medium tracking-tight text-white md:text-3xl"
-            style={{ fontFamily: "var(--font-display)", letterSpacing: "-1px" }}
-          >
-            Whichever you choose, you walk out with one{" "}
-            <span
-              style={{
-                background: "linear-gradient(90deg,#FFD23F,#FC19ED)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              champion
-            </span>
-            .
-          </p>
-          <Link
-            href="https://gameshowchallengerooms.com/"
-            className="mt-7 inline-flex items-center gap-2 rounded-full px-8 py-4 text-base font-bold text-white"
-            style={{ background: "linear-gradient(135deg, #7C5CFC, #FC19ED)" }}
-          >
-            Book your show
-            <ArrowUpRight size={18} />
-          </Link>
-          <p className="mt-3 text-sm text-white/55">
-            From <span className="font-semibold text-white">₹750</span>/head, taxes in.
-          </p>
         </div>
       </div>
     </section>

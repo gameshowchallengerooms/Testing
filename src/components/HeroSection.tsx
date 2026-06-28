@@ -9,6 +9,7 @@ import {
   useScroll,
   useSpring,
   useTransform,
+  useMotionTemplate,
   useReducedMotion,
   type MotionValue,
 } from "motion/react";
@@ -125,51 +126,103 @@ function FillWord({
 
 // ─── Gold pill border draw ───────────────────────────────────────────────────
 
+/**
+ * Build an SVG path for a rounded rectangle, starting at the top-center so the
+ * stroke draws clockwise from the top — the most natural "draw on" direction.
+ */
+function roundedRectPath(x: number, y: number, w: number, h: number, r: number): string {
+  const radius = Math.max(0, Math.min(r, w / 2, h / 2));
+  return [
+    `M ${x + w / 2} ${y}`,
+    `H ${x + w - radius}`,
+    `A ${radius} ${radius} 0 0 1 ${x + w} ${y + radius}`,
+    `V ${y + h - radius}`,
+    `A ${radius} ${radius} 0 0 1 ${x + w - radius} ${y + h}`,
+    `H ${x + radius}`,
+    `A ${radius} ${radius} 0 0 1 ${x} ${y + h - radius}`,
+    `V ${y + radius}`,
+    `A ${radius} ${radius} 0 0 1 ${x + radius} ${y}`,
+    `Z`,
+  ].join(" ");
+}
+
 function GoldPill({ progress }: { progress: MotionValue<number> }) {
   const draw = useTransform(progress, [0, 1], [0, 1]);
-  // A simple rounded-rect approximation via SVG stroke dashoffset on a rect.
-  // We use a fixed size pill and scale via CSS to avoid ResizeObserver overhead.
-  const W = 420;
-  const H = 44;
-  const R = H / 2;
 
-  const bgOpacity = useTransform(draw, [0, 1], [0.04, 0.18]);
+  // Measure the real pill so the border path matches it exactly — no stretching,
+  // so the rounded corners and stroke stay crisp at any size (phone → desktop).
+  const pillRef = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ w: 0, h: 0 });
+  useEffect(() => {
+    const node = pillRef.current;
+    if (!node) return;
+    const update = () => setSize({ w: node.offsetWidth, h: node.offsetHeight });
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(node);
+    return () => ro.disconnect();
+  }, []);
+
+  const STROKE = 2;
+  const inset = STROKE / 2;
+  const r = size.h / 2;
+  const rectPath =
+    size.w && size.h
+      ? roundedRectPath(inset, inset, size.w - STROKE, size.h - STROKE, r - inset)
+      : "";
+
+  // The star rides the border as it draws, then settles at the top.
+  const offsetDistance = useTransform(draw, (v) => `${v * 100}%`);
+  // Fill + glow strengthen as the border closes.
+  const bgOpacity = useTransform(draw, [0, 1], [0.04, 0.16]);
+  const background = useMotionTemplate`rgba(255,210,63,${bgOpacity})`;
+  const glow = useTransform(draw, [0, 1], [0, 0.45]);
+  const boxShadow = useMotionTemplate`0 0 32px rgba(255,210,63,${glow})`;
 
   return (
-    <div className="relative inline-flex items-center gap-2.5 rounded-full px-5 py-2.5 backdrop-blur-md"
-      style={{ minWidth: 260 }}>
-      {/* Animated gold fill */}
+    <motion.div
+      ref={pillRef}
+      className="relative inline-flex max-w-[min(92vw,30rem)] items-center gap-2.5 rounded-full px-5 py-2.5 backdrop-blur-md"
+      style={{ boxShadow }}
+    >
+      {/* Animated translucent gold fill that strengthens as the border closes */}
       <motion.span
         aria-hidden
         className="pointer-events-none absolute inset-0 rounded-full"
-        style={{ background: `rgba(255,210,63,0.12)`, opacity: bgOpacity }}
+        style={{ background }}
       />
 
-      {/* SVG border that draws itself */}
-      <svg
-        aria-hidden
-        className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
-        viewBox={`0 0 ${W} ${H}`}
-        preserveAspectRatio="none"
-        fill="none"
-      >
-        <motion.rect
-          x={1} y={1} width={W - 2} height={H - 2} rx={R - 1}
-          stroke="#FFD23F"
-          strokeWidth={2}
-          strokeLinecap="round"
-          style={{ pathLength: draw }}
-        />
-      </svg>
+      {/* The drawing gold border — an SVG outline scrubbed by scroll, sized to
+          the measured pill so corners and stroke never distort. */}
+      {rectPath && (
+        <svg
+          aria-hidden
+          className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+          width={size.w}
+          height={size.h}
+          fill="none"
+        >
+          <motion.path
+            d={rectPath}
+            stroke="#FFD23F"
+            strokeWidth={STROKE}
+            strokeLinecap="round"
+            style={{ pathLength: draw }}
+          />
+          <motion.g style={{ offsetPath: `path('${rectPath}')`, offsetDistance }}>
+            <Star size={12} className="fill-[#FFD23F] text-[#FFD23F]" x={-6} y={-6} />
+          </motion.g>
+        </svg>
+      )}
 
       <span className="relative z-1 inline-flex items-center gap-2.5">
-        <Star size={14} className="shrink-0 fill-[#FFD23F] text-[#FFD23F]" />
+        <Star size={15} className="shrink-0 fill-[#FFD23F] text-[#FFD23F]" />
         <span className="text-sm font-semibold text-white md:text-base">
           And we&apos;ll make the{" "}
           <span className="text-[#FFD23F]">real show happen for you.</span>
         </span>
       </span>
-    </div>
+    </motion.div>
   );
 }
 
@@ -315,10 +368,10 @@ export function HeroSection() {
           paddingBottom: "20px",
         }}
       >
-        <div className="flex w-full max-w-260 flex-1 flex-col items-center justify-between">
+        <div className="flex w-full max-w-260 flex-1 flex-col items-center justify-center gap-[clamp(1rem,4dvh,2.5rem)]">
 
-          {/* ── Top row: setup copy, 20px under the header ── */}
-          <p className="hero-enter hero-enter-1 mt-[20px] max-w-180 text-sm font-medium leading-relaxed text-white/80 md:text-lg">
+          {/* ── Top row: setup copy ── */}
+          <p className="hero-enter hero-enter-1 max-w-180 text-sm font-medium leading-relaxed text-white/80 md:text-lg">
             For years, you watched celebrities play exciting game shows on TV.{" "}
             Now,{" "}
             <span className="font-semibold text-white">
@@ -338,14 +391,14 @@ export function HeroSection() {
               {reduce ? (
                 WORDS.map((w) => (
                   <span key={w} className="block font-black tracking-tight"
-                    style={{ fontSize: "clamp(40px, min(14.5vw, 12dvh), 128px)", lineHeight: 1.04 }}>
+                    style={{ fontSize: "clamp(50px, min(16.5vw, 14dvh), 156px)", lineHeight: 0.97 }}>
                     {w}
                   </span>
                 ))
               ) : (
                 WORDS.map((w, i) => (
                   <span key={w} className="block font-black tracking-tight"
-                    style={{ fontSize: "clamp(40px, min(14.5vw, 12dvh), 128px)", lineHeight: 1.04 }}>
+                    style={{ fontSize: "clamp(50px, min(16.5vw, 14dvh), 156px)", lineHeight: 0.97 }}>
                     <RevealWord word={w} progress={headlineProgress} index={i} total={WORDS.length} />
                   </span>
                 ))
@@ -354,7 +407,7 @@ export function HeroSection() {
 
             {/* Fill paragraph — timed reveal word colors */}
             <p
-              className="mt-[clamp(0.6rem,2.5dvh,1.5rem)] max-w-135 text-sm md:text-base"
+              className="mt-[clamp(0.5rem,1.8dvh,1rem)] max-w-135 text-sm md:text-base"
               aria-label={PARA_TEXT}
             >
               {reduce ? (
@@ -376,11 +429,11 @@ export function HeroSection() {
             </p>
           </div>
 
-          {/* ── Bottom row: gold pill, 20px from the bottom ── */}
-          <div className="mb-[20px]">
+          {/* ── Bottom row: gold pill ── */}
+          <div>
             {reduce ? (
-              <div className="inline-flex items-center gap-2.5 rounded-full border border-[#FFD23F]/60 bg-[#FFD23F]/10 px-5 py-2.5 backdrop-blur-md">
-                <Star size={14} className="shrink-0 fill-[#FFD23F] text-[#FFD23F]" />
+              <div className="inline-flex max-w-[min(92vw,30rem)] items-center gap-2.5 rounded-full border border-[#FFD23F]/60 bg-[#FFD23F]/10 px-5 py-2.5 backdrop-blur-md">
+                <Star size={15} className="shrink-0 fill-[#FFD23F] text-[#FFD23F]" />
                 <span className="text-sm font-semibold text-white">
                   And we&apos;ll make the{" "}
                   <span className="text-[#FFD23F]">real show happen for you.</span>

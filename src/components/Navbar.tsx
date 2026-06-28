@@ -152,21 +152,24 @@ export function Navbar() {
           left: "50%",
           transform: "translateX(-50%)",
           borderRadius: 33,
-          padding: "4px 4px 4px 12px",
+          padding: "4px 8px",
           background: "rgba(30, 30, 30, 0.8)",
           backdropFilter: "blur(10px)",
           WebkitBackdropFilter: "blur(10px)",
           gap: 10,
         }}
       >
-        {/* Logo */}
-        <Image
-          src="/images/logo.png"
-          alt="Game Show Challenge Rooms"
-          width={155}
-          height={100}
-          className="h-9 w-auto flex-shrink-0"
-        />
+        {/* Logo — fixed width box so it and the mirror spacer on the right are
+            exactly equal, putting the Book CTA at the true horizontal centre. */}
+        <Link href="/" className="flex w-14 flex-shrink-0 justify-start">
+          <Image
+            src="/images/logo.png"
+            alt="Game Show Challenge Rooms"
+            width={155}
+            height={100}
+            className="h-9 w-auto"
+          />
+        </Link>
 
         {/* Compact Book Now CTA */}
         <Link
@@ -195,6 +198,10 @@ export function Navbar() {
             <ArrowUpRight className="text-white" size={18} strokeWidth={2.5} />
           </span>
         </Link>
+
+        {/* Right-side mirror spacer, same width as the logo box (w-14) with
+            symmetric container padding, so the Book CTA is dead-centre. */}
+        <span aria-hidden className="h-9 w-14 flex-shrink-0" />
       </nav>
 
       {/* Mobile menu overlay */}

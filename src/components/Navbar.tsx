@@ -144,7 +144,7 @@ export function Navbar() {
       {/* State 2: Compact Nav (scrolled > 100px) */}
       <nav
         className={cn(
-          "pointer-events-none fixed z-50 flex items-center opacity-0 transition-all duration-300 ease-in-out",
+          "pointer-events-none fixed z-50 flex items-center justify-center gap-3 opacity-0 transition-all duration-300 ease-in-out",
           scrolled && "pointer-events-auto opacity-100"
         )}
         style={{
@@ -156,12 +156,10 @@ export function Navbar() {
           background: "rgba(30, 30, 30, 0.8)",
           backdropFilter: "blur(10px)",
           WebkitBackdropFilter: "blur(10px)",
-          gap: 10,
         }}
       >
-        {/* Logo — fixed width box so it and the mirror spacer on the right are
-            exactly equal, putting the Book CTA at the true horizontal centre. */}
-        <Link href="/" className="flex w-14 flex-shrink-0 justify-start">
+        {/* Logo and CTA sit together as a centred flex group. */}
+        <Link href="/" className="flex shrink-0 items-center pl-1">
           <Image
             src="/images/logo.png"
             alt="Game Show Challenge Rooms"
@@ -174,7 +172,7 @@ export function Navbar() {
         {/* Compact Book Now CTA */}
         <Link
           href="#tickets"
-          className="flex flex-shrink-0 items-center text-white transition-opacity hover:opacity-90"
+          className="flex shrink-0 items-center text-white transition-opacity hover:opacity-90"
           style={{
             background: "black",
             borderRadius: 33,
@@ -198,10 +196,6 @@ export function Navbar() {
             <ArrowUpRight className="text-white" size={18} strokeWidth={2.5} />
           </span>
         </Link>
-
-        {/* Right-side mirror spacer, same width as the logo box (w-14) with
-            symmetric container padding, so the Book CTA is dead-centre. */}
-        <span aria-hidden className="h-9 w-14 flex-shrink-0" />
       </nav>
 
       {/* Mobile menu overlay */}

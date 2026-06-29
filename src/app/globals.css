@@ -701,6 +701,27 @@
   text-decoration: underline;
 }
 
+/* ── BMW configurator CTA ──────────────────────────────────────────────────
+   Squared (no radius). Outline variant fills BMW-blue on hover; filled variant
+   is solid BMW-blue and brightens slightly on hover. */
+.bmw-btn {
+  border-radius: 0;
+}
+.bmw-btn--outline {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: transparent;
+}
+.bmw-btn--outline:hover {
+  background: #0066b1;
+  border-color: #0066b1;
+}
+.bmw-btn--filled {
+  background: #0066b1;
+}
+.bmw-btn--filled:hover {
+  background: #1c69d4;
+}
+
 /* Fine paper grain layered over everything for a tactile, hand-sketched feel. */
 .sketchpad::after {
   content: "";

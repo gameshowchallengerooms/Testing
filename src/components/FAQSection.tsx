@@ -35,12 +35,27 @@ const faqItems = [
   },
 ];
 
-export function FAQSection() {
+/** `embedded` strips the standalone section chrome (full-bleed padding +
+ *  decorative background) so the FAQ can live inside another section — e.g. as
+ *  the right column of the Footer. */
+export function FAQSection({ embedded = false }: { embedded?: boolean }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const handleToggle = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
+
+  if (embedded) {
+    return (
+      <div id="questions" className="w-full">
+        <FAQContent
+          faqItems={faqItems}
+          openIndex={openIndex}
+          handleToggle={handleToggle}
+        />
+      </div>
+    );
+  }
 
   return (
     <section id="questions" className="w-full bg-black">
@@ -60,6 +75,30 @@ export function FAQSection() {
 
         {/* Content */}
         <div className="relative z-[1]">
+          <FAQContent
+            faqItems={faqItems}
+            openIndex={openIndex}
+            handleToggle={handleToggle}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Shared inner content (label, heading, accordion, CTA) used by both the
+ *  standalone section and the embedded (footer) variant. */
+function FAQContent({
+  faqItems,
+  openIndex,
+  handleToggle,
+}: {
+  faqItems: { q: string; a: string }[];
+  openIndex: number | null;
+  handleToggle: (index: number) => void;
+}) {
+  return (
+    <>
           {/* Section Label */}
           <div className="mb-6 flex items-center gap-4">
             <span
@@ -195,8 +234,6 @@ export function FAQSection() {
               </div>
             </div>
           </Reveal>
-        </div>
-      </div>
-    </section>
+    </>
   );
 }

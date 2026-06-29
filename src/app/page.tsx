@@ -3,7 +3,6 @@ import { ScrollZoomIntro } from "@/components/ScrollZoomIntro";
 import { HeroSection } from "@/components/HeroSection";
 import { GameRoomsSection } from "@/components/GameRoomsSection";
 import { ShowRounds } from "@/components/ShowRounds";
-import { FAQSection } from "@/components/FAQSection";
 import { PricingSection } from "@/components/PricingSection";
 import { LocationSection } from "@/components/LocationSection";
 import { Footer } from "@/components/Footer";
@@ -21,7 +20,6 @@ export default function Home() {
       <ShowRounds />
       <PricingSection />
       <LocationSection />
-      <FAQSection />
       <Footer />
       <WhatsAppChat />
     </main>

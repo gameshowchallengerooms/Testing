@@ -16,10 +16,11 @@ const navLinks = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  // True while the light Apple "show recap" panel is on screen — we hide the
-  // floating compact "Book Your Show" pill there (it has its own CTAs and the
-  // dark pill clashes with the white panel on mobile).
-  const [overRecap, setOverRecap] = useState(false);
+  // True while the pinned "One unforgettable night" show story is on screen on a
+  // MOBILE viewport — we hide the floating compact "Book Your Show" pill there so
+  // it doesn't overlap the flipping book covers, then return once it's scrolled
+  // past. (Desktop keeps the pill; the story has room beside it.)
+  const [overShowStory, setOverShowStory] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,41 +35,35 @@ export function Navbar() {
     };
   }, []);
 
-  // Watch the Apple recap section (mobile renders it as #show-recap) so the
-  // compact CTA can step aside while it's in view, then return once it's gone.
-  // The recap mounts AFTER ShowRounds detects a mobile viewport, so it may not
-  // exist when this effect first runs — wait for it via a MutationObserver, then
-  // attach the IntersectionObserver.
+  // Watch the pinned "One unforgettable night" show story (#show-rounds) so the
+  // compact CTA can step aside while it's in view on MOBILE, then return once
+  // it's scrolled past. The hide is mobile-only: on desktop the story has room
+  // beside the pill, so we keep it. The mobile check runs in the IO callback (and
+  // on resize) so the gating tracks viewport changes.
   useEffect(() => {
-    let io: IntersectionObserver | null = null;
+    const story = document.getElementById("show-rounds");
+    if (!story) return;
 
-    const attach = (recap: Element) => {
-      io = new IntersectionObserver(
-        ([entry]) => setOverRecap(entry.isIntersecting),
-        { threshold: 0 }
-      );
-      io.observe(recap);
-    };
+    const isMobile = () => window.matchMedia("(max-width: 767px)").matches;
 
-    const existing = document.getElementById("show-recap");
-    if (existing) {
-      attach(existing);
-      return () => io?.disconnect();
-    }
+    let intersecting = false;
+    const sync = () => setOverShowStory(intersecting && isMobile());
 
-    // Not in the DOM yet — watch for it to appear, then attach once.
-    const mo = new MutationObserver(() => {
-      const recap = document.getElementById("show-recap");
-      if (recap) {
-        attach(recap);
-        mo.disconnect();
-      }
-    });
-    mo.observe(document.body, { childList: true, subtree: true });
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        intersecting = entry.isIntersecting;
+        sync();
+      },
+      { threshold: 0 }
+    );
+    io.observe(story);
+
+    // Keep the mobile gating correct if the viewport crosses the breakpoint.
+    window.addEventListener("resize", sync, { passive: true });
 
     return () => {
-      mo.disconnect();
-      io?.disconnect();
+      io.disconnect();
+      window.removeEventListener("resize", sync);
     };
   }, []);
 
@@ -183,12 +178,13 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* State 2: Compact Nav (scrolled > 100px) — steps aside over the light
-          Apple recap panel, then returns once it's scrolled past. */}
+      {/* State 2: Compact Nav (scrolled > 100px) — on mobile it steps aside while
+          the "One unforgettable night" show story is on screen, then returns once
+          it's scrolled past. */}
       <nav
         className={cn(
           "pointer-events-none fixed z-50 flex items-center justify-center gap-3 opacity-0 transition-all duration-300 ease-in-out",
-          scrolled && !overRecap && "pointer-events-auto opacity-100"
+          scrolled && !overShowStory && "pointer-events-auto opacity-100"
         )}
         style={{
           top: 16,

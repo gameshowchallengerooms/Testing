@@ -18,12 +18,12 @@ import {
  *
  * The three shows are SEPARATE choices (a group books ONE). So instead of three
  * cramped columns, each show gets its own full-screen BEAT that draws + writes
- * itself in as you scroll — sold top-down from the flagship:
+ * itself in as you scroll — sold top-down through the line-up:
  *
  *   intro     → headline "One unforgettable night, your way" writes on
  *   THE CLASSIC   → the pure live game show: core rounds · ~45 min
  *   PRIME TIME    → most popular: the show meets the party · ~60 min
- *   ELITE EDITION → the flagship: biggest & most unforgettable · ~75 min
+ *   ELITE EDITION → the premium celebration show for special days · ~60 min
  *   payoff    → closing line + CTA
  *
  * Collision-proof by construction (per motion-research best practice): art and
@@ -58,9 +58,11 @@ interface Show {
 }
 
 // Sold UP the line-up — The Classic → Prime Time (most popular) → Elite Edition
-// (the flagship). Each is a deliberate, desirable choice; none is "cheap". Copy
-// and feature lists mirror the official brochure: Prime Time builds on The
-// Classic, Elite Edition builds on Prime Time.
+// (the premium show). Each is a deliberate, desirable choice differentiated by
+// VIBE, not quantity: Classic is the core game show, Prime Time the more social
+// party version, Elite the premium celebration version for special occasions.
+// We deliberately avoid "everything in X plus…" framing — with similar runtimes
+// it makes customers count games/minutes and ask "why pay more for the same time".
 const shows: Show[] = [
   {
     label: "The Classic",
@@ -88,12 +90,12 @@ const shows: Show[] = [
     fromPrice: 899,
     bestFor: "The sweet spot most groups choose.",
     pitch:
-      "Everything in The Classic, plus a whole layer of house-party energy — extra games, more group interaction and bigger chances to win. The crowd favourite for a reason.",
+      "The live game show with a whole layer of house-party energy on top — more group games, livelier moments and a bigger, more social format. The crowd favourite for a reason.",
     features: [
-      "Everything in The Classic, plus…",
-      "Extra house-party style games",
-      "More group interaction & challenges",
-      "Bigger energy & more chances to win",
+      "Live host & full game show",
+      "House-party style group games",
+      "More social, high-energy format",
+      "Lively moments & big group fun",
       "Approx. 60 minutes of play",
     ],
     accent: "#7C5CFC",
@@ -103,19 +105,19 @@ const shows: Show[] = [
   },
   {
     label: "Elite Edition",
-    tag: "Go all in.",
-    value: "The biggest and most unforgettable version.",
+    tag: "The premium show.",
+    value: "An elevated celebration show for special days.",
     fromPrice: 1049,
-    bestFor: "For crews who want the full, no-limits night.",
+    bestFor: "Best for birthdays & special occasions.",
     pitch:
-      "Everything in Prime Time, dialled all the way up — more party games, bonus challenges, extended playtime and a finale built for a celebration nobody forgets. The flagship.",
+      "The premium, more curated version of the show — a more exclusive setup, bigger celebration moments and a standout finale built for the days that matter most. The one to book when it's a special occasion.",
     features: [
-      "Everything in Prime Time, plus…",
-      "More party games & bonus challenges",
-      "Extended playtime",
-      "Bigger finale & winner celebration",
-      "Premium group experience",
-      "Approx. 75 minutes of play",
+      "Live host & full game show",
+      "A more curated, premium setup",
+      "Bigger celebration moments",
+      "A standout finale to remember",
+      "Best for birthdays & special occasions",
+      "Approx. 60 minutes of play",
     ],
     accent: "#FF8A1E",
     ink: "#D96B00",
@@ -226,7 +228,16 @@ export function ShowRounds() {
   if (reduce) return <StaticFallback />;
 
   return (
-    <section ref={sectionRef} className="relative w-full bg-black" style={{ height: trackHeight }}>
+    <section
+      ref={sectionRef}
+      // The Navbar watches this id to hide the floating "Book Your Show" pill on
+      // mobile while the pinned "One unforgettable night" show story is on screen
+      // (the pill would overlap the flipping book covers), then return after it.
+      id="show-rounds"
+      data-show-rounds
+      className="relative w-full bg-black"
+      style={{ height: trackHeight }}
+    >
       <div
         className="sketchpad sticky top-0 flex w-full items-center justify-center overflow-hidden"
         style={{ height: "100svh", minHeight: "560px", background: "#0c0d10" }}

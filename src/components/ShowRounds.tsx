@@ -101,6 +101,14 @@ const SHOW_SPANS: [number, number][] = [
   [0.36, 0.54],
   [0.56, 0.72],
 ];
+// Mobile has no in-track recap (it's a normal section below), so the show beats
+// fill the WHOLE track and the last one holds to the very end — that way you exit
+// the pinned stage straight into the white recap, with no dead black scroll.
+const SHOW_SPANS_MOBILE: [number, number][] = [
+  [0.1, 0.34],
+  [0.38, 0.62],
+  [0.66, 1.0],
+];
 // The recap (all three shows together) is the FINAL beat — it draws in and then
 // holds to the end of the track, after which the page scrolls on into pricing.
 const RECAP_SPAN: [number, number] = [0.74, 1];
@@ -162,10 +170,10 @@ export function ShowRounds() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // Mobile renders the recap as a separate normal-flow section below, so the
-  // pinned dark track only needs to cover intro + the 3 show beats (which end at
-  // p≈0.72). Trim the track so it doesn't hold on empty dark scroll afterwards.
-  const trackViewports = isMobile ? TRACK_VIEWPORTS * 0.78 : TRACK_VIEWPORTS;
+  // Mobile packs intro + the 3 show beats across the WHOLE track (the recap is a
+  // separate section below), so a slightly shorter track keeps the scroll tight
+  // and avoids a long pinned stretch.
+  const trackViewports = isMobile ? TRACK_VIEWPORTS * 0.7 : TRACK_VIEWPORTS;
   const trackHeight =
     reduce || viewportH === null
       ? reduce
@@ -225,7 +233,15 @@ export function ShowRounds() {
         <div className="relative z-10 mx-auto w-full max-w-[1080px] px-6">
           <IntroBeat p={p} />
           {shows.map((show, i) => (
-            <ShowBeat key={show.label} show={show} span={SHOW_SPANS[i]} p={p} />
+            <ShowBeat
+              key={show.label}
+              show={show}
+              span={(isMobile ? SHOW_SPANS_MOBILE : SHOW_SPANS)[i]}
+              p={p}
+              // On mobile the last show holds to the end so there's no black gap
+              // before the white recap section.
+              holdToEnd={isMobile && i === shows.length - 1}
+            />
           ))}
           {/* Desktop pins the white recap inside the stage; mobile renders it as
               StaticRecap (normal flow) below so all three shows are reachable. */}
@@ -297,11 +313,14 @@ function BackdropArt({ p, inkOpacity }: { p: MotionValue<number>; inkOpacity: Mo
 
 /** A beat container that fades + rises IN over its first fifth and OUT over its
  *  last fifth, scrubbed by scroll. Beats overlap so one is always present. */
-function useBeatStyle(p: MotionValue<number>, [a, b]: [number, number]) {
+function useBeatStyle(p: MotionValue<number>, [a, b]: [number, number], holdToEnd = false) {
   const inEnd = a + (b - a) * 0.2;
-  const outStart = a + (b - a) * 0.8;
-  const opacity = useTransform(p, [a, inEnd, outStart, b], [0, 1, 1, 0]);
-  const y = useTransform(p, [a, inEnd, outStart, b], [44, 0, 0, -44]);
+  // `holdToEnd`: fade in, then stay fully visible to the end of the span (no
+  // fade-out). Used for the last mobile show beat so it's still on screen as you
+  // scroll out of the pinned stage into the white recap — no blank gap.
+  const outStart = a + (b - a) * (holdToEnd ? 1 : 0.8);
+  const opacity = useTransform(p, [a, inEnd, outStart, b], [0, 1, 1, holdToEnd ? 1 : 0]);
+  const y = useTransform(p, [a, inEnd, outStart, b], [44, 0, 0, holdToEnd ? 0 : -44]);
   return { opacity, y };
 }
 
@@ -337,8 +356,18 @@ function IntroBeat({ p }: { p: MotionValue<number> }) {
 /** One show beat: number + clock-free clean layout, big name, value line, pitch,
  *  feature ticks, and a self-drawing underline (the only stroke near text, and
  *  it sits in the name's own keep-out lane). */
-function ShowBeat({ show, span, p }: { show: Show; span: [number, number]; p: MotionValue<number> }) {
-  const style = useBeatStyle(p, span);
+function ShowBeat({
+  show,
+  span,
+  p,
+  holdToEnd = false,
+}: {
+  show: Show;
+  span: [number, number];
+  p: MotionValue<number>;
+  holdToEnd?: boolean;
+}) {
+  const style = useBeatStyle(p, span, holdToEnd);
 
   // per-element write-on timing inside the beat
   const tagAt = slice(span, 0.08, 0.2);
@@ -535,7 +564,15 @@ function RecapCard({ show, reveal }: { show: Show; reveal?: WriteOnStyle }) {
  *  as an ordinary light section lets all three stack and scroll naturally. */
 function StaticRecap() {
   return (
-    <section className="apple-light w-full px-5 py-20" style={{ background: "linear-gradient(180deg, #fbfbfd 0%, #f5f5f7 100%)" }}>
+    <section
+      // The Navbar watches this id to hide the floating "Book Your Show" pill
+      // while the light Apple panel is on screen (it has its own CTAs + the dark
+      // pill clashes with the white background on mobile).
+      id="show-recap"
+      data-recap
+      className="apple-light w-full px-5 py-20"
+      style={{ background: "linear-gradient(180deg, #fbfbfd 0%, #f5f5f7 100%)" }}
+    >
       <h2 className="apple-title px-4 text-center text-[34px] leading-[1.05]" style={{ letterSpacing: "-0.02em" }}>
         Which show is yours?
       </h2>

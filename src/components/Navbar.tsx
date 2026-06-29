@@ -16,6 +16,10 @@ const navLinks = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // True while the light Apple "show recap" panel is on screen — we hide the
+  // floating compact "Book Your Show" pill there (it has its own CTAs and the
+  // dark pill clashes with the white panel on mobile).
+  const [overRecap, setOverRecap] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,6 +31,44 @@ export function Navbar() {
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  // Watch the Apple recap section (mobile renders it as #show-recap) so the
+  // compact CTA can step aside while it's in view, then return once it's gone.
+  // The recap mounts AFTER ShowRounds detects a mobile viewport, so it may not
+  // exist when this effect first runs — wait for it via a MutationObserver, then
+  // attach the IntersectionObserver.
+  useEffect(() => {
+    let io: IntersectionObserver | null = null;
+
+    const attach = (recap: Element) => {
+      io = new IntersectionObserver(
+        ([entry]) => setOverRecap(entry.isIntersecting),
+        { threshold: 0 }
+      );
+      io.observe(recap);
+    };
+
+    const existing = document.getElementById("show-recap");
+    if (existing) {
+      attach(existing);
+      return () => io?.disconnect();
+    }
+
+    // Not in the DOM yet — watch for it to appear, then attach once.
+    const mo = new MutationObserver(() => {
+      const recap = document.getElementById("show-recap");
+      if (recap) {
+        attach(recap);
+        mo.disconnect();
+      }
+    });
+    mo.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      mo.disconnect();
+      io?.disconnect();
     };
   }, []);
 
@@ -141,11 +183,12 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* State 2: Compact Nav (scrolled > 100px) */}
+      {/* State 2: Compact Nav (scrolled > 100px) — steps aside over the light
+          Apple recap panel, then returns once it's scrolled past. */}
       <nav
         className={cn(
           "pointer-events-none fixed z-50 flex items-center justify-center gap-3 opacity-0 transition-all duration-300 ease-in-out",
-          scrolled && "pointer-events-auto opacity-100"
+          scrolled && !overRecap && "pointer-events-auto opacity-100"
         )}
         style={{
           top: 16,

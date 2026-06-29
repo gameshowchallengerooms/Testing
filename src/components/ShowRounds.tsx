@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowDown, Check } from "lucide-react";
+import { useLenis } from "lenis/react";
+import Snap from "lenis/snap";
 import {
   motion,
   useScroll,
@@ -148,6 +150,21 @@ function slice([a, b]: [number, number], from: number, to: number): [number, num
   return [a + (b - a) * from, a + (b - a) * to];
 }
 
+/* Where, within a show's span, the scroll should come to REST when snapping —
+   deep inside the open-and-fully-written hold (content done by ~0.62, beat fades
+   at 0.9), so a snapped show sits open and readable. The intro rests at its
+   centre. These progress values (0→1 across the track) are converted to absolute
+   scroll pixels and registered with Lenis's Snap so the page settles on each
+   show instead of letting it blur past on a fast flick. */
+const REST_AT = 0.76;
+const INTRO_REST = 0.5;
+
+function restProgress(spans: [number, number][]): number[] {
+  const introMid = INTRO_SPAN[0] + (INTRO_SPAN[1] - INTRO_SPAN[0]) * INTRO_REST;
+  const showRests = spans.map(([a, b]) => a + (b - a) * REST_AT);
+  return [introMid, ...showRests];
+}
+
 /* ── Self-drawing stroke (pathLength scrubbed by scroll) ──────────────────── */
 
 function Stroke({
@@ -217,6 +234,49 @@ export function ShowRounds() {
   });
   // Linear-tracking scrub (light spring only to glide a flick), per research §3.
   const p = useSpring(scrollYProgress, { stiffness: 300, damping: 44, restDelta: 0.0004 });
+
+  // Lenis snap: settle the scroll on each show's open, readable rest point so a
+  // fast flick can't blow past the content. Only runs with Lenis (desktop) — on
+  // touch devices Lenis is off and native momentum scrolling stays untouched.
+  // `proximity` only snaps when you come to rest NEAR a point, so it never fights
+  // a deliberate scroll straight through to pricing.
+  const lenis = useLenis();
+  useEffect(() => {
+    if (!lenis || viewportH === null) return;
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const snap = new Snap(lenis, {
+      type: "proximity",
+      // Snap only when you settle reasonably close to a rest point (~35% of the
+      // viewport); a hard scroll past a show falls outside this and isn't caught.
+      distanceThreshold: "35%",
+      duration: 0.9,
+      debounce: 320,
+    });
+
+    const removers: Array<() => void> = [];
+    const register = () => {
+      removers.forEach((r) => r());
+      removers.length = 0;
+      const top = section.offsetTop;
+      const trackPx = section.offsetHeight;
+      const pinned = Math.max(1, trackPx - viewportH); // scroll range while pinned
+      const spans = isMobile ? SHOW_SPANS_MOBILE : SHOW_SPANS;
+      for (const prog of restProgress(spans)) {
+        removers.push(snap.add(Math.round(top + prog * pinned)));
+      }
+    };
+    register();
+    // Re-register on resize: offsetTop/Height shift with layout.
+    const onResize = () => register();
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      removers.forEach((r) => r());
+      snap.destroy();
+    };
+  }, [lenis, viewportH, isMobile]);
 
   const hintOpacity = useTransform(p, [0, 0.04], [1, 0]);
 
@@ -334,8 +394,11 @@ function BackdropArt({ p, inkOpacity }: { p: MotionValue<number>; inkOpacity: Mo
  *  `holdToEnd`: skip the fade-OUT (stay visible to the span end) — used for the
  *  last show so it holds as you scroll on down into pricing. */
 function useBeatStyle(p: MotionValue<number>, [a, b]: [number, number], holdToEnd = false) {
-  const inEnd = a + (b - a) * 0.2;
-  const outStart = a + (b - a) * (holdToEnd ? 1 : 0.8);
+  const inEnd = a + (b - a) * 0.18;
+  // Hold the beat fully visible until the very tail of its span (0.9), so the
+  // open, readable show rests on screen far longer than it cross-fades — fast
+  // scrolling still leaves a generous window to read before the next show.
+  const outStart = a + (b - a) * (holdToEnd ? 1 : 0.9);
   const opacity = useTransform(p, [a, inEnd, outStart, b], [0, 1, 1, holdToEnd ? 1 : 0]);
   const y = useTransform(p, [a, inEnd, outStart, b], [44, 0, 0, holdToEnd ? 0 : -44]);
   return { opacity, y };
@@ -389,9 +452,10 @@ function BookTurn({
   children: React.ReactNode;
 }) {
   const accent = show.accent;
-  // The leaf turns over the first ~50% of the span, then holds open. Build the
+  // The leaf turns over the first ~42% of the span, then holds open. Build the
   // start / mid / end scroll positions of that window for the 3-stop ramps below.
-  const [fa, fb] = slice(span, 0.0, 0.5);
+  // (Opening a touch earlier leaves more of the span for the open, readable page.)
+  const [fa, fb] = slice(span, 0.0, 0.42);
   const fmid = fa + (fb - fa) * 0.5;
 
   // Real paper: ease out of the lift, ease into the lay-down — a soft S so it
@@ -506,14 +570,15 @@ function ShowBeat({
   // book arriving, and the BookTurn sequence then flips it open.
   const style = useBeatStyle(p, span, holdToEnd);
 
-  // Content write-on timing. The leaf flips open + fades by ~50% of the span, so
-  // the page content starts revealing around then and finishes well before the
-  // beat's fade-out (begins at 80%), giving every line a clear visible window.
-  const tagAt = slice(span, 0.44, 0.54);
-  const nameAt = slice(span, 0.48, 0.6);
-  const underlineAt = slice(span, 0.54, 0.64);
-  const valueAt = slice(span, 0.56, 0.66);
-  const pitchAt = slice(span, 0.62, 0.74);
+  // Content write-on timing. The leaf flips open + fades by ~42% of the span, so
+  // the page content reveals right after and is FULLY written by ~62%, leaving a
+  // long static, readable hold (to the beat's fade-out at 90%). The snap settles
+  // the scroll inside that hold, so each show comes to rest open and readable.
+  const tagAt = slice(span, 0.4, 0.48);
+  const nameAt = slice(span, 0.43, 0.52);
+  const underlineAt = slice(span, 0.48, 0.56);
+  const valueAt = slice(span, 0.5, 0.58);
+  const pitchAt = slice(span, 0.54, 0.62);
 
   const tag = useWriteOn(p, tagAt);
   const name = useWriteOn(p, nameAt);

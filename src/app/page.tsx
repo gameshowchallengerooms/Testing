@@ -2,9 +2,9 @@ import { Navbar } from "@/components/Navbar";
 import { ScrollZoomIntro } from "@/components/ScrollZoomIntro";
 import { HeroSection } from "@/components/HeroSection";
 import { GameRoomsSection } from "@/components/GameRoomsSection";
-import { LiveShowSection } from "@/components/LiveShowSection";
-import { FAQSection } from "@/components/FAQSection";
+import { ShowRounds } from "@/components/ShowRounds";
 import { PricingSection } from "@/components/PricingSection";
+import { StillHaveQuestions } from "@/components/FAQSection";
 import { LocationSection } from "@/components/LocationSection";
 import { Footer } from "@/components/Footer";
 import { ScrollProgress } from "@/components/ScrollProgress";
@@ -17,10 +17,10 @@ export default function Home() {
       <Navbar />
       <HeroSection />
       <ScrollZoomIntro />
-      <LiveShowSection />
       <GameRoomsSection />
+      <ShowRounds />
       <PricingSection />
-      <FAQSection />
+      <StillHaveQuestions />
       <LocationSection />
       <Footer />
       <WhatsAppChat />

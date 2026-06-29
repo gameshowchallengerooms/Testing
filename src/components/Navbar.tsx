@@ -16,6 +16,11 @@ const navLinks = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // True while the pinned "One unforgettable night" show story is on screen on a
+  // MOBILE viewport — we hide the floating compact "Book Your Show" pill there so
+  // it doesn't overlap the flipping book covers, then return once it's scrolled
+  // past. (Desktop keeps the pill; the story has room beside it.)
+  const [overShowStory, setOverShowStory] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,6 +32,38 @@ export function Navbar() {
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  // Watch the pinned "One unforgettable night" show story (#show-rounds) so the
+  // compact CTA can step aside while it's in view on MOBILE, then return once
+  // it's scrolled past. The hide is mobile-only: on desktop the story has room
+  // beside the pill, so we keep it. The mobile check runs in the IO callback (and
+  // on resize) so the gating tracks viewport changes.
+  useEffect(() => {
+    const story = document.getElementById("show-rounds");
+    if (!story) return;
+
+    const isMobile = () => window.matchMedia("(max-width: 767px)").matches;
+
+    let intersecting = false;
+    const sync = () => setOverShowStory(intersecting && isMobile());
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        intersecting = entry.isIntersecting;
+        sync();
+      },
+      { threshold: 0 }
+    );
+    io.observe(story);
+
+    // Keep the mobile gating correct if the viewport crosses the breakpoint.
+    window.addEventListener("resize", sync, { passive: true });
+
+    return () => {
+      io.disconnect();
+      window.removeEventListener("resize", sync);
     };
   }, []);
 
@@ -141,11 +178,13 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* State 2: Compact Nav (scrolled > 100px) */}
+      {/* State 2: Compact Nav (scrolled > 100px) — on mobile it steps aside while
+          the "One unforgettable night" show story is on screen, then returns once
+          it's scrolled past. */}
       <nav
         className={cn(
-          "pointer-events-none fixed z-50 flex items-center opacity-0 transition-all duration-300 ease-in-out",
-          scrolled && "pointer-events-auto opacity-100"
+          "pointer-events-none fixed z-50 flex items-center justify-center gap-3 opacity-0 transition-all duration-300 ease-in-out",
+          scrolled && !overShowStory && "pointer-events-auto opacity-100"
         )}
         style={{
           top: 16,
@@ -156,12 +195,10 @@ export function Navbar() {
           background: "rgba(30, 30, 30, 0.8)",
           backdropFilter: "blur(10px)",
           WebkitBackdropFilter: "blur(10px)",
-          gap: 10,
         }}
       >
-        {/* Logo — fixed width box so it and the mirror spacer on the right are
-            exactly equal, putting the Book CTA at the true horizontal centre. */}
-        <Link href="/" className="flex w-14 flex-shrink-0 justify-start">
+        {/* Logo and CTA sit together as a centred flex group. */}
+        <Link href="/" className="flex shrink-0 items-center pl-1">
           <Image
             src="/images/logo.png"
             alt="Game Show Challenge Rooms"
@@ -174,7 +211,7 @@ export function Navbar() {
         {/* Compact Book Now CTA */}
         <Link
           href="#tickets"
-          className="flex flex-shrink-0 items-center text-white transition-opacity hover:opacity-90"
+          className="flex shrink-0 items-center text-white transition-opacity hover:opacity-90"
           style={{
             background: "black",
             borderRadius: 33,
@@ -198,10 +235,6 @@ export function Navbar() {
             <ArrowUpRight className="text-white" size={18} strokeWidth={2.5} />
           </span>
         </Link>
-
-        {/* Right-side mirror spacer, same width as the logo box (w-14) with
-            symmetric container padding, so the Book CTA is dead-centre. */}
-        <span aria-hidden className="h-9 w-14 flex-shrink-0" />
       </nav>
 
       {/* Mobile menu overlay */}

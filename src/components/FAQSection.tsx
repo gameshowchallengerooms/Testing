@@ -35,12 +35,27 @@ const faqItems = [
   },
 ];
 
-export function FAQSection() {
+/** `embedded` strips the standalone section chrome (full-bleed padding +
+ *  decorative background) so the FAQ can live inside another section — e.g. as
+ *  the right column of the Footer. */
+export function FAQSection({ embedded = false }: { embedded?: boolean }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const handleToggle = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
+
+  if (embedded) {
+    return (
+      <div id="questions" className="w-full">
+        <FAQContent
+          faqItems={faqItems}
+          openIndex={openIndex}
+          handleToggle={handleToggle}
+        />
+      </div>
+    );
+  }
 
   return (
     <section id="questions" className="w-full bg-black">
@@ -60,6 +75,30 @@ export function FAQSection() {
 
         {/* Content */}
         <div className="relative z-[1]">
+          <FAQContent
+            faqItems={faqItems}
+            openIndex={openIndex}
+            handleToggle={handleToggle}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Shared inner content (label, heading, accordion, CTA) used by both the
+ *  standalone section and the embedded (footer) variant. */
+function FAQContent({
+  faqItems,
+  openIndex,
+  handleToggle,
+}: {
+  faqItems: { q: string; a: string }[];
+  openIndex: number | null;
+  handleToggle: (index: number) => void;
+}) {
+  return (
+    <>
           {/* Section Label */}
           <div className="mb-6 flex items-center gap-4">
             <span
@@ -143,59 +182,66 @@ export function FAQSection() {
               );
             })}
           </div>
+    </>
+  );
+}
 
-          {/* Closing CTA */}
-          <Reveal delay={120}>
-            <div
-              className="mt-12 flex flex-col items-center gap-5 overflow-hidden rounded-3xl p-8 text-center md:flex-row md:justify-between md:text-left"
-              style={{
-                background:
-                  "linear-gradient(120deg, #147EFF 0%, #7C5CFC 50%, #FC19ED 100%)",
-              }}
-            >
-              <div>
-                <h3
-                  className="text-2xl font-bold text-white md:text-3xl"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  Still have questions?
-                </h3>
-                <p className="mt-1 text-sm text-white/80 md:text-base">
-                  Grab your crew, pick a slot, and let&apos;s get you in the game show.
-                </p>
-              </div>
-
-              {/* Two ways to reach us — chat on WhatsApp or call straight away. */}
-              <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:shrink-0">
-                <a
-                  href={whatsappHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Chat with us on WhatsApp"
-                  className="group inline-flex items-center justify-center gap-2.5 rounded-full bg-white px-7 py-4 text-base font-bold text-[#7C5CFC] shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-transform hover:scale-[1.04]"
-                >
-                  <span className="text-[#25D366]">
-                    <WhatsAppGlyph size={20} />
-                  </span>
-                  Chat
-                </a>
-                <a
-                  href={`tel:${PHONE_NUMBER}`}
-                  aria-label={`Call us at ${PHONE_DISPLAY}`}
-                  className="group inline-flex flex-col items-center justify-center rounded-full bg-white px-7 py-3 text-[#7C5CFC] shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-transform hover:scale-[1.04]"
-                >
-                  <span className="inline-flex items-center gap-2 text-base font-bold leading-tight">
-                    <Phone size={18} strokeWidth={2.6} />
-                    Talk to us
-                  </span>
-                  <span className="text-xs font-semibold text-[#7C5CFC]/70">
-                    {PHONE_DISPLAY}
-                  </span>
-                </a>
-              </div>
+/** "Still have questions?" CTA — extracted from the FAQ so it can sit on its own
+ *  (rendered right below the Pricing section). */
+export function StillHaveQuestions() {
+  return (
+    <section className="w-full bg-black px-5 py-10 md:px-10">
+      <div className="mx-auto w-full" style={{ maxWidth: 1400 }}>
+        <Reveal delay={120}>
+          <div
+            className="flex flex-col items-center gap-5 overflow-hidden rounded-3xl p-8 text-center md:flex-row md:justify-between md:text-left"
+            style={{
+              background:
+                "linear-gradient(120deg, #147EFF 0%, #7C5CFC 50%, #FC19ED 100%)",
+            }}
+          >
+            <div>
+              <h3
+                className="text-2xl font-bold text-white md:text-3xl"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                Still have questions?
+              </h3>
+              <p className="mt-1 text-sm text-white/80 md:text-base">
+                Grab your crew, pick a slot, and let&apos;s get you in the game show.
+              </p>
             </div>
-          </Reveal>
-        </div>
+
+            {/* Two ways to reach us — chat on WhatsApp or call straight away. */}
+            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:shrink-0">
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Chat with us on WhatsApp"
+                className="group inline-flex items-center justify-center gap-2.5 rounded-full bg-white px-7 py-4 text-base font-bold text-[#7C5CFC] shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-transform hover:scale-[1.04]"
+              >
+                <span className="text-[#25D366]">
+                  <WhatsAppGlyph size={20} />
+                </span>
+                Chat
+              </a>
+              <a
+                href={`tel:${PHONE_NUMBER}`}
+                aria-label={`Call us at ${PHONE_DISPLAY}`}
+                className="group inline-flex flex-col items-center justify-center rounded-full bg-white px-7 py-3 text-[#7C5CFC] shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-transform hover:scale-[1.04]"
+              >
+                <span className="inline-flex items-center gap-2 text-base font-bold leading-tight">
+                  <Phone size={18} strokeWidth={2.6} />
+                  Talk to us
+                </span>
+                <span className="text-xs font-semibold text-[#7C5CFC]/70">
+                  {PHONE_DISPLAY}
+                </span>
+              </a>
+            </div>
+          </div>
+        </Reveal>
       </div>
     </section>
   );

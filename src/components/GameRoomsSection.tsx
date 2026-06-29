@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Reveal } from "@/components/Reveal";
-import { ShowRounds } from "@/components/ShowRounds";
 
 export function GameRoomsSection() {
   return (
@@ -46,9 +45,6 @@ export function GameRoomsSection() {
         Live, hosted game shows for groups of up to 15 players.
       </h2>
       </Reveal>
-
-      {/* Inside Each Show — animated rounds */}
-      <ShowRounds />
 
       {/* Footer Row */}
       <div className="mt-12 flex justify-center md:justify-end">

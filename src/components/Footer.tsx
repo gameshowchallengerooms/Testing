@@ -19,10 +19,10 @@ function InstagramIcon() {
   );
 }
 
-function XIcon() {
+function YouTubeIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
     </svg>
   );
 }
@@ -72,6 +72,64 @@ export function Footer() {
             become the star of your own live game show — an unforgettable group outing
             you can&apos;t get anywhere else in the city.
           </p>
+
+          {/* Social — Instagram, Facebook, YouTube — under the brand block. */}
+          <div className="mt-6 flex items-center gap-4">
+            <Link
+              href="https://www.instagram.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+              className="text-white transition-opacity hover:opacity-70"
+            >
+              <InstagramIcon />
+            </Link>
+            <Link
+              href="https://www.facebook.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook"
+              className="text-white transition-opacity hover:opacity-70"
+            >
+              <FacebookIcon />
+            </Link>
+            <Link
+              href="https://www.youtube.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="YouTube"
+              className="text-white transition-opacity hover:opacity-70"
+            >
+              <YouTubeIcon />
+            </Link>
+          </div>
+
+          {/* Contact + Privacy — sit directly below the social handlers. */}
+          <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:gap-6 lg:items-start">
+            <Link
+              href="mailto:gameshowchallengerooms@gmail.com"
+              className="flex items-center gap-2 text-sm font-medium text-white/80 transition-colors hover:text-white"
+            >
+              <Mail size={16} className="text-[#B49BFF]" />
+              gameshowchallengerooms@gmail.com
+            </Link>
+            <Link
+              href="tel:+919000187731"
+              className="flex items-center gap-2 text-sm font-medium text-white/80 transition-colors hover:text-white"
+            >
+              <Phone size={16} className="text-[#B49BFF]" />
+              +91 90001 87731
+            </Link>
+          </div>
+
+          <Link
+            href="/privacy-policy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 text-sm font-normal text-white transition-opacity hover:underline hover:opacity-80"
+          >
+            Privacy Policy
+          </Link>
         </div>
 
         {/* FAQ — moved here from its own section, embedded as the right column. */}
@@ -80,65 +138,15 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Contact */}
-      <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-6">
-        <Link
-          href="mailto:gameshowchallengerooms@gmail.com"
-          className="flex items-center gap-2 text-sm font-medium text-white/80 transition-colors hover:text-white"
-        >
-          <Mail size={16} className="text-[#B49BFF]" />
-          gameshowchallengerooms@gmail.com
-        </Link>
-        <Link
-          href="tel:+919000187731"
-          className="flex items-center gap-2 text-sm font-medium text-white/80 transition-colors hover:text-white"
-        >
-          <Phone size={16} className="text-[#B49BFF]" />
-          +91 90001 87731
-        </Link>
+      {/* Closing line + copyright — the footer's final note, full width. */}
+      <div className="mt-6 flex w-full max-w-[1280px] flex-col items-center gap-2 border-t border-white/10 pt-7 text-center">
+        <p className="text-sm font-medium text-white/70">
+          Lights, buzzers, glory — we&apos;ll see you under the studio lights. 🎬
+        </p>
+        <span className="text-xs font-normal text-white/50">
+          © Game Show Challenge Rooms · Hyderabad · All Rights Reserved
+        </span>
       </div>
-
-      <span className="text-sm font-normal text-white">Social</span>
-
-      <div className="flex items-center gap-4">
-        <Link
-          href="https://www.facebook.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-white transition-opacity hover:opacity-70"
-        >
-          <FacebookIcon />
-        </Link>
-        <Link
-          href="https://www.instagram.com/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-white transition-opacity hover:opacity-70"
-        >
-          <InstagramIcon />
-        </Link>
-        <Link
-          href="https://x.com/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-white transition-opacity hover:opacity-70"
-        >
-          <XIcon />
-        </Link>
-      </div>
-
-      <Link
-        href="/privacy-policy"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-sm font-normal text-white transition-opacity hover:underline hover:opacity-80"
-      >
-        Privacy Policy
-      </Link>
-
-      <span className="text-xs font-normal text-white/50">
-        © Game Show Challenge Rooms · Hyderabad · All Rights Reserved
-      </span>
     </footer>
   );
 }

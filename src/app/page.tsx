@@ -4,6 +4,7 @@ import { HeroSection } from "@/components/HeroSection";
 import { GameRoomsSection } from "@/components/GameRoomsSection";
 import { ShowRounds } from "@/components/ShowRounds";
 import { PricingSection } from "@/components/PricingSection";
+import { StillHaveQuestions } from "@/components/FAQSection";
 import { LocationSection } from "@/components/LocationSection";
 import { Footer } from "@/components/Footer";
 import { ScrollProgress } from "@/components/ScrollProgress";
@@ -19,6 +20,7 @@ export default function Home() {
       <GameRoomsSection />
       <ShowRounds />
       <PricingSection />
+      <StillHaveQuestions />
       <LocationSection />
       <Footer />
       <WhatsAppChat />

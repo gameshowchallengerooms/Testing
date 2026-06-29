@@ -192,7 +192,7 @@ export const metadata: Metadata = {
       "All your life you watched it on TV. Now you can be in it. Hyderabad's first live game show experience — host, lights, buzzers and your crew. Great for team building, birthdays and corporate outings. Book your show.",
     images: [
       {
-        url: "/images/logo.png",
+        url: "/seo/og-image.png",
         width: 1200,
         height: 630,
         alt: "Game Show Challenge Rooms — Hyderabad's live game show experience",
@@ -204,7 +204,7 @@ export const metadata: Metadata = {
     title: "Game Show Challenge Rooms Hyderabad | You're On The Show",
     description:
       "Hyderabad's first live game show experience — host, lights, buzzers and your crew. Groups of 4–15. Book your show.",
-    images: ["/images/logo.png"],
+    images: ["/seo/og-image.png"],
   },
   robots: {
     index: true,
@@ -217,11 +217,16 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
+  // All icons are the brand logo on the dark brand square (generated from
+  // public/images/logo-transparent.png). src/app/favicon.ico is the multi-res
+  // .ico Next serves at /favicon.ico automatically.
   icons: {
-    icon: "/seo/ZrnSOoqkPD3fRzQY8ti5PBxhnc.png",
-    // The real 180×180 asset. apple-touch-icon.png is mislabeled (it's 64×64),
-    // so Apple touch icons should point at the genuinely 180px file.
-    apple: "/seo/favicon-32.png",
+    icon: [
+      { url: "/seo/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/seo/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/seo/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: { url: "/seo/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
   },
   other: {
     "geo.region": "IN-TG",

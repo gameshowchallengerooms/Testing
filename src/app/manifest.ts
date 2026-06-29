@@ -12,23 +12,11 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#7C5CFC",
     lang: "en-IN",
     categories: ["entertainment", "events", "lifestyle"],
+    // Square brand-logo icons generated from public/images/logo-transparent.png.
     icons: [
-      {
-        // The file actually 180×180 on disk. (apple-touch-icon.png is only
-        // 64×64 despite its name, which is what triggered the manifest
-        // "resource size is not correct" warning.)
-        src: "/seo/favicon-32.png",
-        sizes: "180x180",
-        type: "image/png",
-      },
-      {
-        // logo.png is 1497×966, not square — declare its true dimensions so the
-        // manifest size assertion matches the resource.
-        src: "/images/logo.png",
-        sizes: "1497x966",
-        type: "image/png",
-        purpose: "any",
-      },
+      { src: "/seo/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/seo/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/seo/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }

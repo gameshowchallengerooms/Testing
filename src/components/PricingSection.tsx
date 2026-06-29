@@ -9,55 +9,115 @@ import { cn } from "@/lib/utils";
 const BMW_BLUE = "#0066B1";
 const BMW_LIGHT = "#1c69d4";
 
-interface Tier {
-  players: string;
-  weekday: number;
-  weekend: number;
-  highlight?: boolean;
-  badge?: string;
+const BOOKING_URL = "https://gameshowchallengerooms.com/";
+
+type DayType = "weekday" | "weekend";
+
+/** One show tier (a configurable "model" in the BMW line-up). The price grid is
+ *  keyed by player count → [weekday, weekend] so picking a group size + day
+ *  reveals exactly that build's per-person price — no spreadsheet, just your
+ *  number. 6, 7 and 8 share the best price, so they collapse to a single "6+"
+ *  entry the configurator surfaces as "best price, locked in". */
+interface ShowTier {
+  label: string;
+  /** TWO-tone label: dim eyebrow + bold name (matches the brochure). */
+  eyebrow: string;
+  tagline: string;
+  accent: string;
+  /** WCAG-safe text variant of the accent for the price + name. */
+  ink: string;
+  features: string[];
+  popular?: boolean;
+  /** price[playerKey] = [weekday, weekend], per person. */
+  price: Record<PlayerKey, [number, number]>;
 }
 
-const tiers: Tier[] = [
-  { players: "4 Players", weekday: 900, weekend: 1000, badge: "Minimum group" },
-  { players: "5 Players", weekday: 800, weekend: 900, badge: "Popular" },
-  { players: "6 & more", weekday: 750, weekend: 850, highlight: true, badge: "Best Value" },
+// Player-count options. 6, 7 and 8 all land on the same (lowest) price, so they
+// collapse into one "6+" build — the BMW configurator never shows a redundant
+// grid; it just tells you you've hit the best price.
+type PlayerKey = "4" | "5" | "6+";
+
+// Minimum group size is 4 — the selector never offers fewer.
+const playerOptions: { key: PlayerKey; label: string; sub: string }[] = [
+  { key: "4", label: "4", sub: "players" },
+  { key: "5", label: "5", sub: "players" },
+  { key: "6+", label: "6+", sub: "best price" },
 ];
 
-// What every ticket includes — framed as the experience.
-const included = [
+const tiers: ShowTier[] = [
   {
-    title: "Step out of the audience.",
-    text: "The shows you've watched on TV your whole life — now the lights, the buzzers and the host are all pointed at you.",
+    label: "The Classic",
+    eyebrow: "The original",
+    tagline: "The pure live game show experience.",
+    accent: "#147EFF",
+    ink: "#3B95FF",
+    features: [
+      "Live game show host",
+      "Core buzzer & challenge rounds",
+      "Team-based competition",
+      "Scores, fun twists & winner moments",
+      "Approx. 45 minutes of play",
+    ],
+    price: {
+      "4": [900, 1000],
+      "5": [800, 900],
+      "6+": [750, 850],
+    },
   },
   {
-    title: "Laugh till it hurts.",
-    text: "Your crew, screaming, buzzing in, talking trash, losing their minds. One hour you'll relive for years.",
+    label: "Prime Time",
+    eyebrow: "Most popular",
+    tagline: "Where the game show meets the party.",
+    accent: "#7C5CFC",
+    ink: "#9A7BFF",
+    popular: true,
+    features: [
+      "Everything in The Classic, plus…",
+      "Extra house-party style games",
+      "More group interaction & challenges",
+      "Bigger energy & more chances to win",
+      "Approx. 60 minutes of play",
+    ],
+    price: {
+      "4": [1049, 1149],
+      "5": [949, 1049],
+      "6+": [899, 999],
+    },
   },
   {
-    title: "Your moment, on the big stage.",
-    text: "Mid-show, the host stops everything and the whole room celebrates your birthday or special day.",
-  },
-  {
-    title: "Walk out a champion.",
-    text: "Hoist the title, get your team on the Wall of Fame, and leave with a story nobody will believe.",
+    label: "Elite Edition",
+    eyebrow: "Go all in",
+    tagline: "The biggest and most unforgettable version.",
+    accent: "#FF8A1E",
+    ink: "#FF9F45",
+    features: [
+      "Everything in Prime Time, plus…",
+      "More party games & bonus challenges",
+      "Extended playtime",
+      "Bigger finale & winner celebration",
+      "Premium group experience",
+      "Approx. 75 minutes of play",
+    ],
+    price: {
+      "4": [1199, 1299],
+      "5": [1099, 1199],
+      "6+": [1049, 1149],
+    },
   },
 ];
 
-const features = [
-  "Real host, studio lights & buzzers",
-  "Three live game-show rounds",
-  "Champion crowning & Wall of Fame",
-  "Taxes included · no hidden costs",
-];
-
+// Fine print — the conditions strip from the brochure, plus the real add-on
+// and kids notes carried over from the original section.
 const notes = [
+  "Minimum 4 players required.",
+  "Weekend pricing applies Fri, Sat, Sun & public holidays.",
+  "Arrive 15 minutes before your slot.",
+  "Prices may vary for special dates, corporate events & large groups.",
   "Extra time @ ₹600 for the whole team (15 minutes).",
   "Kids aged 0–4 years get free admission.",
   "Add-on Celebration Room to cut a cake after your show.",
   "Kids prices apply with a minimum of 2 paying adults.",
 ];
-
-type DayType = "weekday" | "weekend";
 
 /** Outlined CTA that fills BMW-blue on hover — the signature BMW button. The
  *  filled variant is solid blue from the start (used for the recommended tier). */
@@ -93,9 +153,12 @@ function BmwButton({
 }
 
 export function PricingSection() {
+  // The two configurator axes: how many of you, and which day.
+  const [players, setPlayers] = useState<PlayerKey>("6+");
   const [day, setDay] = useState<DayType>("weekday");
 
-  const priceOf = (t: Tier) => (day === "weekday" ? t.weekday : t.weekend);
+  const dayIndex = day === "weekday" ? 0 : 1;
+  const priceOf = (t: ShowTier) => t.price[players][dayIndex];
   const lowest = Math.min(...tiers.map(priceOf));
 
   return (
@@ -119,175 +182,198 @@ export function PricingSection() {
             className="max-w-[20ch] text-[34px] font-bold leading-[1.04] tracking-[-0.02em] md:text-[58px]"
             style={{ fontFamily: "var(--font-inter-tight, var(--font-display))" }}
           >
-            One ticket. The whole experience.
+            Build your show. See your price.
           </h2>
           <p className="mt-5 max-w-[58ch] text-[16px] leading-relaxed text-white/60 md:text-[19px]">
-            You&apos;re not buying a ticket — you&apos;re buying the best hour your group will
-            have all year. The bigger your group, the less each person pays.
+            Pick your group size and your day — the per-person price for every show
+            updates instantly. The bigger your group, the less each person pays.
           </p>
+        </div>
 
-          {/* BMW segmented selector — squared, hairline, blue active block. */}
-          <div
-            className="relative mt-9 grid grid-cols-2"
-            style={{ border: "1px solid rgba(255,255,255,0.18)" }}
-            role="tablist"
-            aria-label="Choose a day"
-          >
-            <span
-              className="absolute top-0 bottom-0 left-0 w-1/2 transition-transform duration-300 ease-out"
-              style={{
-                background: BMW_BLUE,
-                transform: day === "weekday" ? "translateX(0)" : "translateX(100%)",
-              }}
-              aria-hidden="true"
-            />
-            <button
-              type="button"
-              role="tab"
-              aria-selected={day === "weekday"}
-              onClick={() => setDay("weekday")}
-              className={cn(
-                "relative z-10 px-7 py-3 text-[13px] font-semibold uppercase tracking-[0.08em] transition-colors",
-                day === "weekday" ? "text-white" : "text-white/55 hover:text-white"
-              )}
+        {/* ── BMW configurator: two axes (group size + day) ─────────────────── */}
+        <div className="mt-12 grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-end">
+          {/* Axis 1 — group size, as squared BMW spec chips. */}
+          <div>
+            <span className="mb-3 block text-[12px] font-semibold uppercase tracking-[0.14em] text-white/45">
+              Your group
+            </span>
+            <div
+              className="grid grid-cols-3"
+              style={{ border: "1px solid rgba(255,255,255,0.18)" }}
+              role="group"
+              aria-label="Choose your group size"
             >
-              Mon–Thu
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={day === "weekend"}
-              onClick={() => setDay("weekend")}
-              className={cn(
-                "relative z-10 px-7 py-3 text-[13px] font-semibold uppercase tracking-[0.08em] transition-colors",
-                day === "weekend" ? "text-white" : "text-white/55 hover:text-white"
-              )}
+              {playerOptions.map((opt, i) => {
+                const active = players === opt.key;
+                return (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setPlayers(opt.key)}
+                    className={cn(
+                      "flex flex-col items-center gap-0.5 py-3.5 transition-colors",
+                      i > 0 && "border-l border-white/15",
+                      active ? "text-white" : "text-white/55 hover:text-white"
+                    )}
+                    style={active ? { background: BMW_BLUE } : undefined}
+                  >
+                    <span
+                      className="text-[20px] font-bold leading-none tabular-nums"
+                      style={{ fontFamily: "var(--font-inter-tight, var(--font-display))" }}
+                    >
+                      {opt.label}
+                    </span>
+                    <span className="text-[10px] font-medium uppercase tracking-[0.08em] opacity-70">
+                      {opt.sub}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-2.5 text-[12px] text-white/45">
+              {players === "6+"
+                ? "6, 7 or 8 players — you're at the best per-person price. It won't drop further."
+                : "Add more players to bring the per-person price down — it bottoms out at 6+."}
+            </p>
+          </div>
+
+          {/* Axis 2 — day, the existing squared BMW segmented selector. */}
+          <div>
+            <span className="mb-3 block text-[12px] font-semibold uppercase tracking-[0.14em] text-white/45">
+              Your day
+            </span>
+            <div
+              className="relative grid grid-cols-2"
+              style={{ border: "1px solid rgba(255,255,255,0.18)" }}
+              role="tablist"
+              aria-label="Choose a day"
             >
-              Fri–Sun &amp; Holidays
-            </button>
+              <span
+                className="absolute top-0 bottom-0 left-0 w-1/2 transition-transform duration-300 ease-out"
+                style={{
+                  background: BMW_BLUE,
+                  transform: day === "weekday" ? "translateX(0)" : "translateX(100%)",
+                }}
+                aria-hidden="true"
+              />
+              <button
+                type="button"
+                role="tab"
+                aria-selected={day === "weekday"}
+                onClick={() => setDay("weekday")}
+                className={cn(
+                  "relative z-10 px-5 py-[18px] text-[13px] font-semibold uppercase tracking-[0.08em] transition-colors",
+                  day === "weekday" ? "text-white" : "text-white/55 hover:text-white"
+                )}
+              >
+                Mon–Thu
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={day === "weekend"}
+                onClick={() => setDay("weekend")}
+                className={cn(
+                  "relative z-10 px-5 py-[18px] text-[13px] font-semibold uppercase tracking-[0.08em] transition-colors",
+                  day === "weekend" ? "text-white" : "text-white/55 hover:text-white"
+                )}
+              >
+                Fri–Sun &amp; Holidays
+              </button>
+            </div>
+            <p className="mt-2.5 text-[12px] text-white/45">
+              Weekend pricing applies Fri, Sat, Sun &amp; public holidays.
+            </p>
           </div>
         </div>
 
-        {/* Model line-up: angular spec panels, recommended one gets a blue top bar. */}
-        <div className="mt-14 grid gap-px md:grid-cols-3" style={{ background: "rgba(255,255,255,0.08)" }}>
+        {/* ── The three show tiers — prices react to the configurator ───────── */}
+        <div className="mt-12 grid gap-px md:grid-cols-3" style={{ background: "rgba(255,255,255,0.08)" }}>
           {tiers.map((tier) => {
             const price = priceOf(tier);
-            const other = day === "weekday" ? tier.weekend : tier.weekday;
+            const other = tier.price[players][day === "weekday" ? 1 : 0];
             return (
               <div
-                key={tier.players}
+                key={tier.label}
                 className="relative flex flex-col px-7 pb-8 pt-9"
-                style={{ background: tier.highlight ? "#1b1e20" : "#101213" }}
+                style={{ background: tier.popular ? "#1b1e20" : "#101213" }}
               >
-                {/* Blue accent bar marks the recommended build. */}
-                {tier.highlight && (
-                  <span
-                    className="absolute inset-x-0 top-0 h-[3px]"
-                    style={{ background: BMW_BLUE }}
-                    aria-hidden
-                  />
-                )}
+                {/* Accent bar marks the recommended build, in the tier's colour. */}
+                <span
+                  className="absolute inset-x-0 top-0 h-[3px]"
+                  style={{ background: tier.popular ? tier.accent : "transparent" }}
+                  aria-hidden
+                />
 
                 {/* Eyebrow / badge. */}
-                {tier.badge && (
-                  <span
-                    className="text-[11px] font-bold uppercase tracking-[0.16em]"
-                    style={{ color: tier.highlight ? BMW_LIGHT : "rgba(255,255,255,0.45)" }}
-                  >
-                    {tier.badge}
-                  </span>
-                )}
-
-                {/* Model name = group size. */}
-                <h3
-                  className="mt-3 text-[26px] font-bold tracking-[-0.01em] md:text-[28px]"
-                  style={{ fontFamily: "var(--font-inter-tight, var(--font-display))" }}
+                <span
+                  className="text-[11px] font-bold uppercase tracking-[0.16em]"
+                  style={{ color: tier.popular ? tier.ink : "rgba(255,255,255,0.45)" }}
                 >
-                  {tier.players}
-                </h3>
+                  {tier.eyebrow}
+                </span>
 
-                {/* Price block. */}
+                {/* Model name = show tier. */}
+                <h3
+                  className="mt-2 text-[26px] font-bold tracking-[-0.01em] md:text-[30px]"
+                  style={{ fontFamily: "var(--font-inter-tight, var(--font-display))", color: tier.ink }}
+                >
+                  {tier.label}
+                </h3>
+                <p className="mt-2 text-[14px] leading-snug text-white/55">{tier.tagline}</p>
+
+                {/* Price block — driven by the configurator. */}
                 <div className="mt-6">
                   <span className="text-[12px] font-medium uppercase tracking-[0.12em] text-white/45">
-                    From
+                    {players === "6+" ? "From" : `For ${players} players`}
                   </span>
                   <div className="mt-1 flex items-baseline gap-1.5">
                     <span
                       className="text-[42px] font-bold leading-none tracking-[-0.02em] md:text-[46px]"
                       style={{ fontFamily: "var(--font-inter-tight, var(--font-display))" }}
                     >
-                      ₹{price}
+                      ₹{price.toLocaleString("en-IN")}
                     </span>
                     <span className="text-[13px] text-white/50">/ person</span>
                   </div>
                   <p className="mt-2 text-[12px] text-white/40">
-                    {day === "weekday" ? "Fri–Sun & Holidays" : "Mon–Thu"}: ₹{other}/person
+                    {day === "weekday" ? "Fri–Sun & Holidays" : "Mon–Thu"}: ₹
+                    {other.toLocaleString("en-IN")}/person
                   </p>
                 </div>
 
                 {/* Spec list, BMW hairline-separated. */}
                 <ul className="mt-7 space-y-3 border-t border-white/10 pt-6">
-                  {features.map((f) => (
+                  {tier.features.map((f) => (
                     <li key={f} className="flex items-start gap-2.5 text-[14px] text-white/70">
-                      <Check size={16} strokeWidth={2.5} className="mt-0.5 shrink-0" style={{ color: BMW_LIGHT }} />
+                      <Check
+                        size={16}
+                        strokeWidth={2.5}
+                        className="mt-0.5 shrink-0"
+                        style={{ color: tier.ink }}
+                      />
                       {f}
                     </li>
                   ))}
                 </ul>
 
-                <BmwButton
-                  href="https://gameshowchallengerooms.com/"
-                  filled={tier.highlight}
-                  className="mt-8 w-full"
-                >
-                  Build Your Show
+                <BmwButton href={BOOKING_URL} filled={tier.popular} className="mt-8 w-full">
+                  Book {tier.label}
                 </BmwButton>
               </div>
             );
           })}
         </div>
 
-        {/* From-line, BMW spec note. */}
+        {/* From-line, BMW spec note — reflects the current configuration. */}
         <p className="mt-6 text-[13px] uppercase tracking-[0.1em] text-white/45">
-          From <span className="font-bold text-white">₹{lowest}</span> per person with 6 or more.
+          From <span className="font-bold text-white">₹{lowest.toLocaleString("en-IN")}</span> per person
+          {players === "6+" ? " with 6 or more" : ` for ${players} players`} on{" "}
+          {day === "weekday" ? "weekdays" : "weekends"}.
         </p>
 
-        {/* "Standard equipment" — BMW frames inclusions like a feature spec sheet. */}
-        <div className="mt-24 border-t border-white/10 pt-14">
-          <span className="flex items-center gap-3 text-[13px] font-semibold uppercase tracking-[0.18em] text-white/55">
-            <span className="block h-[2px] w-9" style={{ background: BMW_BLUE }} />
-            Standard equipment
-          </span>
-          <h3
-            className="mt-5 max-w-[24ch] text-[28px] font-bold tracking-[-0.02em] md:text-[40px]"
-            style={{ fontFamily: "var(--font-inter-tight, var(--font-display))" }}
-          >
-            What&apos;s in every ticket.
-          </h3>
-          <div className="mt-12 grid gap-x-12 gap-y-10 sm:grid-cols-2">
-            {included.map((item, idx) => (
-              <div key={item.title} className="flex gap-5 border-t border-white/10 pt-6">
-                <span
-                  className="text-[14px] font-bold tabular-nums"
-                  style={{ color: BMW_LIGHT, fontFamily: "var(--font-inter-tight, var(--font-display))" }}
-                >
-                  {String(idx + 1).padStart(2, "0")}
-                </span>
-                <div>
-                  <h4
-                    className="text-[18px] font-bold tracking-[-0.01em] md:text-[20px]"
-                    style={{ fontFamily: "var(--font-inter-tight, var(--font-display))" }}
-                  >
-                    {item.title}
-                  </h4>
-                  <p className="mt-2 text-[15px] leading-relaxed text-white/60">{item.text}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Kids Play — angular accessory panel. */}
+        {/* Kids Play — angular accessory panel, a real add-on offering. */}
         <div
           className="mt-16 flex flex-col gap-6 px-8 py-9 md:flex-row md:items-center md:justify-between"
           style={{ background: "#101213", borderLeft: `3px solid ${BMW_BLUE}` }}
@@ -304,8 +390,8 @@ export function PricingSection() {
             </h3>
             <p className="mt-1 text-[14px] text-white/55">For ages 5–8 years · ID cards mandatory</p>
           </div>
-          <BmwButton href="https://gameshowchallengerooms.com/" className="shrink-0">
-            Build Your Show
+          <BmwButton href={BOOKING_URL} className="shrink-0">
+            Book Kids Play
           </BmwButton>
         </div>
 

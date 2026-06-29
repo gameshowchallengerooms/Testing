@@ -20,9 +20,9 @@ import {
  * itself in as you scroll — sold top-down from the flagship:
  *
  *   intro     → headline "One unforgettable night, your way" writes on
- *   PRIME TIME    → the hero: 5 rounds · 75 min, full pitch + features
- *   PRIME CLASSIC → most booked: 4 rounds · 1 hr
- *   THE CLASSIC   → quick & punchy: 3 rounds · 45 min
+ *   THE CLASSIC   → the pure live game show: core rounds · ~45 min
+ *   PRIME TIME    → most popular: the show meets the party · ~60 min
+ *   ELITE EDITION → the flagship: biggest & most unforgettable · ~75 min
  *   payoff    → closing line + CTA
  *
  * Collision-proof by construction (per motion-research best practice): art and
@@ -33,6 +33,9 @@ import {
 
 const TRACK_VIEWPORTS = 7; // screens of scroll the whole story spans
 
+// BMW design accent — the signature blue used across the showroom UI.
+const BMW_BLUE = "#0066B1";
+
 /* ── Content ─────────────────────────────────────────────────────────────── */
 
 interface Show {
@@ -40,6 +43,8 @@ interface Show {
   tag: string;
   /** rounds + duration framed as value, not spec */
   value: string;
+  /** lowest per-person weekday price (6+ players) — shown as the "from" line */
+  fromPrice: number;
   bestFor: string;
   pitch: string;
   features: string[];
@@ -51,45 +56,69 @@ interface Show {
   popular?: boolean;
 }
 
-// Sold UP — Prime Time first as the aspiration, then down. Copy from the
-// conversion pass: each show is a deliberate, desirable choice; none is "cheap".
+// Sold UP the line-up — The Classic → Prime Time (most popular) → Elite Edition
+// (the flagship). Each is a deliberate, desirable choice; none is "cheap". Copy
+// and feature lists mirror the official brochure: Prime Time builds on The
+// Classic, Elite Edition builds on Prime Time.
 const shows: Show[] = [
   {
-    label: "Prime Time",
-    tag: "Go all in.",
-    value: "5 huge rounds · 75 unforgettable minutes",
-    bestFor: "For crews who want the full, no-limits night.",
+    label: "The Classic",
+    tag: "The original.",
+    value: "The pure live game show experience.",
+    fromPrice: 750,
+    bestFor: "Everything that makes a game show a game show.",
     pitch:
-      "The complete journey — lights up, buzzers blazing, every round bigger than the last, building to a finale you'll talk about for weeks. This is the one you came all this way for.",
-    features: ["Buzzer face-offs", "Wheel-of-fortune spins", "Head-to-head grand finale"],
-    accent: "#FC19ED",
-    ink: "#B5179E",
-    gradient: "linear-gradient(135deg, #7C5CFC, #FC19ED)",
+      "A real host, the studio lights, the buzzers and your crew going head to head — the core live game show, start to finish, with all the rivalry and bragging rights baked in.",
+    features: [
+      "Live game show host",
+      "Core buzzer & challenge rounds",
+      "Team-based competition",
+      "Scores, fun twists & winner moments",
+      "Approx. 45 minutes of play",
+    ],
+    accent: "#147EFF",
+    ink: "#0B5ED7",
+    gradient: "linear-gradient(135deg, #1FA2FF, #147EFF)",
   },
   {
-    label: "Prime Classic",
-    tag: "Most booked.",
-    value: "4 packed rounds · a perfect hour",
+    label: "Prime Time",
+    tag: "Most popular.",
+    value: "Where the game show meets the party.",
+    fromPrice: 899,
     bestFor: "The sweet spot most groups choose.",
     pitch:
-      "The crowd favourite for a reason — all the buzzers, laughs and rivalry, dialled to just the right length. Maximum fun, zero filler.",
-    features: ["Buzzer face-offs", "Team rivalry rounds", "Champion crowning"],
-    accent: "#FFD23F",
-    ink: "#9A6A00",
-    gradient: "linear-gradient(135deg, #FFD23F, #FFB020)",
+      "Everything in The Classic, plus a whole layer of house-party energy — extra games, more group interaction and bigger chances to win. The crowd favourite for a reason.",
+    features: [
+      "Everything in The Classic, plus…",
+      "Extra house-party style games",
+      "More group interaction & challenges",
+      "Bigger energy & more chances to win",
+      "Approx. 60 minutes of play",
+    ],
+    accent: "#7C5CFC",
+    ink: "#5B3FD6",
+    gradient: "linear-gradient(135deg, #9A7BFF, #7C5CFC)",
     popular: true,
   },
   {
-    label: "The Classic",
-    tag: "Quick & electric.",
-    value: "3 fast rounds · 45 electric minutes",
-    bestFor: "Perfect first taste — big thrill, less time.",
+    label: "Elite Edition",
+    tag: "Go all in.",
+    value: "The biggest and most unforgettable version.",
+    fromPrice: 1049,
+    bestFor: "For crews who want the full, no-limits night.",
     pitch:
-      "Short on time, big on energy — a sharp, fast-paced taste of the studio with all the buzzers and bragging rights baked in. Walk in curious, walk out a champion.",
-    features: ["Lightning buzzer rounds", "Live studio thrills", "Champion crowning"],
-    accent: "#22D3A5",
-    ink: "#0E7C5A",
-    gradient: "linear-gradient(135deg, #22D3A5, #14B8A6)",
+      "Everything in Prime Time, dialled all the way up — more party games, bonus challenges, extended playtime and a finale built for a celebration nobody forgets. The flagship.",
+    features: [
+      "Everything in Prime Time, plus…",
+      "More party games & bonus challenges",
+      "Extended playtime",
+      "Bigger finale & winner celebration",
+      "Premium group experience",
+      "Approx. 75 minutes of play",
+    ],
+    accent: "#FF8A1E",
+    ink: "#D96B00",
+    gradient: "linear-gradient(135deg, #FFA94D, #FF8A1E)",
   },
 ];
 
@@ -190,22 +219,22 @@ export function ShowRounds() {
 
   const hintOpacity = useTransform(p, [0, 0.04], [1, 0]);
 
-  // As the RECAP (the three shows together) arrives, the scene transitions to an
-  // Apple "system light" soft gradient — dark neon stage → calm light panel — so
-  // the final comparison reads like a clean, premium Apple page before pricing.
-  // (The intro + per-show beats stay dark; only the recap turns light.)
+  // As the RECAP (the three shows together) arrives, the neon sketch stage
+  // settles into the BMW "showroom" gradient — the same deep, structured
+  // near-black the pricing section uses (#0a0b0c → #161819) — so the final
+  // comparison reads as one continuous BMW spec sheet straight into pricing.
+  // (The intro + per-show beats keep the brighter sketch stage; the recap calms.)
   const lightBg = useTransform(
     p,
     [RECAP_SPAN[0], RECAP_SPAN[0] + 0.08],
     [
       "linear-gradient(180deg, #0c0d10 0%, #0c0d10 100%)",
-      // Apple's light comparison sections sit on #f5f5f7 with white cards above.
-      "linear-gradient(180deg, #fbfbfd 0%, #f5f5f7 100%)",
+      "linear-gradient(180deg, #0a0b0c 0%, #161819 100%)",
     ]
   );
-  // The ambient neon ink fades out as the panel goes light (it belongs to the
-  // dark stage); a subtle scroll hint colour also flips.
-  const inkOpacity = useTransform(p, [RECAP_SPAN[0], RECAP_SPAN[0] + 0.08], [0.18, 0]);
+  // The ambient neon ink fades right down as the BMW panel arrives (it belongs
+  // to the sketch stage, not the structured showroom).
+  const inkOpacity = useTransform(p, [RECAP_SPAN[0], RECAP_SPAN[0] + 0.08], [0.18, 0.04]);
 
   if (reduce) return <StaticFallback />;
 
@@ -381,14 +410,22 @@ function ShowBeat({
   const value = useWriteOn(p, valueAt);
   const pitch = useWriteOn(p, pitchAt);
 
+  // BMW underline: a precise bar that WIPES in left→right (scaleX), in place of
+  // the old hand-drawn rough-ink stroke. Scrubbed by the same scroll window.
+  const underlineScale = useTransform(p, underlineAt, [0, 1], { clamp: true });
+
   return (
-    <motion.div className="absolute inset-x-6 top-1/2 -translate-y-1/2" style={style}>
-      {/* scrim pad behind copy so any ambient backdrop ink stays readable —
-          soft-dark (not pure black) at high opacity for a calm reading surface */}
-      <div className="mx-auto max-w-[760px] rounded-[2rem] bg-[#121316]/75 px-6 py-8 text-center backdrop-blur-sm md:px-10 md:py-10">
-        {/* tag */}
+    <motion.div className="absolute inset-x-4 top-1/2 -translate-y-1/2 sm:inset-x-6" style={style}>
+      {/* BMW spec panel — squared (no radius), structured near-black with a thin
+          accent left-edge and hairline border. Replaces the soft rounded scrim. */}
+      <div
+        className="mx-auto max-w-[760px] border border-white/10 bg-[#101213]/85 px-6 py-8 text-center backdrop-blur-sm sm:px-8 md:px-12 md:py-11"
+        style={{ borderLeft: `3px solid ${show.accent}` }}
+      >
+        {/* tag — squared BMW eyebrow. Popular = solid accent block; others a
+            hairline-outlined accent label. */}
         <motion.span
-          className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold uppercase tracking-wide"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] sm:text-xs"
           style={
             show.popular
               ? { background: show.accent, color: "#0b0b0d", ...tag }
@@ -399,40 +436,46 @@ function ShowBeat({
           {show.tag}
         </motion.span>
 
-        {/* name + its underline (the underline draws in its own lane below it) */}
+        {/* name + its clean BMW underline (wipes in within the name's own lane) */}
         <motion.h3
-          className="mt-4 text-5xl font-bold leading-none tracking-tight md:text-7xl"
-          style={{ fontFamily: "var(--font-display)", letterSpacing: "-2px", color: show.accent, ...name }}
+          className="mt-4 text-[40px] font-bold leading-none tracking-[-0.02em] sm:text-5xl md:text-7xl"
+          style={{ fontFamily: "var(--font-inter-tight, var(--font-display))", color: show.accent, ...name }}
         >
           {show.label}
         </motion.h3>
-        <svg viewBox="0 0 400 24" className="mx-auto mt-2 h-4 w-[min(340px,70%)]" fill="none" aria-hidden="true">
-          <Stroke d="M12 12 q 188 14 376 2" p={p} span={underlineAt} className="ink" width={5} stroke={show.accent} />
-        </svg>
+        <div className="mx-auto mt-3 h-[3px] w-[clamp(120px,40%,220px)] overflow-hidden">
+          <motion.span
+            className="block h-full w-full origin-left"
+            style={{ background: show.accent, scaleX: underlineScale }}
+            aria-hidden
+          />
+        </div>
 
         {/* value line */}
-        <motion.p className="read-strong mt-4 text-lg font-semibold md:text-2xl" style={value}>
+        <motion.p className="read-strong mt-5 text-lg font-semibold md:text-2xl" style={value}>
           {show.value}
         </motion.p>
-        <motion.p className="mt-1 text-sm font-semibold uppercase tracking-[0.18em] md:text-base" style={{ color: show.accent, ...value }}>
+        <motion.p
+          className="mt-1.5 text-[13px] font-semibold uppercase tracking-[0.16em] sm:text-sm md:text-base"
+          style={{ color: show.accent, ...value }}
+        >
           {show.bestFor}
         </motion.p>
 
         {/* pitch */}
-        <motion.p className="read-body mx-auto mt-5 max-w-[52ch] text-base md:text-lg" style={pitch}>
+        <motion.p className="read-body mx-auto mt-5 max-w-[52ch] text-[15px] leading-relaxed sm:text-base md:text-lg" style={pitch}>
           {show.pitch}
         </motion.p>
 
-        {/* features */}
-        <motion.ul className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3" style={pitch}>
+        {/* features — BMW square ticks, hairline-topped on a left-aligned grid for
+            calm scanning (centred would wrap raggedly with longer feature lines). */}
+        <motion.ul
+          className="mx-auto mt-7 grid max-w-[600px] gap-x-7 gap-y-3 border-t border-white/10 pt-6 text-left sm:grid-cols-2"
+          style={pitch}
+        >
           {show.features.map((f) => (
-            <li key={f} className="read-body flex items-center gap-2 text-sm md:text-base">
-              <span
-                className="flex h-5 w-5 items-center justify-center rounded-full"
-                style={{ background: `${show.accent}22`, color: show.accent }}
-              >
-                <Check size={13} strokeWidth={3} />
-              </span>
+            <li key={f} className="read-body flex items-start gap-2.5 text-[14px] sm:text-[15px]">
+              <Check size={16} strokeWidth={2.5} className="mt-0.5 shrink-0" style={{ color: show.accent }} />
               {f}
             </li>
           ))}
@@ -465,36 +508,46 @@ function RecapBeat({ p }: { p: MotionValue<number> }) {
 
   return (
     <motion.div
-      className="apple-light absolute inset-x-4 top-1/2 max-h-[94svh] -translate-y-1/2 overflow-y-auto py-6 text-center md:inset-x-6"
-      style={style}
+      className="absolute inset-x-4 top-1/2 max-h-[94svh] -translate-y-1/2 overflow-y-auto py-6 text-white md:inset-x-6"
+      style={{ ...style, fontFamily: "var(--font-sans)" }}
     >
-      {/* Apple large title: near-black ink, heavy weight, tight tracking. */}
-      <motion.h2
-        className="apple-title px-4 text-[34px] leading-[1.05] md:text-[72px]"
-        style={{ letterSpacing: "-0.02em", ...heading }}
-      >
-        Which show is yours?
-      </motion.h2>
-      <motion.p
-        className="apple-subtle mx-auto mt-4 max-w-[46ch] px-4 text-[19px] md:text-[30px]"
-        style={{ fontFamily: "var(--font-apple)", letterSpacing: "-0.012em", lineHeight: 1.25, ...heading }}
-      >
-        Three unforgettable shows. Pick yours, gather your crew, and walk out a champion.
-      </motion.p>
+      <div className="mx-auto max-w-[1180px] px-2">
+        {/* BMW eyebrow — uppercase, blue tick, tracked. */}
+        <motion.span
+          className="mb-5 flex items-center gap-3 text-[13px] font-semibold uppercase tracking-[0.18em] text-white/55"
+          style={heading}
+        >
+          <span className="block h-[2px] w-9" style={{ background: BMW_BLUE }} />
+          The line-up
+        </motion.span>
+        {/* BMW headline — tight, bold, Inter-Tight. */}
+        <motion.h2
+          className="text-[34px] font-bold leading-[1.04] tracking-[-0.02em] md:text-[58px]"
+          style={{ fontFamily: "var(--font-inter-tight, var(--font-display))", ...heading }}
+        >
+          Which show is yours?
+        </motion.h2>
+        <motion.p
+          className="mt-5 max-w-[58ch] text-[16px] leading-relaxed text-white/60 md:text-[19px]"
+          style={heading}
+        >
+          Three unforgettable shows. Pick yours, gather your crew, and walk out a champion.
+        </motion.p>
 
-      {/* Apple comparison grid: borderless, shadowless, centred columns that
-          share the panel — separated by whitespace, not card chrome. On mobile
-          they stack with a hairline between each. */}
-      <div className="mx-auto mt-10 grid max-w-[1000px] gap-x-6 gap-y-10 px-2 md:mt-16 md:grid-cols-3">
-        {shows.map((s, i) => (
-          // Stagger the three in early in the span, then hold for the rest.
-          <RecapCardScrubbed
-            key={s.label}
-            show={s}
-            at={slice(RECAP_SPAN, 0.16 + i * 0.08, 0.3 + i * 0.08)}
-            p={p}
-          />
-        ))}
+        {/* BMW comparison grid: squared spec panels separated by hairline gaps,
+            the popular tier carries an accent top-bar — identical language to the
+            pricing line-up below. */}
+        <div className="mt-10 grid gap-px md:mt-12 md:grid-cols-3" style={{ background: "rgba(255,255,255,0.08)" }}>
+          {shows.map((s, i) => (
+            // Stagger the three in early in the span, then hold for the rest.
+            <RecapCardScrubbed
+              key={s.label}
+              show={s}
+              at={slice(RECAP_SPAN, 0.16 + i * 0.08, 0.3 + i * 0.08)}
+              p={p}
+            />
+          ))}
+        </div>
       </div>
     </motion.div>
   );
@@ -506,86 +559,122 @@ function RecapCardScrubbed({ show, at, p }: { show: Show; at: [number, number]; 
   return <RecapCard show={show} reveal={reveal} />;
 }
 
-/** One Apple comparison COLUMN (not a boxed card): borderless and shadowless,
- *  centred text, a small colour dot, the name, a one-line summary, a hairline
- *  divider, then the spec list — exactly Apple's product line-up grid. With no
- *  `reveal` style it renders statically (the mobile StaticRecap path). */
+/** One BMW spec PANEL (not a boxed Apple column): squared, deep near-black, the
+ *  popular tier carries a coloured top-bar. Eyebrow, tight Inter-Tight name in the
+ *  tier accent, the tagline, a "from" price, then a hairline-separated spec list
+ *  and the signature BMW button. With no `reveal` style it renders statically
+ *  (the mobile StaticRecap path). */
 function RecapCard({ show, reveal }: { show: Show; reveal?: WriteOnStyle }) {
   return (
-    <motion.div className="apple-light flex flex-col items-center text-center" style={reveal}>
-      {/* Colour dot — Apple's tiny finish swatch above the name. */}
+    <motion.div
+      className="relative flex flex-col px-7 pb-8 pt-9"
+      style={{ background: show.popular ? "#1b1e20" : "#101213", ...reveal }}
+    >
+      {/* Accent top-bar marks the recommended build, in the tier's colour. */}
       <span
-        className="h-2.5 w-2.5 rounded-full"
-        style={{ background: show.accent, boxShadow: `0 0 0 1px ${show.ink}44` }}
+        className="absolute inset-x-0 top-0 h-[3px]"
+        style={{ background: show.popular ? show.accent : "transparent" }}
         aria-hidden
       />
 
-      {/* Name — Apple bold title. */}
-      <h3 className="apple-title mt-5 text-[32px] md:text-[40px]">{show.label}</h3>
-
-      {/* One-line summary (the "tag"), secondary ink — like Apple's tagline. */}
-      <p className="apple-subtle mt-2 text-[19px] md:text-[21px]" style={{ lineHeight: 1.3 }}>
+      {/* Eyebrow — the tag, uppercase tracked. */}
+      <span
+        className="text-[11px] font-bold uppercase tracking-[0.16em]"
+        style={{ color: show.popular ? show.accent : "rgba(255,255,255,0.45)" }}
+      >
         {show.tag}
-      </p>
+      </span>
 
-      {/* "From / value" block — Apple puts a price-style line here. */}
-      <p className="mt-7 text-[17px] font-semibold md:text-[19px]" style={{ color: "#1d1d1f", letterSpacing: "-0.01em" }}>
-        {show.value}
-      </p>
+      {/* Name — tight, bold, in the tier accent. */}
+      <h3
+        className="mt-2 text-[26px] font-bold tracking-[-0.01em] md:text-[30px]"
+        style={{ fontFamily: "var(--font-inter-tight, var(--font-display))", color: show.accent }}
+      >
+        {show.label}
+      </h3>
+      <p className="mt-2 text-[14px] leading-snug text-white/55">{show.value}</p>
 
-      {/* Hairline divider, full column width — Apple's signature separator. */}
-      <span className="mt-8 block h-px w-full" style={{ background: "#d2d2d7" }} aria-hidden />
+      {/* "From" price block — BMW spec framing. */}
+      <div className="mt-6">
+        <span className="text-[12px] font-medium uppercase tracking-[0.12em] text-white/45">From</span>
+        <div className="mt-1 flex items-baseline gap-1.5">
+          <span
+            className="text-[38px] font-bold leading-none tracking-[-0.02em] md:text-[42px]"
+            style={{ fontFamily: "var(--font-inter-tight, var(--font-display))" }}
+          >
+            ₹{show.fromPrice.toLocaleString("en-IN")}
+          </span>
+          <span className="text-[13px] text-white/50">/ person</span>
+        </div>
+        <p className="mt-2 text-[12px] text-white/40">{show.bestFor}</p>
+      </div>
 
-      {/* "Best for" caption, then the spec list — centred, calm secondary ink. */}
-      <p className="apple-tertiary mt-8 text-[15px]">{show.bestFor}</p>
-      <ul className="mt-4 space-y-3">
+      {/* Spec list — BMW hairline-separated. */}
+      <ul className="mt-7 space-y-3 border-t border-white/10 pt-6">
         {show.features.map((f) => (
-          <li key={f} className="apple-subtle text-[18px]" style={{ lineHeight: 1.45 }}>
+          <li key={f} className="flex items-start gap-2.5 text-[14px] text-white/70">
+            <Check size={16} strokeWidth={2.5} className="mt-0.5 shrink-0" style={{ color: show.accent }} />
             {f}
           </li>
         ))}
       </ul>
 
-      {/* Apple CTA: blue text link, first-person + action verb (research: first-
-          person phrasing lifts CTR ~94%) with a genuine-urgency micro-line. */}
-      <Link href="#tickets" className="apple-link mt-8 inline-flex items-center gap-1 font-normal text-[19px]!">
-        Book this show
-        <span aria-hidden className="text-[21px] leading-none">›</span>
+      {/* BMW CTA — outlined, fills blue on hover; the popular tier is filled. */}
+      <Link
+        href="#tickets"
+        className={
+          "bmw-btn group/btn mt-8 inline-flex w-full items-center justify-center gap-2 px-7 py-3.5 text-[14px] font-semibold uppercase tracking-[0.06em] text-white transition-colors duration-200 " +
+          (show.popular ? "bmw-btn--filled" : "bmw-btn--outline")
+        }
+      >
+        Book {show.label}
+        <ArrowDown
+          size={16}
+          strokeWidth={2.5}
+          className="-rotate-90 transition-transform duration-200 group-hover/btn:translate-x-1"
+        />
       </Link>
-      <span className="apple-tertiary mt-2 text-[13px]">From ₹750/head · slots fill fast</span>
     </motion.div>
   );
 }
 
-/** MOBILE recap — the same white Apple comparison panel, but in normal page flow
- *  (not pinned/scrubbed). Pinning the recap inside the sticky stage works on
- *  desktop, but on phones the three shows stack taller than the viewport and the
- *  page scroll (not the panel) wins, so shows 2 & 3 are unreachable. Rendering it
- *  as an ordinary light section lets all three stack and scroll naturally. */
+/** MOBILE recap — the same BMW comparison panel, but in normal page flow (not
+ *  pinned/scrubbed). Pinning the recap inside the sticky stage works on desktop,
+ *  but on phones the three shows stack taller than the viewport and the page
+ *  scroll (not the panel) wins, so shows 2 & 3 are unreachable. Rendering it as
+ *  an ordinary BMW-dark section lets all three stack and scroll naturally. */
 function StaticRecap() {
   return (
     <section
       // The Navbar watches this id to hide the floating "Book Your Show" pill
-      // while the light Apple panel is on screen (it has its own CTAs + the dark
-      // pill clashes with the white background on mobile).
+      // while the recap panel is on screen (it has its own per-show CTAs).
       id="show-recap"
       data-recap
-      className="apple-light w-full px-5 py-20"
-      style={{ background: "linear-gradient(180deg, #fbfbfd 0%, #f5f5f7 100%)" }}
+      className="w-full px-5 py-20 text-white"
+      style={{
+        background: "linear-gradient(180deg, #0a0b0c 0%, #161819 100%)",
+        fontFamily: "var(--font-sans)",
+      }}
     >
-      <h2 className="apple-title px-4 text-center text-[34px] leading-[1.05]" style={{ letterSpacing: "-0.02em" }}>
-        Which show is yours?
-      </h2>
-      <p
-        className="apple-subtle mx-auto mt-4 max-w-[46ch] px-4 text-center text-[19px]"
-        style={{ fontFamily: "var(--font-apple)", letterSpacing: "-0.012em", lineHeight: 1.25 }}
-      >
-        Three unforgettable shows. Pick yours, gather your crew, and walk out a champion.
-      </p>
-      <div className="mx-auto mt-12 grid max-w-[1000px] gap-y-12 px-2">
-        {shows.map((s) => (
-          <RecapCard key={s.label} show={s} />
-        ))}
+      <div className="mx-auto max-w-[1180px]">
+        <span className="mb-5 flex items-center gap-3 text-[13px] font-semibold uppercase tracking-[0.18em] text-white/55">
+          <span className="block h-[2px] w-9" style={{ background: BMW_BLUE }} />
+          The line-up
+        </span>
+        <h2
+          className="text-[34px] font-bold leading-[1.04] tracking-[-0.02em]"
+          style={{ fontFamily: "var(--font-inter-tight, var(--font-display))" }}
+        >
+          Which show is yours?
+        </h2>
+        <p className="mt-5 max-w-[58ch] text-[16px] leading-relaxed text-white/60">
+          Three unforgettable shows. Pick yours, gather your crew, and walk out a champion.
+        </p>
+        <div className="mt-10 grid gap-px" style={{ background: "rgba(255,255,255,0.08)" }}>
+          {shows.map((s) => (
+            <RecapCard key={s.label} show={s} />
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -599,83 +688,36 @@ function useBeatStyleEnd(p: MotionValue<number>, [a, b]: [number, number]) {
 }
 
 /* ── Reduced-motion / no-scroll fallback ─────────────────────────────────── */
+/* Same BMW showroom layout as the recap, rendered statically (no scroll scrub)
+ * so reduced-motion users get the identical structured spec-sheet comparison. */
 function StaticFallback() {
   return (
-    <section className="relative w-full overflow-hidden bg-black px-5 py-20 md:px-10 md:py-28">
-      <div className="mx-auto max-w-[1080px]">
-        <div className="text-center">
-          <p className="read-muted text-sm font-semibold uppercase tracking-[0.32em]">Choose your show</p>
-          <h2
-            className="read-strong mx-auto mt-4 max-w-[18ch] text-3xl font-medium leading-tight tracking-tight md:text-5xl"
-            style={{ fontFamily: "var(--font-display)", letterSpacing: "-1.5px" }}
-          >
-            One unforgettable night,{" "}
-            <span
-              style={{
-                background: "linear-gradient(90deg,#147EFF,#FC19ED)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              your way.
-            </span>
-          </h2>
-          <p className="read-body mx-auto mt-4 max-w-[46ch] text-base md:text-lg">
-            Three separate live shows — pick the one that fits your crew. Each builds
-            to one champion and one night you&apos;ll never forget.
-          </p>
-        </div>
+    <section
+      className="relative w-full overflow-hidden px-5 py-20 text-white md:px-10 md:py-28"
+      style={{
+        background: "linear-gradient(180deg, #0a0b0c 0%, #161819 100%)",
+        fontFamily: "var(--font-sans)",
+      }}
+    >
+      <div className="mx-auto max-w-[1180px]">
+        <span className="mb-5 flex items-center gap-3 text-[13px] font-semibold uppercase tracking-[0.18em] text-white/55">
+          <span className="block h-[2px] w-9" style={{ background: BMW_BLUE }} />
+          The line-up
+        </span>
+        <h2
+          className="text-[34px] font-bold leading-[1.04] tracking-[-0.02em] md:text-[58px]"
+          style={{ fontFamily: "var(--font-inter-tight, var(--font-display))" }}
+        >
+          Which show is yours?
+        </h2>
+        <p className="mt-5 max-w-[58ch] text-[16px] leading-relaxed text-white/60 md:text-[19px]">
+          Three separate live shows — pick the one that fits your crew. Each builds to
+          one champion and one night you&apos;ll never forget.
+        </p>
 
-        <div className="mt-12 grid gap-5 lg:grid-cols-3">
+        <div className="mt-12 grid gap-px md:grid-cols-3" style={{ background: "rgba(255,255,255,0.08)" }}>
           {shows.map((s) => (
-            <div
-              key={s.label}
-              className="relative flex flex-col rounded-3xl border p-7"
-              style={{
-                borderColor: s.popular ? s.accent : `${s.accent}55`,
-                background: `linear-gradient(160deg,${s.accent}1f,#0d0d0f 65%)`,
-                boxShadow: s.popular ? `0 22px 55px ${s.accent}26` : undefined,
-              }}
-            >
-              <span
-                className="inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide"
-                style={
-                  s.popular
-                    ? { background: s.accent, color: "#0b0b0d" }
-                    : { border: `1px solid ${s.accent}66`, color: s.accent, background: `${s.accent}14` }
-                }
-              >
-                {s.popular && <span aria-hidden>★</span>}
-                {s.tag}
-              </span>
-              <h3 className="mt-4 text-3xl font-bold" style={{ fontFamily: "var(--font-display)", color: s.accent }}>
-                {s.label}
-              </h3>
-              <p className="read-strong mt-2 text-[15px] font-semibold">{s.value}</p>
-              <p className="mt-1 text-sm font-semibold uppercase tracking-[0.16em]" style={{ color: s.accent }}>{s.bestFor}</p>
-              <p className="read-body mt-3 text-[15px]">{s.pitch}</p>
-              <ul className="mt-4 space-y-2.5 border-t border-white/10 pt-4">
-                {s.features.map((f) => (
-                  <li key={f} className="read-body flex items-center gap-2 text-[15px]">
-                    <Check size={15} strokeWidth={3} style={{ color: s.accent }} />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="#tickets"
-                className="mt-5 inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-bold transition-transform hover:scale-[1.03]"
-                style={
-                  s.popular
-                    ? { background: s.accent, color: "#0b0b0d" }
-                    : { border: `1px solid ${s.accent}66`, color: s.accent }
-                }
-              >
-                See prices
-                <ArrowDown size={15} />
-              </Link>
-            </div>
+            <RecapCard key={s.label} show={s} />
           ))}
         </div>
       </div>

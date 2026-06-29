@@ -141,8 +141,15 @@ export function ShowRounds() {
   // Measure viewport once; react only to width changes (ignore iOS URL-bar
   // height jitter — see research brief §2).
   const [viewportH, setViewportH] = useState<number | null>(null);
+  // Below Tailwind's `md` the recap stacks the three shows into a tall column;
+  // the white panel needs a top-anchored, internally-scrollable layout there so
+  // all three stay reachable (see RecapBeat).
+  const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
-    const measure = () => setViewportH(window.innerHeight);
+    const measure = () => {
+      setViewportH(window.innerHeight);
+      setIsMobile(window.innerWidth < 768);
+    };
     measure();
     let lastWidth = window.innerWidth;
     const onResize = () => {
@@ -155,12 +162,16 @@ export function ShowRounds() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // Mobile renders the recap as a separate normal-flow section below, so the
+  // pinned dark track only needs to cover intro + the 3 show beats (which end at
+  // p≈0.72). Trim the track so it doesn't hold on empty dark scroll afterwards.
+  const trackViewports = isMobile ? TRACK_VIEWPORTS * 0.78 : TRACK_VIEWPORTS;
   const trackHeight =
     reduce || viewportH === null
       ? reduce
         ? "auto"
         : `${TRACK_VIEWPORTS * 100}vh`
-      : `${Math.round(viewportH * TRACK_VIEWPORTS)}px`;
+      : `${Math.round(viewportH * trackViewports)}px`;
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -191,10 +202,13 @@ export function ShowRounds() {
   if (reduce) return <StaticFallback />;
 
   return (
+    <>
     <section ref={sectionRef} className="relative w-full bg-black" style={{ height: trackHeight }}>
       <motion.div
         className="sketchpad sticky top-0 flex w-full items-center justify-center overflow-hidden"
-        style={{ height: "100svh", minHeight: "560px", background: lightBg }}
+        // On mobile the stage stays dark (the recap is rendered light, below);
+        // only desktop morphs the pinned stage to the light Apple panel.
+        style={{ height: "100svh", minHeight: "560px", background: isMobile ? "#0c0d10" : lightBg }}
       >
         {/* Shared SVG defs (rough-ink filter + gradients) defined ONCE — filter
             and gradient refs resolve document-wide by id, so we avoid duplicate
@@ -213,7 +227,9 @@ export function ShowRounds() {
           {shows.map((show, i) => (
             <ShowBeat key={show.label} show={show} span={SHOW_SPANS[i]} p={p} />
           ))}
-          <RecapBeat p={p} />
+          {/* Desktop pins the white recap inside the stage; mobile renders it as
+              StaticRecap (normal flow) below so all three shows are reachable. */}
+          {!isMobile && <RecapBeat p={p} />}
         </div>
 
         <motion.div
@@ -224,6 +240,8 @@ export function ShowRounds() {
         </motion.div>
       </motion.div>
     </section>
+    {isMobile && <StaticRecap />}
+    </>
   );
 }
 
@@ -403,13 +421,16 @@ function useWriteOn(p: MotionValue<number>, [a, b]: [number, number]) {
   const filter = useTransform(blur, (v) => `blur(${v}px)`);
   return { opacity, y, filter };
 }
+/** Motion style returned by useWriteOn (undefined ⇒ statically visible). */
+type WriteOnStyle = ReturnType<typeof useWriteOn>;
 
 /** RECAP — after walking through each show, bring ALL THREE back together so the
  *  group can compare at a glance and make the call, then nudge down to pricing.
  *  The three mini-cards stagger in (Prime Time first / highlighted). */
 function RecapBeat({ p }: { p: MotionValue<number> }) {
   // Final beat: fade IN and HOLD (no fade-out) so it stays put as you scroll on
-  // into the pricing section right below.
+  // into the pricing section right below. (Desktop only — on mobile the recap is
+  // rendered as a normal-flow StaticRecap so all three shows scroll naturally.)
   const style = useBeatStyleEnd(p, RECAP_SPAN);
   const heading = useWriteOn(p, slice(RECAP_SPAN, 0.04, 0.2));
 
@@ -436,23 +457,33 @@ function RecapBeat({ p }: { p: MotionValue<number> }) {
           share the panel — separated by whitespace, not card chrome. On mobile
           they stack with a hairline between each. */}
       <div className="mx-auto mt-10 grid max-w-[1000px] gap-x-6 gap-y-10 px-2 md:mt-16 md:grid-cols-3">
-        {shows.map((s, i) => {
+        {shows.map((s, i) => (
           // Stagger the three in early in the span, then hold for the rest.
-          const cardAt = slice(RECAP_SPAN, 0.16 + i * 0.08, 0.3 + i * 0.08);
-          return <RecapCard key={s.label} show={s} at={cardAt} p={p} />;
-        })}
+          <RecapCardScrubbed
+            key={s.label}
+            show={s}
+            at={slice(RECAP_SPAN, 0.16 + i * 0.08, 0.3 + i * 0.08)}
+            p={p}
+          />
+        ))}
       </div>
     </motion.div>
   );
 }
 
+/** Scroll-scrubbed wrapper (desktop): drives the card's write-on from `p`. */
+function RecapCardScrubbed({ show, at, p }: { show: Show; at: [number, number]; p: MotionValue<number> }) {
+  const reveal = useWriteOn(p, at);
+  return <RecapCard show={show} reveal={reveal} />;
+}
+
 /** One Apple comparison COLUMN (not a boxed card): borderless and shadowless,
  *  centred text, a small colour dot, the name, a one-line summary, a hairline
- *  divider, then the spec list — exactly Apple's product line-up grid. */
-function RecapCard({ show, at, p }: { show: Show; at: [number, number]; p: MotionValue<number> }) {
-  const style = useWriteOn(p, at);
+ *  divider, then the spec list — exactly Apple's product line-up grid. With no
+ *  `reveal` style it renders statically (the mobile StaticRecap path). */
+function RecapCard({ show, reveal }: { show: Show; reveal?: WriteOnStyle }) {
   return (
-    <motion.div className="apple-light flex flex-col items-center text-center" style={style}>
+    <motion.div className="apple-light flex flex-col items-center text-center" style={reveal}>
       {/* Colour dot — Apple's tiny finish swatch above the name. */}
       <span
         className="h-2.5 w-2.5 rounded-full"
@@ -494,6 +525,32 @@ function RecapCard({ show, at, p }: { show: Show; at: [number, number]; p: Motio
       </Link>
       <span className="apple-tertiary mt-2 text-[13px]">From ₹750/head · slots fill fast</span>
     </motion.div>
+  );
+}
+
+/** MOBILE recap — the same white Apple comparison panel, but in normal page flow
+ *  (not pinned/scrubbed). Pinning the recap inside the sticky stage works on
+ *  desktop, but on phones the three shows stack taller than the viewport and the
+ *  page scroll (not the panel) wins, so shows 2 & 3 are unreachable. Rendering it
+ *  as an ordinary light section lets all three stack and scroll naturally. */
+function StaticRecap() {
+  return (
+    <section className="apple-light w-full px-5 py-20" style={{ background: "linear-gradient(180deg, #fbfbfd 0%, #f5f5f7 100%)" }}>
+      <h2 className="apple-title px-4 text-center text-[34px] leading-[1.05]" style={{ letterSpacing: "-0.02em" }}>
+        Which show is yours?
+      </h2>
+      <p
+        className="apple-subtle mx-auto mt-4 max-w-[46ch] px-4 text-center text-[19px]"
+        style={{ fontFamily: "var(--font-apple)", letterSpacing: "-0.012em", lineHeight: 1.25 }}
+      >
+        Three unforgettable shows. Pick yours, gather your crew, and walk out a champion.
+      </p>
+      <div className="mx-auto mt-12 grid max-w-[1000px] gap-y-12 px-2">
+        {shows.map((s) => (
+          <RecapCard key={s.label} show={s} />
+        ))}
+      </div>
+    </section>
   );
 }
 

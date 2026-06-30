@@ -174,9 +174,9 @@ const SHOW_SPANS: [number, number][] = [
 // fill the WHOLE track and the last one holds to the very end — that way you exit
 // the pinned stage straight into the white recap, with no dead black scroll.
 const SHOW_SPANS_MOBILE: [number, number][] = [
-  [0.24, 0.48],
-  [0.5, 0.74],
-  [0.76, 1.0],
+  [0.08, 0.34],
+  [0.36, 0.62],
+  [0.64, 1.0],
 ];
 
 function slice([a, b]: [number, number], from: number, to: number): [number, number] {
@@ -235,10 +235,9 @@ export function ShowRounds() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // Mobile packs intro + the 3 show beats across the WHOLE track (the recap is a
-  // separate section below); keep it nearly as long as desktop so the shelf + each
-  // show still ease by slowly enough to read (a too-short track scrolls too fast).
-  const trackViewports = isMobile ? TRACK_VIEWPORTS * 0.88 : TRACK_VIEWPORTS;
+  // Mobile should reach the real show cards quickly. Keep desktop cinematic, but
+  // shorten the pinned mobile track so users do not sit on a blank heading screen.
+  const trackViewports = isMobile ? 4.6 : TRACK_VIEWPORTS;
   const trackHeight =
     reduce || viewportH === null
       ? reduce
@@ -338,8 +337,12 @@ export function ShowRounds() {
   // the camera has fully "zoomed in" and travels book to book. Each book blends
   // between its shelf slot (zoom 0) and its focused, centred position (zoom 1), and
   // stays zoomed in from then on.
-  const zoomStart = ESTABLISH_SPAN[0] + (ESTABLISH_SPAN[1] - ESTABLISH_SPAN[0]) * 0.55;
-  const zoomEnd = spansForFocus[0][0] + (spansForFocus[0][1] - spansForFocus[0][0]) * COVER_AT;
+  const zoomStart = isMobile
+    ? 0.035
+    : ESTABLISH_SPAN[0] + (ESTABLISH_SPAN[1] - ESTABLISH_SPAN[0]) * 0.55;
+  const zoomEnd = isMobile
+    ? 0.07
+    : spansForFocus[0][0] + (spansForFocus[0][1] - spansForFocus[0][0]) * COVER_AT;
   const zoom = useTransform(p, [zoomStart, zoomEnd], [0, 1], { clamp: true });
 
   if (reduce) return <StaticFallback />;
@@ -839,6 +842,7 @@ function BookTurn({
   show,
   index,
   children,
+  isMobile,
   tileMaxH,
 }: {
   p: MotionValue<number>;
@@ -846,6 +850,7 @@ function BookTurn({
   show: Show;
   index: number;
   children: React.ReactNode;
+  isMobile: boolean;
   /** MOBILE shelf clamp: short max-height (px string) that crops the closed cover to
    *  a compact tile and releases to full height on focus. "none" on desktop. */
   tileMaxH?: MotionValue<string>;
@@ -867,11 +872,12 @@ function BookTurn({
   // span so the audience can READ the cover (title, edition, and the cover art)
   // before anything moves. Elite has the most on its cover, so it dwells longer.
   // Only AFTER the dwell does the cover begin to swing open.
-  const dwell = isElite ? 0.34 : 0.18;
+  const dwell = isMobile ? 0.06 : isElite ? 0.34 : 0.18;
   // The cover then opens SLOWLY (over the next chunk of the span), tracking the
   // scroll the whole way — every bit of scroll swings the board a little more, like
   // easing a real hardback open by hand. The rest of the span is the readable hold.
-  const [fa, fb] = slice(span, dwell, dwell + 0.4);
+  const turnDuration = isMobile ? 0.62 : 0.4;
+  const [fa, fb] = slice(span, dwell, Math.min(0.9, dwell + turnDuration));
   const fmid = fa + (fb - fa) * 0.5;
 
   // Gentle, continuous easing (soft in and out) so the swing reads as a smooth,
@@ -880,14 +886,16 @@ function BookTurn({
   // laying it back over the page we fully fade it out as it APPROACHES edge-on —
   // it reads as the cover swinging away, leaving the page cleanly visible with NO
   // leftover sliver/ghost lingering at the rest point.
-  const EASE = cubicBezier(0.33, 0, 0.3, 1);
-  const rotate = useTransform(p, [fa, fb], [0, -90], { clamp: true, ease: EASE });
+  const EASE = isMobile ? cubicBezier(0.2, 0.8, 0.2, 1) : cubicBezier(0.33, 0, 0.3, 1);
+  const rotate = useTransform(p, [fa, fb], [0, isMobile ? -78 : -90], { clamp: true, ease: EASE });
   // Cover opacity: solid through most of the swing, then fades COMPLETELY by ~78%
   // of the turn window — gone well before the page settles, so nothing of the
   // cover remains visible at the open/rest state.
   const leafOpacity = useTransform(
     p,
-    [fa, fa + (fb - fa) * 0.55, fa + (fb - fa) * 0.78],
+    isMobile
+      ? [fa, fa + (fb - fa) * 0.74, fa + (fb - fa) * 0.96]
+      : [fa, fa + (fb - fa) * 0.55, fa + (fb - fa) * 0.78],
     [1, 1, 0],
     { clamp: true }
   );
@@ -1282,12 +1290,16 @@ function ShowBeat({
   // Receded (non-focused) books sit slightly back in depth; the focused one comes
   // fully forward. Uniform because every shelf book shares the same resting z.
   const z3d = useTransform(lift, (l) => -260 * (1 - l));
-  const opacity = useTransform([lift, zoom, p], ([l, z, prog]: number[]) => {
+  const opacity = useTransform([lift, zoom, p, proximity], ([l, z, prog, pr]: number[]) => {
+    if (isMobile) {
+      const enter = Math.max(0, Math.min(1, (prog - 0.035) / 0.025));
+      return pr * enter;
+    }
     // During the ESTABLISH shelf (zoom→0) all three are visible together. Once
     // zoomed in to read (zoom→1), the non-focused books fade WAY back (to a faint
     // hint) so they never distract the focused page; the focused book is full
     // strength. So: shelf floor when establishing, near-invisible when reading.
-    const shelfFloor = isMobile ? 0 : 0.85; // mobile shows one big card at a time
+    const shelfFloor = 0.85;
     const readFloor = 0; // fully gone while reading another book — no distraction
     const floor = shelfFloor + (readFloor - shelfFloor) * z;
     const base = floor + (1 - floor) * l;
@@ -1433,7 +1445,14 @@ function ShowBeat({
       {/* Every show flips open like a real book — the cover carries the show's
           name, and turns off the spine on scroll to reveal the panel beneath.
           On mobile the closed cover is cropped to a short readable tile (tileMaxH). */}
-      <BookTurn p={p} span={span} show={show} index={index} tileMaxH={isMobile ? maxHeight : undefined}>
+      <BookTurn
+        p={p}
+        span={span}
+        show={show}
+        index={index}
+        isMobile={isMobile}
+        tileMaxH={isMobile ? maxHeight : undefined}
+      >
         {panel}
       </BookTurn>
     </motion.div>

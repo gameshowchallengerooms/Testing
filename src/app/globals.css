@@ -382,15 +382,6 @@
 .hero-enter-6 { animation-delay: 610ms; }
 .hero-enter-7 { animation-delay: 700ms; }
 
-.scroll-progress {
-  --scroll-progress: 0;
-  transform: scaleX(var(--scroll-progress));
-  transform-origin: left center;
-  background: linear-gradient(90deg, #147eff 0%, #7c5cfc 48%, #fc19ed 100%);
-  box-shadow: 0 0 16px rgba(124, 92, 252, 0.9);
-  will-change: transform;
-}
-
 /* Cinematic line reveal: a clipped wipe + lift, one line after another */
 @keyframes line-reveal {
   from {
@@ -770,20 +761,11 @@
   filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.9));
 }
 
-/* ── Neon stage light-rig (ShowRounds backdrop) ──────────────────────────────
-   Bright glowing neon tubing + drifting coloured spotlight blooms behind the
-   game-show books. The SVG <g filter="#neon-bloom"> does the soft glow; here we
-   add the lit-tube look (round caps, a faint core flicker) and the moving wash. */
-.neon-line {
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  animation: neon-pulse 3.4s ease-in-out infinite;
-}
-@keyframes neon-pulse {
-  0%, 100% { opacity: 0.82; }
-  50% { opacity: 1; }
-}
+/* ── Stage light-rig (ShowRounds backdrop) ───────────────────────────────────
+   Drifting coloured spotlight blooms behind the game-show books, plus the swing-
+   and-flare spotlight BEAMS (rendered in <ShowRounds /> as scroll/velocity-driven
+   motion). The beams are what make the stage react to every swipe; the blooms
+   below are the ambient wash they ride over. */
 
 /* Soft coloured spotlight blooms — big blurred radial discs that slowly drift,
    like stage lights washing the set. Screen-blended so they add light. */
@@ -817,11 +799,51 @@
   0%, 100% { transform: translate(-50%, -50%) scale(1); }
   50% { transform: translate(-44%, -56%) scale(1.15); }
 }
+/* ── Book cover foil art (per tier) ──────────────────────────────────────────
+   Gentle floating motifs (mic / star-burst / balloons, gift, crown) + twinkling
+   confetti + a slow star-burst spin, so each closed book cover feels alive. */
+.cover-float {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.cover-float--a {
+  animation: cover-bob 5.5s ease-in-out infinite;
+}
+.cover-float--b {
+  animation: cover-bob 6.5s ease-in-out infinite 0.6s;
+}
+.cover-float--c {
+  animation: cover-bob 7s ease-in-out infinite 1.1s;
+}
+.cover-twinkle {
+  animation: cover-twinkle 3.2s ease-in-out infinite;
+}
+.cover-spin {
+  transform-box: view-box;
+  animation: cover-spin 22s linear infinite;
+}
+@keyframes cover-bob {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-6px) rotate(1.5deg); }
+}
+@keyframes cover-twinkle {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+@keyframes cover-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .neon-line,
   .bg-spot--blue,
   .bg-spot--pink,
-  .bg-spot--violet {
+  .bg-spot--violet,
+  .cover-float--a,
+  .cover-float--b,
+  .cover-float--c,
+  .cover-twinkle,
+  .cover-spin {
     animation: none;
   }
 }

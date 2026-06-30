@@ -7,7 +7,7 @@ import { ArrowUpRight, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { label: "Game Shows", href: "#games" },
+  { label: "Game Shows", href: "#show-rounds" },
   { label: "Team Building", href: "/team-building", newTab: true },
   { label: "Pricing", href: "#tickets" },
   { label: "Location", href: "#location" },

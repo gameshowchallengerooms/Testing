@@ -11,8 +11,8 @@ import { cn } from "@/lib/utils";
  * NEXT_PUBLIC_WHATSAPP_NUMBER (digits only, with country code, e.g. 919000187731)
  * and falls back to the business number used elsewhere on the site.
  *
- * The FAB stays hidden until the visitor has scrolled past the "Live, hosted
- * game shows for groups of up to 15 players" (#games) section, then fades in.
+ * The FAB stays hidden until the visitor has scrolled past the show line-up
+ * (#show-rounds) section, then fades in.
  */
 export const WHATSAPP_NUMBER =
   process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "") || "919000187731";
@@ -44,14 +44,13 @@ export function WhatsAppGlyph({ size = 30 }: { size?: number }) {
 }
 
 export function WhatsAppChat() {
-  // Reveal the FAB only after the visitor scrolls past the #games section
-  // ("Live, hosted game shows for groups of up to 15 players").
+  // Reveal the FAB only after the visitor scrolls past the show line-up section.
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const games = document.getElementById("games");
-    if (!games) {
-      // No games section on this page — show the FAB normally. Defer the state
+    const gate = document.getElementById("show-rounds");
+    if (!gate) {
+      // No gating section on this page — show the FAB normally. Defer the state
       // update to a microtask so we don't setState synchronously inside the
       // effect body (which would trigger a cascading render).
       const id = requestAnimationFrame(() => setVisible(true));
@@ -59,9 +58,9 @@ export function WhatsAppChat() {
     }
 
     const check = () => {
-      // Visible once the bottom of the games section has scrolled above the
-      // top of the viewport (i.e. the user is past it).
-      setVisible(games.getBoundingClientRect().bottom <= 0);
+      // Visible once the bottom of the show line-up section has scrolled above
+      // the top of the viewport (i.e. the user is past it).
+      setVisible(gate.getBoundingClientRect().bottom <= 0);
     };
     check();
     window.addEventListener("scroll", check, { passive: true });

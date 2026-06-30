@@ -16,7 +16,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...[
       "about",
       "live",
-      "games",
+      "show-rounds",
       "team-building",
       "tickets",
       "questions",

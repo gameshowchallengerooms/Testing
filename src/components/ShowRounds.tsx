@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowDown, Check } from "lucide-react";
+import { ArrowDown, Check, ChevronRight } from "lucide-react";
 import { useLenis } from "lenis/react";
 import Snap from "lenis/snap";
 import {
@@ -10,6 +10,8 @@ import {
   useScroll,
   useSpring,
   useTransform,
+  useVelocity,
+  useMotionTemplate,
   useReducedMotion,
   cubicBezier,
   type MotionValue,
@@ -34,7 +36,8 @@ import {
  * decorative stroke ever crosses a label.
  */
 
-const TRACK_VIEWPORTS = 7; // screens of scroll the whole story spans
+const TRACK_VIEWPORTS = 11; // screens of scroll the whole story spans — long enough
+// that the shelf lingers and each show eases in/out slowly (not a fast blur-by).
 
 // BMW design accent — the signature blue used across the showroom UI.
 const BMW_BLUE = "#0066B1";
@@ -69,6 +72,11 @@ interface Show {
   /** darker, WCAG-safe variant of the accent for TEXT/CTA on the white recap */
   ink: string;
   gradient: string;
+  /** Cover MATERIAL — a rich two-tone gradient blended diagonally across the book
+   *  board: `matFrom` is the luminous near-corner hue, `matTo` the deep partner hue.
+   *  Gives each tier a dimensional, premium look instead of one-hue-fading-to-black. */
+  matFrom: string;
+  matTo: string;
   popular?: boolean;
 }
 
@@ -94,9 +102,12 @@ const shows: Show[] = [
       "Scores, fun twists & winner moments",
       "Approx. 45 minutes of play",
     ],
-    accent: "#147EFF",
+    accent: "#2E9BFF",
     ink: "#0B5ED7",
-    gradient: "linear-gradient(135deg, #1FA2FF, #147EFF)",
+    gradient: "linear-gradient(135deg, #4FB8FF, #1E7BFF)",
+    // Electric azure → deep royal-indigo: clean, confident, "the original".
+    matFrom: "#46B4FF",
+    matTo: "#0A2150",
   },
   {
     label: "Prime Time",
@@ -113,9 +124,12 @@ const shows: Show[] = [
       "Lively moments & big group fun",
       "Approx. 60 minutes of play",
     ],
-    accent: "#7C5CFC",
+    accent: "#9B6BFF",
     ink: "#5B3FD6",
-    gradient: "linear-gradient(135deg, #9A7BFF, #7C5CFC)",
+    gradient: "linear-gradient(135deg, #C04BFF, #7C5CFC)",
+    // Hot magenta → deep indigo-violet: the vivid, electric party — most vibrant.
+    matFrom: "#C152FF",
+    matTo: "#241152",
     popular: true,
   },
   {
@@ -134,71 +148,62 @@ const shows: Show[] = [
       "Best for birthdays & special occasions",
       "Approx. 60 minutes of play",
     ],
-    accent: "#FF8A1E",
-    ink: "#D96B00",
-    gradient: "linear-gradient(135deg, #FFA94D, #FF8A1E)",
+    accent: "#FFB23E",
+    ink: "#C25A00",
+    gradient: "linear-gradient(135deg, #FFD66B, #FF8A1E)",
+    // Luminous gold → deep wine/plum: luxe, celebratory, premium — never muddy brown.
+    matFrom: "#FFC85A",
+    matTo: "#3F1330",
   },
 ];
 
-/* Each beat owns a slice of the 0→1 scroll timeline: intro → 3 shows, the last
-   holding to the end so the page scrolls straight down into pricing (no held
-   recap). Each show is a book that flips open, so every span gets equal, generous
-   room for the page turn + the content reveal that follows it. */
-const INTRO_SPAN: [number, number] = [0.0, 0.1];
+/* The 0→1 scroll timeline: intro headline → ESTABLISH (all three closed books
+   shown together, small, in a row — the "shelf") → then the camera ZOOMS IN to
+   each book in turn, opening it, before panning to the next. Each show owns a span
+   where its book is centred + flips open. */
+const INTRO_SPAN: [number, number] = [0.0, 0.06];
+// Establish: the lineup of three closed books, seen together before any zoom-in —
+// held for a good while so you can actually take in all three shows.
+const ESTABLISH_SPAN: [number, number] = [0.06, 0.24];
 const SHOW_SPANS: [number, number][] = [
-  [0.1, 0.4],
-  [0.42, 0.72],
-  [0.74, 1.0],
+  [0.24, 0.48],
+  [0.5, 0.74],
+  [0.76, 1.0],
 ];
 // Mobile has no in-track recap (it's a normal section below), so the show beats
 // fill the WHOLE track and the last one holds to the very end — that way you exit
 // the pinned stage straight into the white recap, with no dead black scroll.
 const SHOW_SPANS_MOBILE: [number, number][] = [
-  [0.1, 0.34],
-  [0.38, 0.62],
-  [0.66, 1.0],
+  [0.24, 0.48],
+  [0.5, 0.74],
+  [0.76, 1.0],
 ];
 
 function slice([a, b]: [number, number], from: number, to: number): [number, number] {
   return [a + (b - a) * from, a + (b - a) * to];
 }
 
-/* Where, within a show's span, the scroll should come to REST when snapping —
-   inside the open-and-fully-written hold (cover open + content done by ~0.8, beat
-   fades at 0.9), so a snapped show sits open and readable. The intro rests at its
-   centre. These progress values (0→1 across the track) are converted to absolute
-   scroll pixels and registered with Lenis's Snap so the page settles on each
-   show instead of letting it blur past on a fast flick. */
-const REST_AT = 0.85;
+/* Where, within a show's span, the scroll should come to REST when snapping. Each
+   show gets TWO rest points: one on the CLOSED COVER (during the cover-read dwell,
+   so the audience settles to read the title/edition/art before it opens) and one
+   on the OPEN PAGE (inside the readable hold). The intro rests at its centre. These
+   progress values (0→1 across the track) become absolute scroll pixels registered
+   with Lenis's Snap so the page settles on each beat instead of blurring past. */
+const COVER_AT = 0.08; // on the closed cover, early in the dwell
+const REST_AT = 0.85; // on the open, fully-written page
 const INTRO_REST = 0.5;
 
 function restProgress(spans: [number, number][]): number[] {
   const introMid = INTRO_SPAN[0] + (INTRO_SPAN[1] - INTRO_SPAN[0]) * INTRO_REST;
-  const showRests = spans.map(([a, b]) => a + (b - a) * REST_AT);
-  return [introMid, ...showRests];
-}
-
-/* ── Self-drawing stroke (pathLength scrubbed by scroll) ──────────────────── */
-
-function Stroke({
-  d,
-  p,
-  span,
-  className = "ink",
-  width = 4,
-  stroke,
-}: {
-  d: string;
-  p: MotionValue<number>;
-  span: [number, number];
-  className?: string;
-  width?: number;
-  stroke?: string;
-}) {
-  const pathLength = useTransform(p, span, [0, 1], { clamp: true });
-  return (
-    <motion.path d={d} className={className} strokeWidth={width} stroke={stroke} style={{ pathLength }} />
-  );
+  // A rest on the ESTABLISH "shelf" so the lineup of three closed books can settle
+  // and be taken in before you zoom into the first one.
+  const shelfMid = ESTABLISH_SPAN[0] + (ESTABLISH_SPAN[1] - ESTABLISH_SPAN[0]) * 0.55;
+  const points: number[] = [introMid, shelfMid];
+  for (const [a, b] of spans) {
+    points.push(a + (b - a) * COVER_AT); // closed-cover read stop
+    points.push(a + (b - a) * REST_AT); // open-page stop
+  }
+  return points;
 }
 
 /* ── The scene ───────────────────────────────────────────────────────────── */
@@ -231,9 +236,9 @@ export function ShowRounds() {
   }, []);
 
   // Mobile packs intro + the 3 show beats across the WHOLE track (the recap is a
-  // separate section below), so a slightly shorter track keeps the scroll tight
-  // and avoids a long pinned stretch.
-  const trackViewports = isMobile ? TRACK_VIEWPORTS * 0.7 : TRACK_VIEWPORTS;
+  // separate section below); keep it nearly as long as desktop so the shelf + each
+  // show still ease by slowly enough to read (a too-short track scrolls too fast).
+  const trackViewports = isMobile ? TRACK_VIEWPORTS * 0.88 : TRACK_VIEWPORTS;
   const trackHeight =
     reduce || viewportH === null
       ? reduce
@@ -247,6 +252,17 @@ export function ShowRounds() {
   });
   // Linear-tracking scrub (light spring only to glide a flick), per research §3.
   const p = useSpring(scrollYProgress, { stiffness: 300, damping: 44, restDelta: 0.0004 });
+
+  // SWIPE FEEDBACK SIGNAL — a 0→1 "energy" value that spikes the instant you swipe
+  // and decays back to rest, so the stage visibly reacts to EVERY gesture (the old
+  // neon tubes drew on over such wide scroll spans that a single swipe barely moved
+  // them, and they pulsed on a timer regardless of scroll — so it read as "stuck").
+  // We take the scroll velocity, rectify + normalise it, and ease it with a fast
+  // spring: scroll → beams flare and swing; stop → it settles. Drives BackdropArt
+  // and the progress rail's glowing head.
+  const rawVelocity = useVelocity(scrollYProgress);
+  const energyTarget = useTransform(rawVelocity, (v) => Math.min(1, Math.abs(v) * 9));
+  const energy = useSpring(energyTarget, { stiffness: 170, damping: 26, restDelta: 0.001 });
 
   // Lenis snap: settle the scroll on each show's open, readable rest point so a
   // fast flick can't blow past the content. Only runs with Lenis (desktop) — on
@@ -299,7 +315,35 @@ export function ShowRounds() {
   // heavy blur + the panel's own backdrop, so it never hurts legibility).
   const inkOpacity = useTransform(p, [0, 0.06, 0.8, 0.95], [0, 0.85, 0.85, 0.5]);
 
+  // CAMERA FOCUS — the three books sit in a ROW; the camera travels left→right
+  // across them. `focus` is a continuous book index (0 = Classic centred, 1 =
+  // Prime Time, 2 = Elite). It HOLDS on each book through that show's span (so the
+  // book opens + is read while centred), then PANS to the next between spans. Each
+  // book reads its own offset from `focus` to slide + zoom itself in/out of frame.
+  const spansForFocus = isMobile ? SHOW_SPANS_MOBILE : SHOW_SPANS;
+  // Build strictly-increasing keyframes: the camera HOLDS on book i from that
+  // show's span start (a) to its end (b), then PANS i → i+1 across the gap to the
+  // next show's start. (Output repeats i across [a,b] = hold, then steps to i+1.)
+  const focusInput: number[] = [0];
+  const focusOutput: number[] = [0];
+  spansForFocus.forEach(([a, b], i) => {
+    focusInput.push(a, b);
+    focusOutput.push(i, i);
+  });
+  const focus = useTransform(p, focusInput, focusOutput, { clamp: true });
+
+  // CAMERA ZOOM — 0 through the first half of the ESTABLISH phase (the three closed
+  // books shown small together, a shelf you take in at a glance), then ramps to 1
+  // across the back half of establish into the first book's cover-read point, where
+  // the camera has fully "zoomed in" and travels book to book. Each book blends
+  // between its shelf slot (zoom 0) and its focused, centred position (zoom 1), and
+  // stays zoomed in from then on.
+  const zoomStart = ESTABLISH_SPAN[0] + (ESTABLISH_SPAN[1] - ESTABLISH_SPAN[0]) * 0.55;
+  const zoomEnd = spansForFocus[0][0] + (spansForFocus[0][1] - spansForFocus[0][0]) * COVER_AT;
+  const zoom = useTransform(p, [zoomStart, zoomEnd], [0, 1], { clamp: true });
+
   if (reduce) return <StaticFallback />;
+  if (isMobile) return <MobileLineup />;
 
   return (
     <section
@@ -323,11 +367,19 @@ export function ShowRounds() {
           <SketchDefs />
         </svg>
 
-        {/* LAYER 1 (art-back): one ambient ink flourish, far behind the text. */}
+        {/* LAYER 1 (art-back): the stage light-rig — a soft glow that glides + shifts
+            hue per show with the scroll, so the scene visibly changes as you swipe. */}
         <BackdropArt p={p} inkOpacity={inkOpacity} />
 
-        {/* LAYER 2 (DOM text): all beats stack centred and cross-fade in place. */}
-        <div className="relative z-10 mx-auto w-full max-w-[1080px] px-6">
+        {/* "Shows Available" heading over the shelf — visible while the three books
+            are lined up (establish), fading away as you zoom into a book to read it. */}
+        <ShelfHeading zoom={zoom} />
+
+        {/* LAYER 2 — the books in a ROW the camera travels across. The intro headline
+            still lives centred; each book slides + zooms by its offset from `focus`,
+            so the active one is centred & large and the others wait off to the sides
+            (already open if you've passed them — they stay open in place). */}
+        <div className="relative z-10 h-full w-full" style={{ perspective: "1600px" }}>
           <IntroBeat p={p} />
           {shows.map((show, i) => (
             <ShowBeat
@@ -336,12 +388,21 @@ export function ShowRounds() {
               span={(isMobile ? SHOW_SPANS_MOBILE : SHOW_SPANS)[i]}
               show={show}
               p={p}
+              focus={focus}
+              zoom={zoom}
+              isMobile={isMobile}
             />
           ))}
         </div>
 
+        {/* PROGRESS RAIL — a slim line-up tracker that fills as you move through the
+            three shows, with a glowing head that flares brighter the faster you
+            swipe. This is the unambiguous "your swipe is doing something" signal:
+            even a tiny scroll visibly advances the fill + lights the head. */}
+        <ProgressRail p={p} energy={energy} />
+
         <motion.div
-          className="pointer-events-none absolute bottom-6 left-1/2 z-20 -translate-x-1/2 text-[11px] font-medium uppercase tracking-[0.3em] text-white/40"
+          className="pointer-events-none absolute bottom-10 left-1/2 z-20 -translate-x-1/2 text-[11px] font-medium uppercase tracking-[0.3em] text-white/40"
           style={{ opacity: hintOpacity }}
         >
           Scroll
@@ -351,7 +412,56 @@ export function ShowRounds() {
   );
 }
 
-/* SVG defs: rough-ink filter + neon gradients + a strong neon-bloom filter. */
+/** The line-up progress tracker pinned to the bottom of the stage. The fill + its
+ *  head glide with scroll position 0→1 (the main "your swipe is doing something"
+ *  cue, visible even when the books are mid-hold); the head's glow gently lifts
+ *  while swiping. Three tick marks flag the shows so you see which one you're on. */
+function ProgressRail({ p, energy }: { p: MotionValue<number>; energy: MotionValue<number> }) {
+  const fill = useTransform(p, (v) => `${Math.max(0, Math.min(1, v)) * 100}%`);
+  // The head GLIDES along the rail with scroll position (the main "I'm moving" cue),
+  // and gently lifts its glow while swiping — a soft, restrained confirmation, NOT
+  // the big strobing flare we removed from the background.
+  const headOpacity = useTransform(energy, [0, 1], [0.6, 1]);
+  const headScale = useTransform(energy, [0, 1], [1, 1.35]);
+  const headShadow = "0 0 10px rgba(124,180,255,0.85)";
+
+  return (
+    <div className="pointer-events-none absolute bottom-[26px] left-1/2 z-20 w-[min(78vw,420px)] -translate-x-1/2">
+      <div className="relative h-[3px] w-full overflow-visible rounded-full bg-white/12">
+        {/* filled portion */}
+        <motion.span
+          className="absolute inset-y-0 left-0 rounded-full"
+          style={{
+            width: fill,
+            background: "linear-gradient(90deg, #36CFFF, #7C5CFC 55%, #FF8A1E)",
+          }}
+        />
+        {/* glowing head at the leading edge of the fill */}
+        <motion.span
+          className="absolute top-1/2 h-[10px] w-[10px] rounded-full bg-white"
+          style={{
+            left: fill,
+            x: "-50%",
+            y: "-50%",
+            opacity: headOpacity,
+            scale: headScale,
+            boxShadow: headShadow,
+          }}
+        />
+        {/* show tick marks at each beat's rough centre */}
+        {[0.25, 0.57, 0.87].map((t) => (
+          <span
+            key={t}
+            className="absolute top-1/2 h-[7px] w-[1.5px] -translate-y-1/2 rounded-full bg-white/30"
+            style={{ left: `${t * 100}%` }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* SVG defs — the rough-ink filter + champ gradient kept for the cover/recap art. */
 function SketchDefs() {
   return (
     <defs>
@@ -363,93 +473,60 @@ function SketchDefs() {
         <stop offset="0" stopColor="#147EFF" />
         <stop offset="1" stopColor="#FC19ED" />
       </linearGradient>
-      {/* Neon tube gradients — bright, saturated, like lit stage tubing. */}
-      <linearGradient id="neon-blue" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stopColor="#36CFFF" />
-        <stop offset="1" stopColor="#5B7CFF" />
-      </linearGradient>
-      <linearGradient id="neon-pink" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stopColor="#FF4FD8" />
-        <stop offset="1" stopColor="#A24BFF" />
-      </linearGradient>
-      <linearGradient id="neon-violet" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stopColor="#9A7BFF" />
-        <stop offset="1" stopColor="#36CFFF" />
-      </linearGradient>
-      {/* Big soft bloom so each neon line reads as a glowing tube, not a thin path. */}
-      <filter id="neon-bloom" x="-60%" y="-60%" width="220%" height="220%">
-        <feGaussianBlur in="SourceGraphic" stdDeviation="9" result="b1" />
-        <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b2" />
-        <feMerge>
-          <feMergeNode in="b1" />
-          <feMergeNode in="b1" />
-          <feMergeNode in="b2" />
-          <feMergeNode in="SourceGraphic" />
-        </feMerge>
-      </filter>
     </defs>
   );
 }
 
-/** The neon light-rig behind the books — a glowing game-show stage. Bright neon
- *  ribbons sweep on as you scroll, riding over a slow pulse so the tubes feel
- *  "lit", with soft drifting spotlight blooms. Sits in its own layer far behind
- *  the panels; a heavy blur + the panel's backdrop keep it from hurting legibility
- *  even at this much higher brightness. */
+/** The stage light-rig behind the books — a glowing game-show stage. Driven purely
+ *  by scroll POSITION (never velocity), so it GLIDES with your swipe and never
+ *  strobes/flickers:
+ *
+ *   • a big soft GLOW that travels smoothly across the stage as you move through
+ *     the line-up, and
+ *   • the whole wash shifts HUE per show — blue (Classic) → violet (Prime Time) →
+ *     warm orange (Elite) — so each swipe visibly changes the colour of the room.
+ *
+ *  Because everything tracks the spring-smoothed scroll position, motion is silky
+ *  and continuous; there's no velocity-reactive flare to cause the jittery
+ *  "heart-attack" strobing. Sits far behind the panels; the heavy blur + the panel
+ *  backdrop keep it from hurting legibility. */
 function BackdropArt({ p, inkOpacity }: { p: MotionValue<number>; inkOpacity: MotionValue<number> }) {
+  // The active show's accent, interpolated smoothly across the scroll: blue →
+  // violet → orange. Two glow layers cross-blend so the colour shift reads as the
+  // room re-lighting around the book you're on.
+  const hueStops = [0, 0.25, 0.55, 0.85, 1];
+  const glowA = useTransform(p, hueStops, ["#1FA2FF", "#1FA2FF", "#7C5CFC", "#FF8A1E", "#FF8A1E"]);
+  const glowB = useTransform(p, hueStops, ["#36CFFF", "#36CFFF", "#9A7BFF", "#FFA94D", "#FFA94D"]);
+  // The glow GLIDES across the stage with scroll position — a gentle pan so a swipe
+  // visibly moves the light, with no jitter (position is spring-smoothed upstream).
+  const glowX = useTransform(p, [0, 1], ["28%", "72%"]);
+  const glowY = useTransform(p, [0, 1], ["34%", "60%"]);
+  const wash = useMotionTemplate`radial-gradient(60vmax 60vmax at ${glowX} ${glowY}, ${glowA} 0%, transparent 60%)`;
+  const washB = useMotionTemplate`radial-gradient(46vmax 46vmax at ${glowY} ${glowX}, ${glowB} 0%, transparent 58%)`;
+
   return (
     <motion.div
       className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
       style={{ opacity: inkOpacity }}
       aria-hidden
     >
-      {/* Drifting coloured spotlight blooms — the wash of stage lights. */}
+      {/* Ambient drifting blooms — the base wash of stage lights (slow, calm). */}
       <span
         className="bg-spot bg-spot--blue absolute h-[60vmax] w-[60vmax] rounded-full"
         style={{ top: "-20%", left: "-10%" }}
       />
-      <span
-        className="bg-spot bg-spot--pink absolute h-[55vmax] w-[55vmax] rounded-full"
-        style={{ bottom: "-25%", right: "-10%" }}
-      />
-      <span
-        className="bg-spot bg-spot--violet absolute left-1/2 top-1/2 h-[50vmax] w-[50vmax] -translate-x-1/2 -translate-y-1/2 rounded-full"
-      />
+      <span className="bg-spot bg-spot--violet absolute left-1/2 top-1/2 h-[50vmax] w-[50vmax] -translate-x-1/2 -translate-y-1/2 rounded-full" />
 
-      {/* Neon tubing — bright glowing ribbons that draw on across the scroll. */}
-      <svg
-        viewBox="0 0 1200 800"
-        className="absolute inset-0 h-full w-full"
-        fill="none"
-        preserveAspectRatio="xMidYMid slice"
-      >
-        <g filter="url(#neon-bloom)">
-          <Stroke
-            d="M-60 150 q 320 -110 600 70 q 340 220 740 70"
-            p={p}
-            span={[0.04, 0.5]}
-            className="neon-line"
-            stroke="url(#neon-blue)"
-            width={7}
-          />
-          <Stroke
-            d="M1260 660 q -380 130 -760 -50 q -340 -160 -620 40"
-            p={p}
-            span={[0.42, 0.92]}
-            className="neon-line"
-            stroke="url(#neon-pink)"
-            width={6}
-          />
-          <Stroke
-            d="M-40 470 q 360 160 700 -10 q 300 -150 620 30"
-            p={p}
-            span={[0.2, 0.74]}
-            className="neon-line"
-            stroke="url(#neon-violet)"
-            width={5}
-          />
-        </g>
-      </svg>
+      {/* Scroll-driven colour wash — travels + shifts hue per show. Screen-blended
+          and heavily soft so it re-lights the room around the active book. */}
+      <motion.span
+        className="absolute inset-0 blur-3xl"
+        style={{ backgroundImage: wash, opacity: 0.5, mixBlendMode: "screen" }}
+      />
+      <motion.span
+        className="absolute inset-0 blur-3xl"
+        style={{ backgroundImage: washB, opacity: 0.38, mixBlendMode: "screen" }}
+      />
     </motion.div>
   );
 }
@@ -467,18 +544,113 @@ function useBeatStyle(p: MotionValue<number>, [a, b]: [number, number]) {
   return { opacity, y };
 }
 
-/** A SHOW beat: like a real book it NEVER disappears once opened. It snaps to
- *  fully visible right at the start of its span (its closed cover is what's first
- *  shown) and then stays put at opacity 1 forever — the NEXT show's book simply
- *  arrives ON TOP and covers it (z-index stacking), the way turning to the next
- *  page hides the one before without it dissolving. No fade-out, no exit drift. */
-function useShowBeatStyle(p: MotionValue<number>, [a, b]: [number, number]) {
-  // Fade the closed cover IN quickly over the first ~6% of the span (a soft arrive
-  // rather than a hard pop), then HOLD at full opacity for the rest — and beyond,
-  // since later spans clamp it. It never fades out; the next book covers it.
-  const inEnd = a + (b - a) * 0.06;
-  const opacity = useTransform(p, [a, inEnd], [0, 1], { clamp: true });
-  return { opacity };
+/** "Shows Available" heading sitting above the shelf of three books. It's tied to
+ *  the camera zoom: fully shown while the books are lined up (zoom→0), fading out
+ *  as you zoom into a book to read it (zoom→1). */
+function ShelfHeading({ zoom }: { zoom: MotionValue<number> }) {
+  const opacity = useTransform(zoom, [0, 0.6], [1, 0]);
+  const y = useTransform(zoom, [0, 0.6], [0, -16]);
+  return (
+    <motion.div
+      className="pointer-events-none absolute inset-x-0 top-[3%] z-20 flex flex-col items-center text-center md:top-[8%]"
+      style={{ opacity, y }}
+    >
+      <span className="text-[11px] font-semibold uppercase tracking-[0.4em] text-white/45 sm:text-xs">
+        The Line-up
+      </span>
+      <h2
+        className="read-strong mt-2 text-3xl font-medium tracking-tight sm:text-4xl md:text-5xl"
+        style={{ fontFamily: "var(--font-display)", letterSpacing: "-1px" }}
+      >
+        Shows Available
+      </h2>
+      <span className="mt-3 h-[2px] w-14 rounded-full bg-gradient-to-r from-[#36CFFF] via-[#7C5CFC] to-[#FF8A1E]" />
+    </motion.div>
+  );
+}
+
+function MobileLineup() {
+  return (
+    <section
+      id="show-rounds"
+      data-show-rounds
+      className="sketchpad relative w-full overflow-hidden px-5 pb-12 pt-20 text-white"
+      style={{ background: "#0c0d10", fontFamily: "var(--font-sans)" }}
+    >
+      <div className="pointer-events-none absolute inset-0" aria-hidden>
+        <span className="absolute -left-32 top-0 h-80 w-80 rounded-full bg-[#2E9BFF]/30 blur-3xl" />
+        <span className="absolute -right-32 bottom-10 h-80 w-80 rounded-full bg-[#FFB23E]/20 blur-3xl" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-[430px]">
+        <div className="text-center">
+          <span className="text-[12px] font-semibold uppercase tracking-[0.38em] text-white/50">
+            The Line-up
+          </span>
+          <h2
+            className="read-strong mt-3 text-[34px] font-semibold leading-none tracking-tight"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Shows Available
+          </h2>
+          <span className="mx-auto mt-4 block h-[2px] w-16 rounded-full bg-gradient-to-r from-[#36CFFF] via-[#9B6BFF] to-[#FFB23E]" />
+        </div>
+
+        <div className="mt-10 space-y-4">
+          {shows.map((show) => (
+            <Link
+              key={show.label}
+              href="#tickets"
+              className="group block overflow-hidden border border-white/14 bg-black/42 shadow-2xl backdrop-blur-md"
+              style={{
+                borderLeft: `5px solid ${show.accent}`,
+                backgroundImage: `linear-gradient(135deg, color-mix(in srgb, ${show.matFrom} 28%, transparent), color-mix(in srgb, ${show.matTo} 42%, transparent))`,
+              }}
+            >
+              <div className="p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <p
+                      className="text-[12px] font-bold uppercase tracking-[0.16em]"
+                      style={{ color: show.accent }}
+                    >
+                      {show.tag}
+                    </p>
+                    <h3
+                      className="mt-2 text-[32px] font-bold leading-none tracking-tight text-white"
+                      style={{ fontFamily: "var(--font-inter-tight, var(--font-display))" }}
+                    >
+                      {show.label}
+                    </h3>
+                  </div>
+                  <div className="shrink-0 rounded-full bg-black/45 px-3 py-2 text-right ring-1 ring-white/15">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">From</p>
+                    <p className="text-[20px] font-bold leading-none">₹{show.fromPrice.toLocaleString("en-IN")}</p>
+                  </div>
+                </div>
+
+                <p className="mt-4 text-[16px] font-semibold leading-snug text-white/90">{show.value}</p>
+                <p className="mt-2 text-[13px] font-medium leading-snug text-white/65">{show.bestFor}</p>
+
+                <div className="mt-5 flex items-center justify-between border-t border-white/12 pt-4">
+                  <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/55">
+                    Tap to see pricing
+                  </span>
+                  <span
+                    className="flex h-9 w-9 items-center justify-center rounded-full text-black transition-transform group-hover:translate-x-1"
+                    style={{ background: show.accent }}
+                    aria-hidden
+                  >
+                    <ChevronRight size={18} strokeWidth={2.8} />
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }
 
 function IntroBeat({ p }: { p: MotionValue<number> }) {
@@ -510,23 +682,33 @@ function IntroBeat({ p }: { p: MotionValue<number> }) {
   );
 }
 
-/** Celebratory, dimensional foil art for the ELITE (special-occasion) cover —
- *  gold balloons with shaded bodies + highlights, a wrapped gift with a bow,
- *  drifting confetti and sparkles. Pure SVG (crisp at any size, no assets), tinted
- *  to the gold-foil cover, with a gentle float so the closed book feels alive and
- *  celebratory. Sits behind the title block (low opacity) so it never fights copy. */
-function CelebrationArt({ accent }: { accent: string }) {
-  const uid = "celeb";
+/** Foil cover art per tier, tuned to PURCHASE PSYCHOLOGY so desirability climbs
+ *  Classic → Prime Time → Elite (the ladder we want people to prefer):
+ *
+ *   • CLASSIC ("the original" — trust/foundation): a single, clean gold mic. Calm,
+ *     confident, minimal — reads solid and dependable, but the plainest cover, so
+ *     the eye is naturally pulled toward the richer tiers (anchors the bottom).
+ *   • PRIME TIME ("most popular" — fun / social proof / FOMO): a lively radiating
+ *     star-burst + confetti + stars. Energetic and inviting — the crowd-pleaser —
+ *     clearly more exciting than Classic, but not lavish, so Elite still wins.
+ *   • ELITE (special occasion — aspiration / status): the lavish celebration —
+ *     a CROWN above balloons, a wrapped gift, confetti and sparkles. The richest,
+ *     most rewarding cover, signalling the premium "treat yourself" choice.
+ *
+ *  All pure SVG (crisp, no assets), tinted to the gold-foil cover, gently floating
+ *  so the closed book feels alive. Sits behind the title block at low opacity so it
+ *  never fights the copy. */
+function CoverArt({ variant, accent }: { variant: "classic" | "prime" | "elite"; accent: string }) {
+  const uid = `art-${variant}`;
   return (
     <svg
-      className="celebration-art pointer-events-none absolute inset-0 h-full w-full"
+      className="cover-art pointer-events-none absolute inset-0 h-full w-full"
       viewBox="0 0 400 280"
       fill="none"
       preserveAspectRatio="xMidYMid slice"
       aria-hidden
     >
       <defs>
-        {/* shaded gold body for balloons + gift — light top-left, deep bottom-right */}
         <radialGradient id={`${uid}-gold`} cx="38%" cy="30%" r="75%">
           <stop offset="0" stopColor="#fff3c4" />
           <stop offset="42%" stopColor="#f0cf6e" />
@@ -541,55 +723,179 @@ function CelebrationArt({ accent }: { accent: string }) {
           <stop offset="0" stopColor="#f7e7a6" />
           <stop offset="1" stopColor="#c79a3a" />
         </linearGradient>
+        {/* Cylindrical foil shading for the mic body/stem — light left, shade right. */}
+        <linearGradient id={`${uid}-chrome`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#a9781f" />
+          <stop offset="0.18" stopColor="#e9c870" />
+          <stop offset="0.4" stopColor="#fff6d6" />
+          <stop offset="0.6" stopColor="#edc869" />
+          <stop offset="0.82" stopColor="#c69835" />
+          <stop offset="1" stopColor="#8a611a" />
+        </linearGradient>
+        {/* Spherical grille shading — top-left key light falling to a warm shadow. */}
+        <radialGradient id={`${uid}-grille`} cx="36%" cy="28%" r="78%">
+          <stop offset="0" stopColor="#fff7da" />
+          <stop offset="34%" stopColor="#f3d57f" />
+          <stop offset="72%" stopColor="#cf9d3c" />
+          <stop offset="100%" stopColor="#7c560f" />
+        </radialGradient>
+        {/* Soft glow so the emblem reads as lit foil on the dark cover. */}
+        <radialGradient id={`${uid}-halo`} cx="50%" cy="50%" r="50%">
+          <stop offset="0" stopColor="#ffe9a8" stopOpacity="0.5" />
+          <stop offset="55%" stopColor="#ffe9a8" stopOpacity="0.1" />
+          <stop offset="100%" stopColor="#ffe9a8" stopOpacity="0" />
+        </radialGradient>
+        <clipPath id={`${uid}-headclip`}>
+          <ellipse cx="200" cy="80" rx="30" ry="34" />
+        </clipPath>
       </defs>
 
-      {/* ── balloons cluster (top-left) ─────────────────────────────────────── */}
-      <g className="celeb-float celeb-float--a">
-        {/* strings */}
-        <path d="M58 92 q 6 34 -2 70" stroke="url(#celeb-ribbon)" strokeWidth="1.4" />
-        <path d="M92 84 q -4 38 6 74" stroke="url(#celeb-ribbon)" strokeWidth="1.4" />
-        {/* balloon 1 (gold) */}
-        <ellipse cx="58" cy="62" rx="26" ry="32" fill={`url(#${uid}-gold)`} />
-        <path d="M58 94 l -5 8 l 10 0 z" fill="#b9852a" />
-        <ellipse cx="49" cy="50" rx="7" ry="11" fill="#fff" opacity="0.5" />
-        {/* balloon 2 (accent) */}
-        <ellipse cx="92" cy="54" rx="24" ry="30" fill={`url(#${uid}-accent)`} />
-        <path d="M92 84 l -5 8 l 10 0 z" fill={accent} />
-        <ellipse cx="84" cy="42" rx="6" ry="10" fill="#fff" opacity="0.55" />
-      </g>
+      {variant === "classic" && (
+        // One sculpted gold STUDIO MICROPHONE, centred — the original game show.
+        // Minimal in count, but rendered as a real lit object: a spherical wire
+        // grille, a chrome collar, a tapered handle and a weighted base.
+        <g className="cover-float cover-float--c">
+          {/* lit halo so the foil reads as glowing on the dark cover */}
+          <circle cx="200" cy="120" r="118" fill={`url(#${uid}-halo)`} />
 
-      {/* ── balloon (top-right) ─────────────────────────────────────────────── */}
-      <g className="celeb-float celeb-float--b">
-        <path d="M338 96 q 8 30 0 66" stroke="url(#celeb-ribbon)" strokeWidth="1.4" />
-        <ellipse cx="338" cy="64" rx="25" ry="31" fill={`url(#${uid}-gold)`} />
-        <path d="M338 95 l -5 8 l 10 0 z" fill="#b9852a" />
-        <ellipse cx="330" cy="51" rx="6" ry="10" fill="#fff" opacity="0.5" />
-      </g>
+          {/* ── stand: yoke arms cradling the head, stem and weighted base ── */}
+          {/* yoke (the U-mount the head pivots in) */}
+          <path
+            d="M171 92 q-6 26 8 42 M229 92 q6 26 -8 42"
+            stroke={`url(#${uid}-chrome)`}
+            strokeWidth="6"
+            strokeLinecap="round"
+            fill="none"
+          />
+          {/* pivot knobs where the head meets the yoke */}
+          <circle cx="172" cy="92" r="4.5" fill={`url(#${uid}-gold)`} />
+          <circle cx="228" cy="92" r="4.5" fill={`url(#${uid}-gold)`} />
+          {/* stem */}
+          <rect x="194" y="128" width="12" height="36" rx="3" fill={`url(#${uid}-chrome)`} />
+          {/* collar joining stem to base */}
+          <rect x="188" y="160" width="24" height="7" rx="3" fill={`url(#${uid}-gold)`} />
+          {/* weighted disc base with an elliptical top face for solidity */}
+          <ellipse cx="200" cy="172" rx="34" ry="9" fill={`url(#${uid}-chrome)`} />
+          <ellipse cx="200" cy="170" rx="34" ry="8" fill={`url(#${uid}-gold)`} />
+          <ellipse cx="200" cy="168" rx="22" ry="4" fill="#fff7da" opacity="0.5" />
 
-      {/* ── wrapped gift (bottom-centre) ────────────────────────────────────── */}
-      <g className="celeb-float celeb-float--c">
-        {/* box body */}
-        <rect x="170" y="206" width="60" height="48" rx="4" fill={`url(#${uid}-accent)`} />
-        {/* lid */}
-        <rect x="164" y="194" width="72" height="18" rx="4" fill={`url(#${uid}-gold)`} />
-        {/* vertical ribbon */}
-        <rect x="194" y="194" width="12" height="60" fill="url(#celeb-ribbon)" opacity="0.92" />
-        {/* bow */}
-        <path d="M200 194 q -20 -16 -26 -2 q -2 10 26 6 z" fill={`url(#${uid}-gold)`} />
-        <path d="M200 194 q 20 -16 26 -2 q 2 10 -26 6 z" fill={`url(#${uid}-gold)`} />
-        <circle cx="200" cy="195" r="5" fill="#f7e7a6" />
-      </g>
+          {/* ── head: spherical grille with curved mesh + collar ── */}
+          {/* chrome collar/band beneath the grille */}
+          <rect x="184" y="106" width="32" height="12" rx="4" fill={`url(#${uid}-chrome)`} />
+          <rect x="184" y="106" width="32" height="3" rx="1.5" fill="#fff7da" opacity="0.6" />
+          {/* grille sphere */}
+          <ellipse cx="200" cy="80" rx="30" ry="34" fill={`url(#${uid}-grille)`} />
+          {/* curved wire mesh, clipped to the sphere so lines wrap its surface */}
+          <g clipPath={`url(#${uid}-headclip)`} stroke="#7c560f" strokeWidth="1.4" opacity="0.5" fill="none">
+            {/* latitudes */}
+            <path d="M170 64 q30 -12 60 0" />
+            <path d="M170 74 q30 -10 60 0" />
+            <path d="M170 84 q30 -8 60 0" />
+            <path d="M170 94 q30 8 60 0" />
+            <path d="M170 104 q30 12 60 0" />
+            {/* longitudes */}
+            <path d="M186 48 q-10 32 0 64" />
+            <path d="M200 46 v68" />
+            <path d="M214 48 q10 32 0 64" />
+          </g>
+          {/* rim shade to round the sphere off, and a crisp specular hotspot */}
+          <ellipse
+            cx="200"
+            cy="80"
+            rx="30"
+            ry="34"
+            fill="none"
+            stroke="#8a611a"
+            strokeWidth="2"
+            opacity="0.45"
+          />
+          <ellipse cx="189" cy="66" rx="7" ry="11" fill="#fffdf2" opacity="0.7" />
+          <circle cx="186" cy="60" r="2.5" fill="#ffffff" opacity="0.85" />
+        </g>
+      )}
 
-      {/* ── confetti + sparkles drifting across ─────────────────────────────── */}
-      <g className="celeb-twinkle">
-        <rect x="140" y="70" width="7" height="7" rx="1" fill={accent} transform="rotate(20 143 73)" />
-        <rect x="270" y="120" width="6" height="6" rx="1" fill="#f0cf6e" transform="rotate(-15 273 123)" />
-        <rect x="120" y="170" width="6" height="6" rx="1" fill="#f0cf6e" transform="rotate(30 123 173)" />
-        <rect x="300" y="190" width="7" height="7" rx="1" fill={accent} transform="rotate(-25 303 193)" />
-        <path d="M250 60 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 z" fill="#fff3c4" />
-        <path d="M160 130 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5 z" fill="#fff3c4" />
-        <path d="M320 140 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2 z" fill="#f7e7a6" />
-      </g>
+      {variant === "prime" && (
+        // A radiating STAR-BURST (party energy) + confetti + stars — the lively,
+        // most-popular crowd-pleaser. More motion + colour than Classic.
+        <>
+          <g className="cover-spin" style={{ transformOrigin: "200px 96px" }}>
+            {/* burst rays */}
+            {Array.from({ length: 12 }).map((_, i) => (
+              <rect
+                key={i}
+                x="197"
+                y="34"
+                width="6"
+                height="34"
+                rx="3"
+                fill={i % 2 ? `url(#${uid}-gold)` : `url(#${uid}-accent)`}
+                transform={`rotate(${i * 30} 200 96)`}
+                opacity="0.9"
+              />
+            ))}
+            {/* centre star */}
+            <path
+              d="M200 70 l8 18 19 2 -14 13 4 19 -17 -10 -17 10 4 -19 -14 -13 19 -2 z"
+              fill={`url(#${uid}-gold)`}
+            />
+          </g>
+          <g className="cover-twinkle">
+            <path d="M96 120 l4 9 9 4 -9 4 -4 9 -4 -9 -9 -4 9 -4 z" fill="#fff3c4" />
+            <path d="M306 116 l3.5 8 8 3.5 -8 3.5 -3.5 8 -3.5 -8 -8 -3.5 8 -3.5 z" fill="#f7e7a6" />
+            <rect x="120" y="200" width="8" height="8" rx="1" fill={accent} transform="rotate(20 124 204)" />
+            <rect x="276" y="206" width="8" height="8" rx="1" fill="#f0cf6e" transform="rotate(-22 280 210)" />
+            <rect x="200" y="216" width="7" height="7" rx="1" fill={accent} transform="rotate(12 203 219)" />
+          </g>
+        </>
+      )}
+
+      {variant === "elite" && (
+        <>
+          {/* CROWN above — the premium status mark, topping the celebration. */}
+          <g className="cover-float cover-float--b">
+            <path
+              d="M168 56 l10 22 22 -30 22 30 10 -22 -6 40 -52 0 z"
+              fill={`url(#${uid}-gold)`}
+            />
+            <rect x="172" y="92" width="56" height="9" rx="3" fill={`url(#${uid}-ribbon)`} />
+            <circle cx="168" cy="54" r="4" fill="#f7e7a6" />
+            <circle cx="200" cy="46" r="4.5" fill="#f7e7a6" />
+            <circle cx="232" cy="54" r="4" fill="#f7e7a6" />
+          </g>
+
+          {/* balloons */}
+          <g className="cover-float cover-float--a">
+            <path d="M64 132 q 6 26 -2 54" stroke={`url(#${uid}-ribbon)`} strokeWidth="1.4" />
+            <ellipse cx="64" cy="108" rx="22" ry="27" fill={`url(#${uid}-gold)`} />
+            <path d="M64 134 l -4 7 l 8 0 z" fill="#b9852a" />
+            <ellipse cx="56" cy="98" rx="6" ry="9" fill="#fff" opacity="0.5" />
+          </g>
+          <g className="cover-float cover-float--b">
+            <path d="M338 134 q 8 24 0 52" stroke={`url(#${uid}-ribbon)`} strokeWidth="1.4" />
+            <ellipse cx="338" cy="110" rx="21" ry="26" fill={`url(#${uid}-accent)`} />
+            <path d="M338 134 l -4 7 l 8 0 z" fill={accent} />
+            <ellipse cx="330" cy="100" rx="5" ry="9" fill="#fff" opacity="0.55" />
+          </g>
+
+          {/* wrapped gift (bottom-centre) */}
+          <g className="cover-float cover-float--c">
+            <rect x="172" y="214" width="56" height="44" rx="4" fill={`url(#${uid}-accent)`} />
+            <rect x="166" y="202" width="68" height="17" rx="4" fill={`url(#${uid}-gold)`} />
+            <rect x="194" y="202" width="12" height="56" fill={`url(#${uid}-ribbon)`} opacity="0.92" />
+            <path d="M200 202 q -19 -15 -25 -2 q -2 10 25 6 z" fill={`url(#${uid}-gold)`} />
+            <path d="M200 202 q 19 -15 25 -2 q 2 10 -25 6 z" fill={`url(#${uid}-gold)`} />
+            <circle cx="200" cy="203" r="5" fill="#f7e7a6" />
+          </g>
+
+          {/* confetti + sparkles */}
+          <g className="cover-twinkle">
+            <rect x="120" y="80" width="7" height="7" rx="1" fill={accent} transform="rotate(20 123 83)" />
+            <rect x="284" y="78" width="6" height="6" rx="1" fill="#f0cf6e" transform="rotate(-15 287 81)" />
+            <path d="M250 150 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 z" fill="#fff3c4" />
+            <path d="M150 160 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5 z" fill="#fff3c4" />
+          </g>
+        </>
+      )}
     </svg>
   );
 }
@@ -618,19 +924,39 @@ function BookTurn({
   show,
   index,
   children,
+  tileMaxH,
 }: {
   p: MotionValue<number>;
   span: [number, number];
   show: Show;
   index: number;
   children: React.ReactNode;
+  /** MOBILE shelf clamp: short max-height (px string) that crops the closed cover to
+   *  a compact tile and releases to full height on focus. "none" on desktop. */
+  tileMaxH?: MotionValue<string>;
 }) {
   const accent = show.accent;
-  // The cover opens SLOWLY across a wide window (~58% of the span) so it tracks
-  // the scroll the whole way — every bit of scroll swings the board a little more,
-  // like easing a real hardback open by hand. The rest of the span is the open,
-  // readable hold. Build the start/mid/end scroll positions of that turn window.
-  const [fa, fb] = slice(span, 0.0, 0.58);
+  // Each tier's cover gets its own foil art, with richness + presence climbing
+  // Classic → Prime Time → Elite, so the eye is drawn UP the ladder (the order we
+  // want people to prefer). Elite is the premium special-occasion volume.
+  const isElite = show.label === "Elite Edition";
+  const coverVariant: "classic" | "prime" | "elite" = isElite
+    ? "elite"
+    : show.popular
+      ? "prime"
+      : "classic";
+  // Art opacity escalates with tier: Classic faint & restrained, Prime Time more
+  // present, Elite the boldest — visual weight reinforces the desirability order.
+  const artOpacity = isElite ? 0.38 : show.popular ? 0.28 : 0.18;
+  // COVER-READ DWELL: the closed cover holds fully shut for the first part of the
+  // span so the audience can READ the cover (title, edition, and the cover art)
+  // before anything moves. Elite has the most on its cover, so it dwells longer.
+  // Only AFTER the dwell does the cover begin to swing open.
+  const dwell = isElite ? 0.34 : 0.18;
+  // The cover then opens SLOWLY (over the next chunk of the span), tracking the
+  // scroll the whole way — every bit of scroll swings the board a little more, like
+  // easing a real hardback open by hand. The rest of the span is the readable hold.
+  const [fa, fb] = slice(span, dwell, dwell + 0.4);
   const fmid = fa + (fb - fa) * 0.5;
 
   // Gentle, continuous easing (soft in and out) so the swing reads as a smooth,
@@ -677,17 +1003,28 @@ function BookTurn({
   const tailStripes =
     "repeating-linear-gradient(90deg, #f4eedd 0px, #f4eedd 1px, #d9cfb6 1px, #d9cfb6 2px)";
 
-  // Darken the accent for the cover's shaded material gradient and bevels.
-  const coverDark = `color-mix(in srgb, ${accent} 38%, #000)`;
-  const coverDeep = `color-mix(in srgb, ${accent} 22%, #000)`;
+  // Rich two-tone cover material. `matFrom` (luminous) and `matTo` (deep) come from
+  // the show; we derive mid + deep shades for bevels/spine and the foil emblem ink.
+  const matFrom = show.matFrom;
+  const matTo = show.matTo;
+  const coverDark = `color-mix(in srgb, ${matTo} 78%, ${accent})`; // mid shade for spine/bevel
+  const coverDeep = `color-mix(in srgb, ${matTo} 88%, #000)`; // deepest — foil emblem ink bg
 
   return (
-    <div
-      className="relative mx-auto max-w-[760px]"
+    <motion.div
+      className="relative mx-auto max-w-[860px]"
       // Centred, long perspective: the CLOSED book faces the viewer flat (no
       // tilt) — only the cover swings in 3D as it opens. A long focal length keeps
       // the depth gentle and realistic instead of a hard, card-like skew.
-      style={{ perspective: "2600px", perspectiveOrigin: "50% 45%" }}
+      // `maxHeight` (mobile only) crops the closed cover into a short, readable tile
+      // on the shelf and releases to full height on focus; overflow hidden keeps the
+      // cropped tile clean (decorative page-edges are hidden in the compact state).
+      style={{
+        perspective: "2600px",
+        perspectiveOrigin: "50% 45%",
+        maxHeight: tileMaxH,
+        overflow: tileMaxH ? "hidden" : undefined,
+      }}
     >
       {/* Contact shadow — grounds the book on a surface (sits just under it). */}
       <span
@@ -697,20 +1034,35 @@ function BookTurn({
       />
 
       {/* PAGE-STACK EDGES — the visible block of pages, giving the book thickness.
-          The block sits behind the page, offset down/right, so its fore-edge
-          (right) and tail (bottom) read as a real stack of leaves. The right slab
-          runs the full height + offset and the bottom slab the full width, so they
-          meet cleanly at the corner and read as one extruded block. */}
+          The block sits behind the page, offset down/right, so its head (top),
+          fore-edge (right) and tail (bottom) read as a real stack of leaves whose
+          outer corners are ROUNDED — like a real book block, not a hard slab. */}
       <span className="pointer-events-none absolute inset-0" aria-hidden>
-        {/* fore-edge (right side) — stacked-paper striations, lit at front */}
+        {/* head edge (top) — a slim page-stack sliver running along the top, so the
+            book's top corners round off too instead of ending in a hard edge. */}
         <span
-          className="absolute top-0 block"
+          className="absolute left-0 block"
           style={{
+            top: `-${Math.round(PAGES * 0.45)}px`,
             right: `-${PAGES}px`,
-            height: `calc(100% + ${PAGES}px)`,
+            height: `${Math.round(PAGES * 0.45)}px`,
+            backgroundImage: tailStripes,
+            borderRadius: "10px 12px 0 0",
+            boxShadow: "inset 0 2px 3px rgba(0,0,0,0.32), inset 0 -1px 0 rgba(255,255,255,0.45)",
+          }}
+        />
+        {/* fore-edge (right side) — stacked-paper striations, lit at front. The
+            outer corners are rounded so the page block curves like a real book. */}
+        <span
+          className="absolute block"
+          style={{
+            top: `-${Math.round(PAGES * 0.45)}px`,
+            right: `-${PAGES}px`,
+            height: `calc(100% + ${PAGES + Math.round(PAGES * 0.45)}px)`,
             width: `${PAGES}px`,
             backgroundImage: pageStripes,
-            boxShadow: "inset -2px 0 3px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.4)",
+            borderRadius: "0 12px 12px 0",
+            boxShadow: "inset -2px 0 3px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.45)",
           }}
         />
         {/* tail edge (bottom) */}
@@ -721,7 +1073,8 @@ function BookTurn({
             width: `calc(100% + ${PAGES}px)`,
             height: `${PAGES}px`,
             backgroundImage: tailStripes,
-            boxShadow: "inset 0 -2px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.4)",
+            borderRadius: "3px 12px 12px 4px",
+            boxShadow: "inset 0 -2px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.45)",
           }}
         />
       </span>
@@ -756,14 +1109,26 @@ function BookTurn({
         aria-hidden
       >
         {/* FRONT face of the cover — a clothbound, foil-stamped game-show volume.
-            Rounded board corners, a deep accent material, a gold-foil emblem,
-            title and edition line, a gilt double-rule frame, and a sheen sweep. */}
+            Naturally rounded board corners (square spine edge, rounder fore-edge
+            corners like a real hardback), a deep accent material, a gold-foil
+            emblem, title and edition line, a gilt double-rule frame, and a sheen. */}
         <span
-          className="absolute inset-0 overflow-hidden rounded-[3px] backface-hidden"
+          className="absolute inset-0 overflow-hidden backface-hidden"
           style={{
-            background: `radial-gradient(130% 100% at 50% 0%, ${accent} 0%, ${coverDark} 58%, ${coverDeep} 100%)`,
+            // tighter radius on the spine (left) side, rounder on the fore-edge
+            // (right) corners — the way a bound board curves away from the binding
+            borderRadius: "3px 12px 12px 3px",
+            // Rich, dimensional MATERIAL: a luminous top-left glow (a stage light
+            // catching the board) over a diagonal matFrom→matTo blend, finished with
+            // a deep bottom-right vignette. Layered gradients read far more premium
+            // than a single hue fading to black.
+            background: `
+              radial-gradient(115% 85% at 22% 8%, color-mix(in srgb, ${matFrom} 72%, #fff) 0%, transparent 46%),
+              radial-gradient(120% 120% at 92% 100%, ${matTo} 0%, transparent 60%),
+              linear-gradient(135deg, ${matFrom} 0%, color-mix(in srgb, ${matFrom} 45%, ${matTo}) 42%, ${matTo} 100%)
+            `,
             boxShadow:
-              "inset 0 1px 0 rgba(255,255,255,0.2), inset 0 0 70px rgba(0,0,0,0.4), inset 7px 0 16px rgba(0,0,0,0.45)",
+              "inset 0 1px 0 rgba(255,255,255,0.28), inset 0 0 80px rgba(0,0,0,0.34), inset 7px 0 16px rgba(0,0,0,0.4)",
           }}
         >
           {/* woven cloth grain — a fine cross-hatch + soft top sheen */}
@@ -779,13 +1144,21 @@ function BookTurn({
             style={{ background: "radial-gradient(120% 90% at 26% 8%, rgba(255,255,255,0.5) 0%, transparent 52%)" }}
           />
 
-          {/* Elite (special-occasion) volume gets celebratory foil art — balloons,
-              a gift, confetti — floating behind the title to feel like a party. */}
-          {isElite && (
-            <span className="pointer-events-none absolute inset-0 opacity-[0.55]">
-              <CelebrationArt accent={accent} />
-            </span>
-          )}
+          {/* Per-tier foil cover art, floating behind the title. Richness +
+              opacity climb Classic → Prime Time → Elite to lead the eye up the
+              desirability ladder (a clean mic → a party star-burst → a crowned
+              celebration). */}
+          <span className="pointer-events-none absolute inset-0" style={{ opacity: artOpacity }}>
+            <CoverArt variant={coverVariant} accent={accent} />
+          </span>
+          <span
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse 62% 58% at 50% 52%, rgba(0,0,0,0.54) 0%, rgba(0,0,0,0.28) 46%, rgba(0,0,0,0.06) 78%)",
+            }}
+            aria-hidden
+          />
 
           {/* gilt double-rule frame — debossed dark line + a thin GOLD-foil keyline */}
           <span
@@ -802,12 +1175,12 @@ function BookTurn({
             }}
           />
 
-          {/* Cover face — foil emblem, tag, title, edition line. */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
+          {/* Cover face — clear, glanceable choice copy. */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center">
             {/* foil emblem medallion: a gold ring + the show's mark (★ for the
                 crowd favourite, the volume numeral otherwise) — game-show energy */}
             <span
-              className="mb-5 flex h-12 w-12 items-center justify-center rounded-full text-[18px] font-bold sm:h-14 sm:w-14 sm:text-xl"
+              className="mb-4 flex h-11 w-11 items-center justify-center rounded-full text-[17px] font-bold sm:h-12 sm:w-12 sm:text-lg"
               style={{
                 background: GOLD,
                 color: coverDeep,
@@ -819,13 +1192,13 @@ function BookTurn({
             </span>
 
             <span
-              className="text-[11px] font-bold uppercase tracking-[0.32em] sm:text-xs"
+              className="text-[12px] font-bold uppercase tracking-[0.18em] sm:text-[13px]"
               style={{ ...GOLD_TEXT, opacity: 0.95 }}
             >
               {show.tag}
             </span>
             <span
-              className="mt-3 text-[40px] font-bold leading-none tracking-[-0.02em] sm:text-5xl md:text-7xl"
+              className="mt-3 text-[46px] font-bold leading-none tracking-[-0.02em] sm:text-[62px] md:text-[72px]"
               style={{
                 fontFamily: "var(--font-inter-tight, var(--font-display))",
                 ...GOLD_TEXT,
@@ -835,17 +1208,20 @@ function BookTurn({
               {show.label}
             </span>
             <span
-              className="mt-4 block h-[2px] w-16 md:w-24"
+              className="mt-4 block h-[2px] w-20 md:w-28"
               style={{ background: GOLD, boxShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
             />
-            <span
-              className="mt-5 text-[10px] font-semibold uppercase tracking-[0.3em] sm:text-[11px]"
-              style={{ color: "rgba(255,255,255,0.6)" }}
-            >
-              The Game Show · Vol. {ROMAN[index] ?? index + 1}
+            {/* Value + price. On DESKTOP the book sits small in the shelf, so these
+                are sized LARGE (md:) to stay readable at a glance before scrolling.
+                On MOBILE the book is nearly full-size in a SHORT tile, so they stay
+                modest (base) to fit without clipping the name. */}
+            <span className="mt-3 max-w-[26ch] text-[15px] font-semibold leading-snug text-white/90 md:mt-4 md:text-[28px]">
+              {show.value}
             </span>
-            <span className="mt-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/45 sm:text-[11px]">
-              Scroll to open
+            <span className="mt-3 inline-flex items-baseline gap-1.5 rounded-full border border-white/25 bg-black/40 px-3.5 py-1.5 text-[15px] font-bold text-white shadow-lg backdrop-blur-sm md:mt-6 md:px-5 md:py-2.5 md:text-[28px]">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/65 md:text-[16px]">From</span>
+              ₹{show.fromPrice.toLocaleString("en-IN")}
+              <span className="text-[11px] font-semibold text-white/65 md:text-[17px]">/ person</span>
             </span>
           </div>
 
@@ -869,7 +1245,7 @@ function BookTurn({
         <span className="absolute inset-x-0 top-[12%] h-[3px]" style={{ background: "rgba(0,0,0,0.45)", boxShadow: "0 1px 0 rgba(255,255,255,0.15)" }} />
         <span className="absolute inset-x-0 bottom-[12%] h-[3px]" style={{ background: "rgba(0,0,0,0.45)", boxShadow: "0 1px 0 rgba(255,255,255,0.15)" }} />
       </span>
-    </div>
+    </motion.div>
   );
 }
 
@@ -881,28 +1257,133 @@ function ShowBeat({
   index,
   span,
   p,
+  focus,
+  zoom,
+  isMobile,
 }: {
   show: Show;
   index: number;
   span: [number, number];
   p: MotionValue<number>;
+  /** continuous camera position (0=Classic, 1=Prime, 2=Elite) */
+  focus: MotionValue<number>;
+  /** 0 = the three-book "shelf" view (zoomed out); 1 = zoomed-in travel mode */
+  zoom: MotionValue<number>;
+  isMobile: boolean;
 }) {
-  // Every show is a book that flips open — and, like a real book, NEVER fades away
-  // once opened. The closed cover arrives, flips open, and the page then holds put.
-  // The next show's book simply arrives ON TOP (higher z-index) and covers it.
-  const style = useShowBeatStyle(p, span);
+  // CAMERA — every book has ONE uniform "shelf" home (small, fixed slot, same size
+  // for all three). Only the book currently being FOCUSED lifts OUT of the shelf to
+  // centre + full size; the instant it stops being focused it returns to that exact
+  // uniform shelf state. So at any rest the non-focused books are all the SAME size,
+  // neatly in the row — never odd in-between scales floating around. A book's lift
+  // is driven by `proximity` (1 when it's the focused book, 0 once it's ≥1 step
+  // away), and the whole thing is gated by `zoom` so the establish "shelf" reads
+  // first. Zoom-in and zoom-out trace the same path (proximity rises then falls).
+  // Shelf layout is RESPONSIVE:
+  //  • Desktop: the three books sit side by side (horizontal), fairly big and not
+  //    too far apart so the cover text is readable.
+  //  • Mobile: a row of three small books would make the text unreadable, so the
+  //    shelf STACKS vertically — each book much bigger (near full width), arranged
+  //    top → middle → bottom.
+  // The three books read as THREE DISTINCT covers on the stage — smaller, with a
+  // clear gap between them — not a packed strip. The rendered book is BOOK_W ×
+  // SHELF_SCALE; the step adds a real gap on top of that.
+  //  • Desktop: a horizontal row; step capped at 31vw so the 3-book row always fits.
+  //  • Mobile: a row of three would be illegible, so the shelf STACKS vertically.
+  //    The books must be SMALL enough that all three + the heading fit ONE screen
+  //    with clear gaps (the previous 0.52 scale + 24vh step overlapped — Prime Time
+  //    was buried under Elite), so mobile uses a smaller scale and a taller step.
+  // The mobile cover is a TALL portrait card because the full reading page sits
+  // UNDER it — so scaling the whole card down to fit three on screen shrank the
+  // NAMES too (hard to read). Instead, on mobile we give the closed shelf book a
+  // FIXED SHORT HEIGHT (a compact landscape tile) so three fit with clear gaps while
+  // the cover text stays at full, readable size. When a book is focused it grows
+  // back to its natural full-page height for reading. Scale stays gentle so the
+  // names read clearly in the shelf.
+  // Desktop uses portrait show cards: narrower, taller, and nearly full shelf
+  // scale so the lineup reads like three premium posters instead of thumbnails.
+  const SHELF_SCALE = isMobile ? 0.92 : 0.9;
+  const BOOK_W = isMobile ? "min(94vw, 860px)" : "min(32vw, 560px)";
+  const stepX = "31vw";
+  // Vertical step between stacked mobile shelf books (vh). 23vh × 2 slots = 46vh
+  // total span, centred — keeps the three SHORT covers evenly grouped under the
+  // heading with clear gaps and no big dead space at the bottom.
+  const SHELF_Y = isMobile ? 23 : 0; // vh between shelf books when stacked (mobile)
+  // Mobile shelf tile height (px): short so three stack with gaps, showing the big
+  // centred NAME at full size. Grows past any page's height once focused (lift→1) so
+  // the full reading page shows. (Wrapper keeps overflow hidden the whole time; the
+  // large focused height simply reveals everything — no JS state needed.)
+  const SHELF_TILE_H = 144;
+  const FOCUS_TILE_H = 2400; // safely taller than any open mobile page
+  const offset = useTransform(focus, (f) => index - f);
+  // proximity: 1 only when this is the focused book, easing to 0 by one step away.
+  const proximity = useTransform(offset, (o) => Math.max(0, 1 - Math.min(Math.abs(o), 1)));
+  const slot = index - 1; // -1 / 0 / +1
+  // On mobile, nudge the whole trio DOWN a little (the wrapper centres on 50%, but
+  // the heading sits above) so the three tiles read as vertically balanced in the
+  // space below the heading rather than leaving a big empty band at the bottom.
+  const SHELF_Y_BASE = isMobile ? 6 : 0; // vh
+  const shelfY = SHELF_Y_BASE + slot * SHELF_Y; // vh
+
+  // Lift = how much this book is out of the shelf toward centre-focus, gated by the
+  // establish zoom-in. (At rest, only the focused book has lift > 0.)
+  const lift = useTransform([proximity, zoom], ([pr, z]: number[]) => pr * z);
+
+  // Horizontal shelf slot in px (8px gaps); on mobile books stack so x stays 0.
+  const x = useTransform(lift, (l) =>
+    isMobile ? "0px" : `calc(${slot} * ${stepX} * ${1 - l})`
+  );
+  const y = useTransform(lift, (l) => `${shelfY * (1 - l)}vh`); // shelf slot → centre
+  const scale = useTransform(lift, (l) => SHELF_SCALE + (1 - SHELF_SCALE) * l); // shelf size → full
+  // MOBILE: closed shelf tile is SHORT (crops the tall page beneath to a compact
+  // landscape cover with the big readable name), expanding to full height as the
+  // book is focused. Quick ramp (l*2) so the page is fully revealed early in focus.
+  const maxHeight = useTransform(lift, (l) =>
+    isMobile
+      ? `${SHELF_TILE_H + (FOCUS_TILE_H - SHELF_TILE_H) * Math.min(1, l * 2)}px`
+      : "none"
+  );
+  // Receded (non-focused) books sit slightly back in depth; the focused one comes
+  // fully forward. Uniform because every shelf book shares the same resting z.
+  const z3d = useTransform(lift, (l) => -260 * (1 - l));
+  const opacity = useTransform([lift, zoom, p], ([l, z, prog]: number[]) => {
+    // During the ESTABLISH shelf (zoom→0) all three are visible together. Once
+    // zoomed in to read (zoom→1), the non-focused books fade WAY back (to a faint
+    // hint) so they never distract the focused page; the focused book is full
+    // strength. So: shelf floor when establishing, near-invisible when reading.
+    const shelfFloor = 0.85; // visible in the lineup view
+    const readFloor = 0; // fully gone while reading another book — no distraction
+    const floor = shelfFloor + (readFloor - shelfFloor) * z;
+    const base = floor + (1 - floor) * l;
+    // Entrance gate: the books fade IN as the intro headline leaves, so they don't
+    // clutter behind the intro copy.
+    const enter = Math.max(0, Math.min(1, (prog - INTRO_SPAN[1] * 0.7) / (ESTABLISH_SPAN[0] - INTRO_SPAN[1] * 0.7 + 0.02)));
+    return base * enter;
+  });
+
+  // The "fun ladder" carries onto the OPEN PAGE too: a faint tier motif sits behind
+  // the copy, escalating Classic → Prime Time → Elite (fun → more fun → extra fun),
+  // so swiping through visibly ramps the energy. Kept very low-opacity so it adds
+  // atmosphere without ever competing with the readable spec content.
+  const isEliteShow = show.label === "Elite Edition";
+  const pageVariant: "classic" | "prime" | "elite" = isEliteShow
+    ? "elite"
+    : show.popular
+      ? "prime"
+      : "classic";
+  const pageArtOpacity = isEliteShow ? 0.16 : show.popular ? 0.11 : 0.06;
 
   // Content write-on timing. Like a real book the page is ALREADY printed under
-  // the cover — so the content writes on EARLY, while the slowly-opening cover
-  // (0→58% of span) still hides most of the page, and is FULLY there by ~46% (just
-  // as the cover passes edge-on and fades). The cover therefore lifts to reveal a
-  // page that's already written, never a blank black page. The open page then
-  // holds put for the rest of the span; the snap rests inside that hold.
-  const tagAt = slice(span, 0.12, 0.22);
-  const nameAt = slice(span, 0.16, 0.28);
-  const underlineAt = slice(span, 0.24, 0.34);
-  const valueAt = slice(span, 0.28, 0.38);
-  const pitchAt = slice(span, 0.34, 0.46);
+  // the cover — so the content writes on while the closed cover (which dwells, then
+  // swings open) still hides the page, and is FULLY there by ~46%, before any cover
+  // finishes clearing. The cover therefore lifts to reveal a page that's already
+  // written, never a blank black page. The open page then holds put for the rest of
+  // the span; the snap rests inside that hold.
+  const tagAt = slice(span, 0.14, 0.24);
+  const nameAt = slice(span, 0.18, 0.3);
+  const underlineAt = slice(span, 0.26, 0.36);
+  const valueAt = slice(span, 0.3, 0.4);
+  const pitchAt = slice(span, 0.36, 0.46);
 
   const tag = useWriteOn(p, tagAt);
   const name = useWriteOn(p, nameAt);
@@ -918,9 +1399,21 @@ function ShowBeat({
   // arrives on top, it cleanly covers the page beneath — like turning a real page.
   const panel = (
     <div
-      className="mx-auto max-w-[760px] border border-white/10 bg-[#101213] px-6 py-8 text-center sm:px-8 md:px-12 md:py-11"
-      style={{ borderLeft: `3px solid ${show.accent}` }}
+      className="relative mx-auto max-w-[860px] overflow-hidden border border-white/10 px-6 py-8 text-center sm:px-8 md:min-h-[700px] md:max-w-[560px] md:px-10 md:py-12"
+      // Square at the spine (left), rounded at the fore-edge (right) so the open
+      // page curves to match the rounded cover + page-block corners.
+      style={{ borderLeft: `3px solid ${show.accent}`, borderRadius: "2px 12px 12px 2px" }}
     >
+        {/* Page background on its OWN layer (z -20) so the tier motif can sit ABOVE
+            it but BELOW the copy. */}
+        <span className="pointer-events-none absolute inset-0 -z-20 bg-[#101213]" aria-hidden />
+        {/* Faint tier motif behind the copy — the escalating "fun" carried onto the
+            open page (Classic → Prime Time → Elite): fun → more fun → extra fun.
+            z -10 keeps it above the page bg but under the text; very low opacity so
+            it never fights the spec content. */}
+        <span className="pointer-events-none absolute inset-0 -z-10" style={{ opacity: pageArtOpacity }} aria-hidden>
+          <CoverArt variant={pageVariant} accent={show.accent} />
+        </span>
         {/* tag — squared BMW eyebrow. Popular = solid accent block; others a
             hairline-outlined accent label. */}
         <motion.span
@@ -984,14 +1477,27 @@ function ShowBeat({
 
   return (
     <motion.div
-      className="absolute inset-x-4 top-1/2 -translate-y-1/2 sm:inset-x-6"
-      // Later shows stack ABOVE earlier ones, so each arriving book covers the
-      // open page before it (a real page-turn) instead of cross-fading.
-      style={{ ...style, zIndex: 10 + index }}
+      // Each book is centred in the stage; the camera transforms move it into /
+      // out of frame. As focus leaves, the book ZOOMS BACK OUT (recedes in depth
+      // via z + shrinks) — the mirror of how it zoomed in. Books nearer the focus
+      // paint above the rest.
+      className="absolute left-1/2 top-1/2 w-[min(32vw,560px)] -translate-x-1/2 -translate-y-1/2"
+      style={{
+        x,
+        y,
+        z: z3d,
+        scale,
+        opacity,
+        maxHeight,
+        overflow: "hidden",
+        transformStyle: "preserve-3d",
+        zIndex: 10 + index,
+      }}
     >
       {/* Every show flips open like a real book — the cover carries the show's
-          name, and turns off the spine on scroll to reveal the panel beneath. */}
-      <BookTurn p={p} span={span} show={show} index={index}>
+          name, and turns off the spine on scroll to reveal the panel beneath.
+          On mobile the closed cover is cropped to a short readable tile (tileMaxH). */}
+      <BookTurn p={p} span={span} show={show} index={index} tileMaxH={isMobile ? maxHeight : undefined}>
         {panel}
       </BookTurn>
     </motion.div>

@@ -568,90 +568,6 @@ function ShelfHeading({ zoom }: { zoom: MotionValue<number> }) {
   );
 }
 
-function MobileLineup() {
-  return (
-    <section
-      id="show-rounds"
-      data-show-rounds
-      className="sketchpad relative w-full overflow-hidden px-5 pb-12 pt-20 text-white"
-      style={{ background: "#0c0d10", fontFamily: "var(--font-sans)" }}
-    >
-      <div className="pointer-events-none absolute inset-0" aria-hidden>
-        <span className="absolute -left-32 top-0 h-80 w-80 rounded-full bg-[#2E9BFF]/30 blur-3xl" />
-        <span className="absolute -right-32 bottom-10 h-80 w-80 rounded-full bg-[#FFB23E]/20 blur-3xl" />
-      </div>
-
-      <div className="relative z-10 mx-auto max-w-[430px]">
-        <div className="text-center">
-          <span className="text-[12px] font-semibold uppercase tracking-[0.38em] text-white/50">
-            The Line-up
-          </span>
-          <h2
-            className="read-strong mt-3 text-[34px] font-semibold leading-none tracking-tight"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            Shows Available
-          </h2>
-          <span className="mx-auto mt-4 block h-[2px] w-16 rounded-full bg-gradient-to-r from-[#36CFFF] via-[#9B6BFF] to-[#FFB23E]" />
-        </div>
-
-        <div className="mt-10 space-y-4">
-          {shows.map((show) => (
-            <Link
-              key={show.label}
-              href="#tickets"
-              className="group block overflow-hidden border border-white/14 bg-black/42 shadow-2xl backdrop-blur-md"
-              style={{
-                borderLeft: `5px solid ${show.accent}`,
-                backgroundImage: `linear-gradient(135deg, color-mix(in srgb, ${show.matFrom} 28%, transparent), color-mix(in srgb, ${show.matTo} 42%, transparent))`,
-              }}
-            >
-              <div className="p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <p
-                      className="text-[12px] font-bold uppercase tracking-[0.16em]"
-                      style={{ color: show.accent }}
-                    >
-                      {show.tag}
-                    </p>
-                    <h3
-                      className="mt-2 text-[32px] font-bold leading-none tracking-tight text-white"
-                      style={{ fontFamily: "var(--font-inter-tight, var(--font-display))" }}
-                    >
-                      {show.label}
-                    </h3>
-                  </div>
-                  <div className="shrink-0 rounded-full bg-black/45 px-3 py-2 text-right ring-1 ring-white/15">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">From</p>
-                    <p className="text-[20px] font-bold leading-none">₹{show.fromPrice.toLocaleString("en-IN")}</p>
-                  </div>
-                </div>
-
-                <p className="mt-4 text-[16px] font-semibold leading-snug text-white/90">{show.value}</p>
-                <p className="mt-2 text-[13px] font-medium leading-snug text-white/65">{show.bestFor}</p>
-
-                <div className="mt-5 flex items-center justify-between border-t border-white/12 pt-4">
-                  <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/55">
-                    Tap to see pricing
-                  </span>
-                  <span
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-black transition-transform group-hover:translate-x-1"
-                    style={{ background: show.accent }}
-                    aria-hidden
-                  >
-                    <ChevronRight size={18} strokeWidth={2.8} />
-                  </span>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function IntroBeat({ p }: { p: MotionValue<number> }) {
   const style = useBeatStyle(p, INTRO_SPAN);
   return (
@@ -1314,40 +1230,26 @@ function ShowBeat({
   // away), and the whole thing is gated by `zoom` so the establish "shelf" reads
   // first. Zoom-in and zoom-out trace the same path (proximity rises then falls).
   // Shelf layout is RESPONSIVE:
-  //  • Desktop: the three books sit side by side (horizontal), fairly big and not
-  //    too far apart so the cover text is readable.
-  //  • Mobile: a row of three small books would make the text unreadable, so the
-  //    shelf STACKS vertically — each book much bigger (near full width), arranged
-  //    top → middle → bottom.
-  // The three books read as THREE DISTINCT covers on the stage — smaller, with a
-  // clear gap between them — not a packed strip. The rendered book is BOOK_W ×
-  // SHELF_SCALE; the step adds a real gap on top of that.
-  //  • Desktop: a horizontal row; step capped at 31vw so the 3-book row always fits.
-  //  • Mobile: a row of three would be illegible, so the shelf STACKS vertically.
-  //    The books must be SMALL enough that all three + the heading fit ONE screen
-  //    with clear gaps (the previous 0.52 scale + 24vh step overlapped — Prime Time
-  //    was buried under Elite), so mobile uses a smaller scale and a taller step.
-  // The mobile cover is a TALL portrait card because the full reading page sits
-  // UNDER it — so scaling the whole card down to fit three on screen shrank the
-  // NAMES too (hard to read). Instead, on mobile we give the closed shelf book a
-  // FIXED SHORT HEIGHT (a compact landscape tile) so three fit with clear gaps while
-  // the cover text stays at full, readable size. When a book is focused it grows
-  // back to its natural full-page height for reading. Scale stays gentle so the
-  // names read clearly in the shelf.
+  //  • Desktop: the three books sit side by side (horizontal row), fairly big and
+  //    not too far apart so the cover text is readable; step capped at 31vw so the
+  //    3-book row always fits.
+  //  • Mobile: a row of three would be illegible, so it's a one-card-at-a-time
+  //    horizontal CAROUSEL — each book near full width (88vw), the focused one
+  //    centred and the others stepped off-screen left/right (112vw apart) and
+  //    faded out, so only one big readable cover shows at a time.
   // Desktop uses portrait show cards: narrower, taller, and nearly full shelf
   // scale so the lineup reads like three premium posters instead of thumbnails.
-  const SHELF_SCALE = isMobile ? 0.92 : 0.9;
-  const BOOK_W = isMobile ? "min(94vw, 860px)" : "min(32vw, 560px)";
+  const SHELF_SCALE = isMobile ? 0.98 : 0.9;
   const stepX = "31vw";
   // Vertical step between stacked mobile shelf books (vh). 23vh × 2 slots = 46vh
   // total span, centred — keeps the three SHORT covers evenly grouped under the
   // heading with clear gaps and no big dead space at the bottom.
-  const SHELF_Y = isMobile ? 23 : 0; // vh between shelf books when stacked (mobile)
+  const SHELF_Y = 0;
   // Mobile shelf tile height (px): short so three stack with gaps, showing the big
   // centred NAME at full size. Grows past any page's height once focused (lift→1) so
   // the full reading page shows. (Wrapper keeps overflow hidden the whole time; the
   // large focused height simply reveals everything — no JS state needed.)
-  const SHELF_TILE_H = 144;
+  const SHELF_TILE_H = 620;
   const FOCUS_TILE_H = 2400; // safely taller than any open mobile page
   const offset = useTransform(focus, (f) => index - f);
   // proximity: 1 only when this is the focused book, easing to 0 by one step away.
@@ -1356,7 +1258,7 @@ function ShowBeat({
   // On mobile, nudge the whole trio DOWN a little (the wrapper centres on 50%, but
   // the heading sits above) so the three tiles read as vertically balanced in the
   // space below the heading rather than leaving a big empty band at the bottom.
-  const SHELF_Y_BASE = isMobile ? 6 : 0; // vh
+  const SHELF_Y_BASE = isMobile ? 5 : 0; // vh
   const shelfY = SHELF_Y_BASE + slot * SHELF_Y; // vh
 
   // Lift = how much this book is out of the shelf toward centre-focus, gated by the
@@ -1364,9 +1266,9 @@ function ShowBeat({
   const lift = useTransform([proximity, zoom], ([pr, z]: number[]) => pr * z);
 
   // Horizontal shelf slot in px (8px gaps); on mobile books stack so x stays 0.
-  const x = useTransform(lift, (l) =>
-    isMobile ? "0px" : `calc(${slot} * ${stepX} * ${1 - l})`
-  );
+  const desktopX = useTransform(lift, (l) => `calc(${slot} * ${stepX} * ${1 - l})`);
+  const mobileX = useTransform(offset, (o) => `${o * 112}vw`);
+  const x = isMobile ? mobileX : desktopX;
   const y = useTransform(lift, (l) => `${shelfY * (1 - l)}vh`); // shelf slot → centre
   const scale = useTransform(lift, (l) => SHELF_SCALE + (1 - SHELF_SCALE) * l); // shelf size → full
   // MOBILE: closed shelf tile is SHORT (crops the tall page beneath to a compact
@@ -1385,7 +1287,7 @@ function ShowBeat({
     // zoomed in to read (zoom→1), the non-focused books fade WAY back (to a faint
     // hint) so they never distract the focused page; the focused book is full
     // strength. So: shelf floor when establishing, near-invisible when reading.
-    const shelfFloor = 0.85; // visible in the lineup view
+    const shelfFloor = isMobile ? 0 : 0.85; // mobile shows one big card at a time
     const readFloor = 0; // fully gone while reading another book — no distraction
     const floor = shelfFloor + (readFloor - shelfFloor) * z;
     const base = floor + (1 - floor) * l;
@@ -1433,7 +1335,7 @@ function ShowBeat({
   // arrives on top, it cleanly covers the page beneath — like turning a real page.
   const panel = (
     <div
-      className="relative mx-auto max-w-[860px] overflow-hidden border border-white/10 px-6 py-8 text-center sm:px-8 md:min-h-[700px] md:max-w-[560px] md:px-10 md:py-12"
+      className="relative mx-auto min-h-[620px] max-w-[390px] overflow-hidden border border-white/10 px-6 py-8 text-center sm:px-8 md:min-h-[700px] md:max-w-[560px] md:px-10 md:py-12"
       // Square at the spine (left), rounded at the fore-edge (right) so the open
       // page curves to match the rounded cover + page-block corners.
       style={{ borderLeft: `3px solid ${show.accent}`, borderRadius: "2px 12px 12px 2px" }}
@@ -1515,7 +1417,7 @@ function ShowBeat({
       // out of frame. As focus leaves, the book ZOOMS BACK OUT (recedes in depth
       // via z + shrinks) — the mirror of how it zoomed in. Books nearer the focus
       // paint above the rest.
-      className="absolute left-1/2 top-1/2 w-[min(32vw,560px)] -translate-x-1/2 -translate-y-1/2"
+      className="absolute left-1/2 top-1/2 w-[min(88vw,390px)] -translate-x-1/2 -translate-y-1/2 md:w-[min(32vw,560px)]"
       style={{
         x,
         y,

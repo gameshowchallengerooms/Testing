@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowDown, Check, ChevronRight } from "lucide-react";
+import { ArrowDown, Check } from "lucide-react";
 import { useLenis } from "lenis/react";
 import Snap from "lenis/snap";
 import {
@@ -343,7 +343,6 @@ export function ShowRounds() {
   const zoom = useTransform(p, [zoomStart, zoomEnd], [0, 1], { clamp: true });
 
   if (reduce) return <StaticFallback />;
-  if (isMobile) return <MobileLineup />;
 
   return (
     <section
@@ -1009,6 +1008,7 @@ function BookTurn({
   const matTo = show.matTo;
   const coverDark = `color-mix(in srgb, ${matTo} 78%, ${accent})`; // mid shade for spine/bevel
   const coverDeep = `color-mix(in srgb, ${matTo} 88%, #000)`; // deepest — foil emblem ink bg
+  const funBadge = index === 0 ? "Fun" : index === 1 ? "More Fun" : "Fun Like Crazy";
 
   return (
     <motion.div
@@ -1155,7 +1155,16 @@ function BookTurn({
             className="pointer-events-none absolute inset-0"
             style={{
               background:
-                "radial-gradient(ellipse 62% 58% at 50% 52%, rgba(0,0,0,0.54) 0%, rgba(0,0,0,0.28) 46%, rgba(0,0,0,0.06) 78%)",
+                "radial-gradient(ellipse 74% 62% at 50% 56%, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.48) 48%, rgba(0,0,0,0.08) 78%)",
+            }}
+            aria-hidden
+          />
+          <span
+            className="pointer-events-none absolute inset-0 opacity-70"
+            style={{
+              background:
+                "conic-gradient(from 210deg at 50% 18%, transparent 0deg, rgba(255,255,255,0.18) 18deg, transparent 36deg, transparent 70deg, rgba(255,255,255,0.14) 92deg, transparent 116deg, transparent 245deg, rgba(255,255,255,0.12) 268deg, transparent 292deg)",
+              mixBlendMode: "screen",
             }}
             aria-hidden
           />
@@ -1174,18 +1183,34 @@ function BookTurn({
               filter: "drop-shadow(0 1px 0 rgba(0,0,0,0.45))",
             }}
           />
+          <span
+            className="pointer-events-none absolute inset-[12px] sm:inset-[18px]"
+            style={{
+              border: "2px solid rgba(255,232,158,0.72)",
+              boxShadow:
+                "inset 0 0 0 8px rgba(0,0,0,0.16), inset 0 0 34px rgba(255,210,63,0.1), 0 0 18px rgba(255,210,63,0.42)",
+            }}
+            aria-hidden
+          />
 
           {/* Cover face — clear, glanceable choice copy. */}
           <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center">
+            <span
+              className="mb-5 inline-flex items-center gap-2 border border-[#f7e7a6]/50 bg-black/70 px-4 py-2 text-[12px] font-black uppercase tracking-[0.18em] text-white shadow-lg backdrop-blur-sm md:text-sm"
+              style={{ boxShadow: `0 0 22px color-mix(in srgb, ${accent} 50%, transparent)` }}
+            >
+              <span className="h-2 w-2 rounded-full" style={{ background: accent, boxShadow: `0 0 10px ${accent}` }} />
+              {funBadge}
+            </span>
             {/* foil emblem medallion: a gold ring + the show's mark (★ for the
                 crowd favourite, the volume numeral otherwise) — game-show energy */}
             <span
-              className="mb-4 flex h-11 w-11 items-center justify-center rounded-full text-[17px] font-bold sm:h-12 sm:w-12 sm:text-lg"
+              className="mb-4 flex h-12 w-12 items-center justify-center rounded-full text-[18px] font-black sm:h-14 sm:w-14 sm:text-xl"
               style={{
                 background: GOLD,
                 color: coverDeep,
                 boxShadow:
-                  "inset 0 1px 1px rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.45)",
+                  "inset 0 1px 1px rgba(255,255,255,0.75), inset 0 -2px 3px rgba(0,0,0,0.35), 0 0 0 5px rgba(0,0,0,0.28), 0 0 26px rgba(255,210,63,0.62)",
               }}
             >
               {show.popular ? "★" : ROMAN[index] ?? index + 1}
@@ -1202,7 +1227,7 @@ function BookTurn({
               style={{
                 fontFamily: "var(--font-inter-tight, var(--font-display))",
                 ...GOLD_TEXT,
-                filter: "drop-shadow(0 1px 0 rgba(0,0,0,0.5)) drop-shadow(0 2px 5px rgba(0,0,0,0.4))",
+                filter: "drop-shadow(0 2px 0 rgba(0,0,0,0.75)) drop-shadow(0 8px 18px rgba(0,0,0,0.72))",
               }}
             >
               {show.label}
@@ -1215,13 +1240,22 @@ function BookTurn({
                 are sized LARGE (md:) to stay readable at a glance before scrolling.
                 On MOBILE the book is nearly full-size in a SHORT tile, so they stay
                 modest (base) to fit without clipping the name. */}
-            <span className="mt-3 max-w-[26ch] text-[15px] font-semibold leading-snug text-white/90 md:mt-4 md:text-[28px]">
+            <span className="mt-3 max-w-[26ch] text-[15px] font-bold leading-snug text-white md:mt-4 md:text-[28px] [text-shadow:0_3px_12px_rgba(0,0,0,0.8)]">
               {show.value}
             </span>
-            <span className="mt-3 inline-flex items-baseline gap-1.5 rounded-full border border-white/25 bg-black/40 px-3.5 py-1.5 text-[15px] font-bold text-white shadow-lg backdrop-blur-sm md:mt-6 md:px-5 md:py-2.5 md:text-[28px]">
+            <span
+              className="mt-3 inline-flex items-baseline gap-1.5 border border-[#f7e7a6]/55 bg-black/60 px-4 py-2 text-[15px] font-black text-white shadow-lg backdrop-blur-sm md:mt-7 md:px-6 md:py-3 md:text-[30px]"
+              style={{
+                boxShadow:
+                  "inset 0 0 18px rgba(255,210,63,0.12), 0 0 24px rgba(0,0,0,0.45), 0 0 18px rgba(255,210,63,0.18)",
+              }}
+            >
               <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/65 md:text-[16px]">From</span>
               ₹{show.fromPrice.toLocaleString("en-IN")}
               <span className="text-[11px] font-semibold text-white/65 md:text-[17px]">/ person</span>
+            </span>
+            <span className="mt-5 text-[11px] font-black uppercase tracking-[0.2em] text-white/75 md:text-xs">
+              {index === 0 ? "Easy Crowd Win" : index === 1 ? "Party Favourite" : "All-Out Celebration"}
             </span>
           </div>
 

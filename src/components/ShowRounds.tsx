@@ -39,6 +39,19 @@ const TRACK_VIEWPORTS = 7; // screens of scroll the whole story spans
 // BMW design accent — the signature blue used across the showroom UI.
 const BMW_BLUE = "#0066B1";
 
+// Gold-foil stamp used on the game-show book covers (emblem, rules, title).
+// `GOLD` is a usable gradient (backgrounds + border-image); `GOLD_TEXT` clips
+// that same gradient into the text fill for a foil-stamped look.
+const GOLD =
+  "linear-gradient(100deg, #f7e7a6 0%, #f3d275 22%, #fff3c4 42%, #e6bb53 62%, #f6dd86 82%, #d4a542 100%)";
+const GOLD_TEXT: React.CSSProperties = {
+  background: GOLD,
+  WebkitBackgroundClip: "text",
+  backgroundClip: "text",
+  WebkitTextFillColor: "transparent",
+  color: "transparent",
+};
+
 /* ── Content ─────────────────────────────────────────────────────────────── */
 
 interface Show {
@@ -151,12 +164,12 @@ function slice([a, b]: [number, number], from: number, to: number): [number, num
 }
 
 /* Where, within a show's span, the scroll should come to REST when snapping —
-   deep inside the open-and-fully-written hold (content done by ~0.62, beat fades
-   at 0.9), so a snapped show sits open and readable. The intro rests at its
+   inside the open-and-fully-written hold (cover open + content done by ~0.8, beat
+   fades at 0.9), so a snapped show sits open and readable. The intro rests at its
    centre. These progress values (0→1 across the track) are converted to absolute
    scroll pixels and registered with Lenis's Snap so the page settles on each
    show instead of letting it blur past on a fast flick. */
-const REST_AT = 0.76;
+const REST_AT = 0.85;
 const INTRO_REST = 0.5;
 
 function restProgress(spans: [number, number][]): number[] {
@@ -280,10 +293,11 @@ export function ShowRounds() {
 
   const hintOpacity = useTransform(p, [0, 0.04], [1, 0]);
 
-  // The stage stays the dark sketch showroom the whole way; the ambient neon ink
-  // dims toward the end so the last held show reads clean as you scroll on into
-  // pricing.
-  const inkOpacity = useTransform(p, [0.8, 0.95], [0.18, 0.05]);
+  // The stage stays the dark game-show set the whole way; the neon light-rig glows
+  // bright behind the books, easing back a touch toward the end so the last held
+  // show reads clean as you scroll on into pricing (kept well above the text via a
+  // heavy blur + the panel's own backdrop, so it never hurts legibility).
+  const inkOpacity = useTransform(p, [0, 0.06, 0.8, 0.95], [0, 0.85, 0.85, 0.5]);
 
   if (reduce) return <StaticFallback />;
 
@@ -318,12 +332,10 @@ export function ShowRounds() {
           {shows.map((show, i) => (
             <ShowBeat
               key={show.label}
+              index={i}
               span={(isMobile ? SHOW_SPANS_MOBILE : SHOW_SPANS)[i]}
               show={show}
               p={p}
-              // The last show holds to the end of the track so it stays put as you
-              // simply scroll on down out of the pinned stage into pricing.
-              holdToEnd={i === shows.length - 1}
             />
           ))}
         </div>
@@ -339,7 +351,7 @@ export function ShowRounds() {
   );
 }
 
-/* SVG defs: rough-ink filter + accent gradients + neon glow. */
+/* SVG defs: rough-ink filter + neon gradients + a strong neon-bloom filter. */
 function SketchDefs() {
   return (
     <defs>
@@ -351,57 +363,122 @@ function SketchDefs() {
         <stop offset="0" stopColor="#147EFF" />
         <stop offset="1" stopColor="#FC19ED" />
       </linearGradient>
+      {/* Neon tube gradients — bright, saturated, like lit stage tubing. */}
+      <linearGradient id="neon-blue" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stopColor="#36CFFF" />
+        <stop offset="1" stopColor="#5B7CFF" />
+      </linearGradient>
+      <linearGradient id="neon-pink" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stopColor="#FF4FD8" />
+        <stop offset="1" stopColor="#A24BFF" />
+      </linearGradient>
+      <linearGradient id="neon-violet" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stopColor="#9A7BFF" />
+        <stop offset="1" stopColor="#36CFFF" />
+      </linearGradient>
+      {/* Big soft bloom so each neon line reads as a glowing tube, not a thin path. */}
+      <filter id="neon-bloom" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="9" result="b1" />
+        <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b2" />
+        <feMerge>
+          <feMergeNode in="b1" />
+          <feMergeNode in="b1" />
+          <feMergeNode in="b2" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
     </defs>
   );
 }
 
-/** A single, large, dim flourish that lives BEHIND everything and slowly draws
- *  across the whole scroll. Low opacity + heavy blur so it's pure ambience and
- *  can never hurt legibility (research §1: art-back layer + scrim above). */
+/** The neon light-rig behind the books — a glowing game-show stage. Bright neon
+ *  ribbons sweep on as you scroll, riding over a slow pulse so the tubes feel
+ *  "lit", with soft drifting spotlight blooms. Sits in its own layer far behind
+ *  the panels; a heavy blur + the panel's backdrop keep it from hurting legibility
+ *  even at this much higher brightness. */
 function BackdropArt({ p, inkOpacity }: { p: MotionValue<number>; inkOpacity: MotionValue<number> }) {
   return (
-    <motion.svg
-      viewBox="0 0 1200 800"
-      className="pointer-events-none absolute inset-0 z-0 h-full w-full"
+    <motion.div
+      className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
       style={{ opacity: inkOpacity }}
-      fill="none"
-      aria-hidden="true"
-      preserveAspectRatio="xMidYMid slice"
+      aria-hidden
     >
-      {/* a sweeping ribbon, top-left to bottom-right, kept to the edges */}
-      <Stroke
-        d="M-40 120 q 300 -80 560 80 q 320 200 720 60"
-        p={p}
-        span={[0.05, 0.55]}
-        className="ink ink-champ"
-        width={5}
+      {/* Drifting coloured spotlight blooms — the wash of stage lights. */}
+      <span
+        className="bg-spot bg-spot--blue absolute h-[60vmax] w-[60vmax] rounded-full"
+        style={{ top: "-20%", left: "-10%" }}
       />
-      <Stroke
-        d="M1240 680 q -360 120 -720 -40 q -320 -150 -600 30"
-        p={p}
-        span={[0.5, 0.96]}
-        className="ink ink-champ"
-        width={4}
+      <span
+        className="bg-spot bg-spot--pink absolute h-[55vmax] w-[55vmax] rounded-full"
+        style={{ bottom: "-25%", right: "-10%" }}
       />
-    </motion.svg>
+      <span
+        className="bg-spot bg-spot--violet absolute left-1/2 top-1/2 h-[50vmax] w-[50vmax] -translate-x-1/2 -translate-y-1/2 rounded-full"
+      />
+
+      {/* Neon tubing — bright glowing ribbons that draw on across the scroll. */}
+      <svg
+        viewBox="0 0 1200 800"
+        className="absolute inset-0 h-full w-full"
+        fill="none"
+        preserveAspectRatio="xMidYMid slice"
+      >
+        <g filter="url(#neon-bloom)">
+          <Stroke
+            d="M-60 150 q 320 -110 600 70 q 340 220 740 70"
+            p={p}
+            span={[0.04, 0.5]}
+            className="neon-line"
+            stroke="url(#neon-blue)"
+            width={7}
+          />
+          <Stroke
+            d="M1260 660 q -380 130 -760 -50 q -340 -160 -620 40"
+            p={p}
+            span={[0.42, 0.92]}
+            className="neon-line"
+            stroke="url(#neon-pink)"
+            width={6}
+          />
+          <Stroke
+            d="M-40 470 q 360 160 700 -10 q 300 -150 620 30"
+            p={p}
+            span={[0.2, 0.74]}
+            className="neon-line"
+            stroke="url(#neon-violet)"
+            width={5}
+          />
+        </g>
+      </svg>
+    </motion.div>
   );
 }
 
 /* ── Beats ───────────────────────────────────────────────────────────────── */
 
 /** A beat container that fades + rises IN over its first fifth and OUT over its
- *  last fifth, scrubbed by scroll. Beats overlap so only one is ever on screen.
- *  `holdToEnd`: skip the fade-OUT (stay visible to the span end) — used for the
- *  last show so it holds as you scroll on down into pricing. */
-function useBeatStyle(p: MotionValue<number>, [a, b]: [number, number], holdToEnd = false) {
+ *  last fifth, scrubbed by scroll. Used for the INTRO headline (a non-book beat
+ *  that should cross-fade away). */
+function useBeatStyle(p: MotionValue<number>, [a, b]: [number, number]) {
   const inEnd = a + (b - a) * 0.18;
-  // Hold the beat fully visible until the very tail of its span (0.9), so the
-  // open, readable show rests on screen far longer than it cross-fades — fast
-  // scrolling still leaves a generous window to read before the next show.
-  const outStart = a + (b - a) * (holdToEnd ? 1 : 0.9);
-  const opacity = useTransform(p, [a, inEnd, outStart, b], [0, 1, 1, holdToEnd ? 1 : 0]);
-  const y = useTransform(p, [a, inEnd, outStart, b], [44, 0, 0, holdToEnd ? 0 : -44]);
+  const outStart = a + (b - a) * 0.82;
+  const opacity = useTransform(p, [a, inEnd, outStart, b], [0, 1, 1, 0]);
+  const y = useTransform(p, [a, inEnd, outStart, b], [44, 0, 0, -44]);
   return { opacity, y };
+}
+
+/** A SHOW beat: like a real book it NEVER disappears once opened. It snaps to
+ *  fully visible right at the start of its span (its closed cover is what's first
+ *  shown) and then stays put at opacity 1 forever — the NEXT show's book simply
+ *  arrives ON TOP and covers it (z-index stacking), the way turning to the next
+ *  page hides the one before without it dissolving. No fade-out, no exit drift. */
+function useShowBeatStyle(p: MotionValue<number>, [a, b]: [number, number]) {
+  // Fade the closed cover IN quickly over the first ~6% of the span (a soft arrive
+  // rather than a hard pop), then HOLD at full opacity for the rest — and beyond,
+  // since later spans clamp it. It never fades out; the next book covers it.
+  const inEnd = a + (b - a) * 0.06;
+  const opacity = useTransform(p, [a, inEnd], [0, 1], { clamp: true });
+  return { opacity };
 }
 
 function IntroBeat({ p }: { p: MotionValue<number> }) {
@@ -433,119 +510,365 @@ function IntroBeat({ p }: { p: MotionValue<number> }) {
   );
 }
 
-/** Flips a show's panel open like a REAL book page. The panel is the page
- *  beneath; a blank cover-leaf sits on top, hinged on the spine along the left
- *  edge, and turns off it (3D rotateY ~180°) as you scroll into the show —
- *  revealing the page. Realism comes from: a specular highlight that sweeps
- *  across the leaf as it catches light mid-turn, a soft page-curl shadow the
- *  lifting leaf casts on the page beneath, and a back face that darkens as it
- *  turns away. The accent-coloured spine is the book's binding throughout. */
+/** Celebratory, dimensional foil art for the ELITE (special-occasion) cover —
+ *  gold balloons with shaded bodies + highlights, a wrapped gift with a bow,
+ *  drifting confetti and sparkles. Pure SVG (crisp at any size, no assets), tinted
+ *  to the gold-foil cover, with a gentle float so the closed book feels alive and
+ *  celebratory. Sits behind the title block (low opacity) so it never fights copy. */
+function CelebrationArt({ accent }: { accent: string }) {
+  const uid = "celeb";
+  return (
+    <svg
+      className="celebration-art pointer-events-none absolute inset-0 h-full w-full"
+      viewBox="0 0 400 280"
+      fill="none"
+      preserveAspectRatio="xMidYMid slice"
+      aria-hidden
+    >
+      <defs>
+        {/* shaded gold body for balloons + gift — light top-left, deep bottom-right */}
+        <radialGradient id={`${uid}-gold`} cx="38%" cy="30%" r="75%">
+          <stop offset="0" stopColor="#fff3c4" />
+          <stop offset="42%" stopColor="#f0cf6e" />
+          <stop offset="100%" stopColor="#b9852a" />
+        </radialGradient>
+        <radialGradient id={`${uid}-accent`} cx="38%" cy="30%" r="75%">
+          <stop offset="0" stopColor="#ffffff" stopOpacity="0.9" />
+          <stop offset="30%" stopColor={accent} />
+          <stop offset="100%" stopColor={accent} stopOpacity="0.65" />
+        </radialGradient>
+        <linearGradient id={`${uid}-ribbon`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#f7e7a6" />
+          <stop offset="1" stopColor="#c79a3a" />
+        </linearGradient>
+      </defs>
+
+      {/* ── balloons cluster (top-left) ─────────────────────────────────────── */}
+      <g className="celeb-float celeb-float--a">
+        {/* strings */}
+        <path d="M58 92 q 6 34 -2 70" stroke="url(#celeb-ribbon)" strokeWidth="1.4" />
+        <path d="M92 84 q -4 38 6 74" stroke="url(#celeb-ribbon)" strokeWidth="1.4" />
+        {/* balloon 1 (gold) */}
+        <ellipse cx="58" cy="62" rx="26" ry="32" fill={`url(#${uid}-gold)`} />
+        <path d="M58 94 l -5 8 l 10 0 z" fill="#b9852a" />
+        <ellipse cx="49" cy="50" rx="7" ry="11" fill="#fff" opacity="0.5" />
+        {/* balloon 2 (accent) */}
+        <ellipse cx="92" cy="54" rx="24" ry="30" fill={`url(#${uid}-accent)`} />
+        <path d="M92 84 l -5 8 l 10 0 z" fill={accent} />
+        <ellipse cx="84" cy="42" rx="6" ry="10" fill="#fff" opacity="0.55" />
+      </g>
+
+      {/* ── balloon (top-right) ─────────────────────────────────────────────── */}
+      <g className="celeb-float celeb-float--b">
+        <path d="M338 96 q 8 30 0 66" stroke="url(#celeb-ribbon)" strokeWidth="1.4" />
+        <ellipse cx="338" cy="64" rx="25" ry="31" fill={`url(#${uid}-gold)`} />
+        <path d="M338 95 l -5 8 l 10 0 z" fill="#b9852a" />
+        <ellipse cx="330" cy="51" rx="6" ry="10" fill="#fff" opacity="0.5" />
+      </g>
+
+      {/* ── wrapped gift (bottom-centre) ────────────────────────────────────── */}
+      <g className="celeb-float celeb-float--c">
+        {/* box body */}
+        <rect x="170" y="206" width="60" height="48" rx="4" fill={`url(#${uid}-accent)`} />
+        {/* lid */}
+        <rect x="164" y="194" width="72" height="18" rx="4" fill={`url(#${uid}-gold)`} />
+        {/* vertical ribbon */}
+        <rect x="194" y="194" width="12" height="60" fill="url(#celeb-ribbon)" opacity="0.92" />
+        {/* bow */}
+        <path d="M200 194 q -20 -16 -26 -2 q -2 10 26 6 z" fill={`url(#${uid}-gold)`} />
+        <path d="M200 194 q 20 -16 26 -2 q 2 10 -26 6 z" fill={`url(#${uid}-gold)`} />
+        <circle cx="200" cy="195" r="5" fill="#f7e7a6" />
+      </g>
+
+      {/* ── confetti + sparkles drifting across ─────────────────────────────── */}
+      <g className="celeb-twinkle">
+        <rect x="140" y="70" width="7" height="7" rx="1" fill={accent} transform="rotate(20 143 73)" />
+        <rect x="270" y="120" width="6" height="6" rx="1" fill="#f0cf6e" transform="rotate(-15 273 123)" />
+        <rect x="120" y="170" width="6" height="6" rx="1" fill="#f0cf6e" transform="rotate(30 123 173)" />
+        <rect x="300" y="190" width="7" height="7" rx="1" fill={accent} transform="rotate(-25 303 193)" />
+        <path d="M250 60 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 z" fill="#fff3c4" />
+        <path d="M160 130 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5 z" fill="#fff3c4" />
+        <path d="M320 140 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2 z" fill="#f7e7a6" />
+      </g>
+    </svg>
+  );
+}
+
+/** Flips a show open like a REAL hardback book. Built as a physical object, not
+ *  a flat card:
+ *
+ *   • a STACK of pages with real thickness — a striated fore-edge on the right
+ *     and a tail edge along the bottom, so the closed book is a block, not a sheet
+ *   • a sculpted SPINE (the binding) down the left: rounded with a highlight and
+ *     a shadow, raised head/tail bands, casting a gutter shadow into the page
+ *   • a hard COVER that overhangs the page block (the "square"), wrapped in a
+ *     cloth/leather-grained accent material with an embossed inner keep-line and
+ *     a debossed title, plus a beveled lit edge
+ *   • a soft CONTACT shadow under the whole thing so it sits on a surface
+ *
+ *  On scroll the cover swings off the spine (3D rotateY): a specular highlight
+ *  sweeps the grain mid-turn, the lifting cover throws a curved gutter shadow on
+ *  the revealed page, its underside (a dark endpaper) shows as it passes edge-on,
+ *  then it fades — leaving the open right-hand page cleanly readable. */
+const ROMAN = ["I", "II", "III", "IV", "V"];
+
 function BookTurn({
   p,
   span,
   show,
+  index,
   children,
 }: {
   p: MotionValue<number>;
   span: [number, number];
   show: Show;
+  index: number;
   children: React.ReactNode;
 }) {
   const accent = show.accent;
-  // The leaf turns over the first ~42% of the span, then holds open. Build the
-  // start / mid / end scroll positions of that window for the 3-stop ramps below.
-  // (Opening a touch earlier leaves more of the span for the open, readable page.)
-  const [fa, fb] = slice(span, 0.0, 0.42);
+  // The cover opens SLOWLY across a wide window (~58% of the span) so it tracks
+  // the scroll the whole way — every bit of scroll swings the board a little more,
+  // like easing a real hardback open by hand. The rest of the span is the open,
+  // readable hold. Build the start/mid/end scroll positions of that turn window.
+  const [fa, fb] = slice(span, 0.0, 0.58);
   const fmid = fa + (fb - fa) * 0.5;
 
-  // Real paper: ease out of the lift, ease into the lay-down — a soft S so it
-  // accelerates off the page then settles, never snapping. The leaf opens to just
-  // past edge-on (~-95°): an absolutely-positioned leaf can't physically swing to
-  // the LEFT of the column, so instead of laying it back over the page (which
-  // would re-cover the content) we fade it out as it passes 90° — it reads as the
-  // page swinging away and the content beneath is left cleanly visible.
-  const EASE = cubicBezier(0.45, 0, 0.2, 1);
-  const rotate = useTransform(p, [fa, fb], [0, -95], { clamp: true, ease: EASE });
-  // Leaf opacity: solid until it nears edge-on, then fades right out by the end.
-  const leafOpacity = useTransform(p, [fa, fa + (fb - fa) * 0.72, fb], [1, 1, 0], { clamp: true });
+  // Gentle, continuous easing (soft in and out) so the swing reads as a smooth,
+  // hand-controlled opening rather than a snap. It opens to ~-90° (edge-on): an
+  // absolutely-positioned cover can't swing LEFT of the column, so rather than
+  // laying it back over the page we fully fade it out as it APPROACHES edge-on —
+  // it reads as the cover swinging away, leaving the page cleanly visible with NO
+  // leftover sliver/ghost lingering at the rest point.
+  const EASE = cubicBezier(0.33, 0, 0.3, 1);
+  const rotate = useTransform(p, [fa, fb], [0, -90], { clamp: true, ease: EASE });
+  // Cover opacity: solid through most of the swing, then fades COMPLETELY by ~78%
+  // of the turn window — gone well before the page settles, so nothing of the
+  // cover remains visible at the open/rest state.
+  const leafOpacity = useTransform(
+    p,
+    [fa, fa + (fb - fa) * 0.55, fa + (fb - fa) * 0.78],
+    [1, 1, 0],
+    { clamp: true }
+  );
 
-  // Specular highlight sweeps across the FRONT of the leaf as it tilts into the
+  // Specular highlight sweeps across the FRONT of the cover as it tilts into the
   // light: dim → bright mid-turn → gone by edge-on.
-  const frontGlow = useTransform(p, [fa, fmid, fb], [0, 0.28, 0], { clamp: true });
+  const frontGlow = useTransform(p, [fa, fmid, fb], [0, 0.3, 0], { clamp: true });
   const frontGlowBg = useTransform(
     frontGlow,
-    (v) => `linear-gradient(105deg, rgba(255,255,255,0) 30%, rgba(255,255,255,${v}) 60%, rgba(255,255,255,0) 75%)`
+    (v) => `linear-gradient(105deg, rgba(255,255,255,0) 30%, rgba(255,255,255,${v}) 58%, rgba(255,255,255,0) 74%)`
   );
 
-  // Page-curl shadow the lifting leaf casts on the page beneath: a soft band near
-  // the spine that fades as the leaf clears, so the revealed page brightens.
-  const curl = useTransform(p, [fa, fmid, fb], [0.55, 0.4, 0], { clamp: true });
+  // Gutter shadow the lifting cover casts on the revealed page: a soft curved band
+  // near the spine, deepest mid-lift, fading as the cover clears so the page reads.
+  const curl = useTransform(p, [fa, fmid, fb], [0.6, 0.45, 0], { clamp: true });
   const curlBg = useTransform(
     curl,
-    (v) => `linear-gradient(90deg, rgba(0,0,0,${v}) 0%, rgba(0,0,0,${v * 0.5}) 22%, rgba(0,0,0,0) 50%)`
+    (v) => `linear-gradient(90deg, rgba(0,0,0,${v}) 0%, rgba(0,0,0,${v * 0.55}) 18%, rgba(0,0,0,0) 46%)`
   );
 
+  // The page block has real depth; PAGES = px of stacked-paper edge shown. Kept
+  // modest so, viewed head-on, the fore-edge reads as a slim warm stack of leaves
+  // rather than a heavy slab.
+  const PAGES = 9;
+  // Warm, finely-striated cream paper for the stacked-page edges (fore + tail).
+  const pageStripes =
+    "repeating-linear-gradient(180deg, #f4eedd 0px, #f4eedd 1px, #d9cfb6 1px, #d9cfb6 2px)";
+  const tailStripes =
+    "repeating-linear-gradient(90deg, #f4eedd 0px, #f4eedd 1px, #d9cfb6 1px, #d9cfb6 2px)";
+
+  // Darken the accent for the cover's shaded material gradient and bevels.
+  const coverDark = `color-mix(in srgb, ${accent} 38%, #000)`;
+  const coverDeep = `color-mix(in srgb, ${accent} 22%, #000)`;
+
   return (
-    <div className="relative mx-auto max-w-[760px]" style={{ perspective: "1800px" }}>
-      {/* The page beneath = the actual spec panel, revealed as the leaf turns. */}
+    <div
+      className="relative mx-auto max-w-[760px]"
+      // Centred, long perspective: the CLOSED book faces the viewer flat (no
+      // tilt) — only the cover swings in 3D as it opens. A long focal length keeps
+      // the depth gentle and realistic instead of a hard, card-like skew.
+      style={{ perspective: "2600px", perspectiveOrigin: "50% 45%" }}
+    >
+      {/* Contact shadow — grounds the book on a surface (sits just under it). */}
+      <span
+        className="pointer-events-none absolute -bottom-5 left-1/2 -z-10 h-10 w-[88%] -translate-x-1/2 rounded-[50%] blur-2xl"
+        style={{ background: "rgba(0,0,0,0.55)" }}
+        aria-hidden
+      />
+
+      {/* PAGE-STACK EDGES — the visible block of pages, giving the book thickness.
+          The block sits behind the page, offset down/right, so its fore-edge
+          (right) and tail (bottom) read as a real stack of leaves. The right slab
+          runs the full height + offset and the bottom slab the full width, so they
+          meet cleanly at the corner and read as one extruded block. */}
+      <span className="pointer-events-none absolute inset-0" aria-hidden>
+        {/* fore-edge (right side) — stacked-paper striations, lit at front */}
+        <span
+          className="absolute top-0 block"
+          style={{
+            right: `-${PAGES}px`,
+            height: `calc(100% + ${PAGES}px)`,
+            width: `${PAGES}px`,
+            backgroundImage: pageStripes,
+            boxShadow: "inset -2px 0 3px rgba(0,0,0,0.4), inset 1px 0 0 rgba(255,255,255,0.4)",
+          }}
+        />
+        {/* tail edge (bottom) */}
+        <span
+          className="absolute left-0 block"
+          style={{
+            bottom: `-${PAGES}px`,
+            width: `calc(100% + ${PAGES}px)`,
+            height: `${PAGES}px`,
+            backgroundImage: tailStripes,
+            boxShadow: "inset 0 -2px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.4)",
+          }}
+        />
+      </span>
+
+      {/* The page beneath = the actual spec panel = the open RIGHT-hand page. */}
       <div className="relative transform-3d">
         {children}
-        {/* Curl shadow cast by the lifting leaf, near the spine. */}
+        {/* Gutter valley shadow cast by the lifting cover, near the spine. */}
         <motion.span
           className="pointer-events-none absolute inset-0"
           style={{ backgroundImage: curlBg }}
           aria-hidden
         />
+        {/* Permanent soft page-curve near the spine, so the open page bows like a
+            real book even after the cover has gone. */}
+        <span
+          className="pointer-events-none absolute inset-y-0 left-0 w-1/3"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.08) 35%, rgba(0,0,0,0) 70%)",
+          }}
+          aria-hidden
+        />
       </div>
 
-      {/* The turning leaf = the book COVER. It carries the show's identity (tag +
-          name + accent rule) so the closed book is never blank, and that title
-          stays legible right through the turn — it only goes as the whole leaf
-          fades near edge-on. Hinged on the LEFT edge (the spine). */}
+      {/* The turning COVER. A hard board hinged on the spine, carrying the show's
+          identity so the closed book is never blank; the title stays legible right
+          through the turn and only goes as the cover fades near edge-on. */}
       <motion.div
-        className="absolute inset-0 origin-left overflow-hidden bg-[#15171a] transform-3d"
-        style={{ rotateY: rotate, opacity: leafOpacity, borderLeft: `3px solid ${accent}` }}
+        className="absolute inset-0 origin-left transform-3d"
+        style={{ rotateY: rotate, opacity: leafOpacity }}
         aria-hidden
       >
-        {/* faint paper grain so the closed leaf doesn't read as flat black */}
+        {/* FRONT face of the cover — a clothbound, foil-stamped game-show volume.
+            Rounded board corners, a deep accent material, a gold-foil emblem,
+            title and edition line, a gilt double-rule frame, and a sheen sweep. */}
         <span
-          className="pointer-events-none absolute inset-0 opacity-[0.06]"
-          style={{ background: "radial-gradient(120% 80% at 70% 0%, #ffffff 0%, transparent 60%)" }}
-        />
-
-        {/* Cover title block — centred, the show's name on the front of the book. */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+          className="absolute inset-0 overflow-hidden rounded-[3px] backface-hidden"
+          style={{
+            background: `radial-gradient(130% 100% at 50% 0%, ${accent} 0%, ${coverDark} 58%, ${coverDeep} 100%)`,
+            boxShadow:
+              "inset 0 1px 0 rgba(255,255,255,0.2), inset 0 0 70px rgba(0,0,0,0.4), inset 7px 0 16px rgba(0,0,0,0.45)",
+          }}
+        >
+          {/* woven cloth grain — a fine cross-hatch + soft top sheen */}
           <span
-            className="text-[11px] font-bold uppercase tracking-[0.28em] sm:text-xs"
-            style={{ color: accent }}
-          >
-            {show.tag}
-          </span>
+            className="pointer-events-none absolute inset-0 opacity-[0.13]"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(0deg, rgba(0,0,0,0.5) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(0,0,0,0.5) 0 1px, transparent 1px 3px)",
+            }}
+          />
           <span
-            className="mt-3 text-[40px] font-bold leading-none tracking-[-0.02em] sm:text-5xl md:text-7xl"
-            style={{ fontFamily: "var(--font-inter-tight, var(--font-display))", color: accent }}
-          >
-            {show.label}
-          </span>
-          <span className="mt-4 block h-[3px] w-16 md:w-24" style={{ background: accent }} />
-          <span className="mt-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/40 md:text-[13px]">
-            Scroll to open
-          </span>
-        </div>
+            className="pointer-events-none absolute inset-0 opacity-35"
+            style={{ background: "radial-gradient(120% 90% at 26% 8%, rgba(255,255,255,0.5) 0%, transparent 52%)" }}
+          />
 
-        {/* moving specular highlight as the leaf tilts into the light */}
-        <motion.span
-          className="pointer-events-none absolute inset-0"
-          style={{ backgroundImage: frontGlowBg }}
-        />
+          {/* Elite (special-occasion) volume gets celebratory foil art — balloons,
+              a gift, confetti — floating behind the title to feel like a party. */}
+          {isElite && (
+            <span className="pointer-events-none absolute inset-0 opacity-[0.55]">
+              <CelebrationArt accent={accent} />
+            </span>
+          )}
+
+          {/* gilt double-rule frame — debossed dark line + a thin GOLD-foil keyline */}
+          <span
+            className="pointer-events-none absolute inset-4 rounded-[2px] sm:inset-6"
+            style={{ boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.4)" }}
+          />
+          <span
+            className="pointer-events-none absolute inset-[18px] rounded-[2px] sm:inset-[26px]"
+            style={{
+              border: "1.5px solid transparent",
+              borderImage: `${GOLD} 1`,
+              opacity: 0.85,
+              filter: "drop-shadow(0 1px 0 rgba(0,0,0,0.45))",
+            }}
+          />
+
+          {/* Cover face — foil emblem, tag, title, edition line. */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
+            {/* foil emblem medallion: a gold ring + the show's mark (★ for the
+                crowd favourite, the volume numeral otherwise) — game-show energy */}
+            <span
+              className="mb-5 flex h-12 w-12 items-center justify-center rounded-full text-[18px] font-bold sm:h-14 sm:w-14 sm:text-xl"
+              style={{
+                background: GOLD,
+                color: coverDeep,
+                boxShadow:
+                  "inset 0 1px 1px rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.45)",
+              }}
+            >
+              {show.popular ? "★" : ROMAN[index] ?? index + 1}
+            </span>
+
+            <span
+              className="text-[11px] font-bold uppercase tracking-[0.32em] sm:text-xs"
+              style={{ ...GOLD_TEXT, opacity: 0.95 }}
+            >
+              {show.tag}
+            </span>
+            <span
+              className="mt-3 text-[40px] font-bold leading-none tracking-[-0.02em] sm:text-5xl md:text-7xl"
+              style={{
+                fontFamily: "var(--font-inter-tight, var(--font-display))",
+                ...GOLD_TEXT,
+                filter: "drop-shadow(0 1px 0 rgba(0,0,0,0.5)) drop-shadow(0 2px 5px rgba(0,0,0,0.4))",
+              }}
+            >
+              {show.label}
+            </span>
+            <span
+              className="mt-4 block h-[2px] w-16 md:w-24"
+              style={{ background: GOLD, boxShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
+            />
+            <span
+              className="mt-5 text-[10px] font-semibold uppercase tracking-[0.3em] sm:text-[11px]"
+              style={{ color: "rgba(255,255,255,0.6)" }}
+            >
+              The Game Show · Vol. {ROMAN[index] ?? index + 1}
+            </span>
+            <span className="mt-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/45 sm:text-[11px]">
+              Scroll to open
+            </span>
+          </div>
+
+          {/* moving specular sheen as the cover tilts into the light */}
+          <motion.span className="pointer-events-none absolute inset-0" style={{ backgroundImage: frontGlowBg }} />
+        </span>
       </motion.div>
 
-      {/* Spine — the accent binding line down the hinge edge, present throughout. */}
-      <span
-        className="pointer-events-none absolute inset-y-0 left-0 w-[3px]"
-        style={{ background: accent, opacity: 0.9 }}
-        aria-hidden
-      />
+      {/* SPINE — the sculpted binding down the hinge edge: rounded accent board
+          with a lit edge, a shadowed valley into the gutter, and raised head/tail
+          bands. Present throughout (it doesn't turn). */}
+      <span className="pointer-events-none absolute inset-y-0 left-0 z-20 w-[14px]" aria-hidden>
+        <span
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(90deg, ${coverDeep} 0%, ${accent} 35%, ${coverDark} 78%, rgba(0,0,0,0.55) 100%)`,
+            boxShadow: "inset 1px 0 0 rgba(255,255,255,0.22), inset -2px 0 6px rgba(0,0,0,0.5)",
+          }}
+        />
+        {/* raised binding bands near head and tail */}
+        <span className="absolute inset-x-0 top-[12%] h-[3px]" style={{ background: "rgba(0,0,0,0.45)", boxShadow: "0 1px 0 rgba(255,255,255,0.15)" }} />
+        <span className="absolute inset-x-0 bottom-[12%] h-[3px]" style={{ background: "rgba(0,0,0,0.45)", boxShadow: "0 1px 0 rgba(255,255,255,0.15)" }} />
+      </span>
     </div>
   );
 }
@@ -555,30 +878,31 @@ function BookTurn({
  *  it sits in the name's own keep-out lane). */
 function ShowBeat({
   show,
+  index,
   span,
   p,
-  holdToEnd = false,
 }: {
   show: Show;
+  index: number;
   span: [number, number];
   p: MotionValue<number>;
-  holdToEnd?: boolean;
 }) {
-  // Every show is a book that flips open. Beats cross-fade normally (fade IN over
-  // the first fifth, OUT over the last) so only ONE beat is ever on screen — the
-  // closed leaf covers the panel during the fade-in, so it still reads as a solid
-  // book arriving, and the BookTurn sequence then flips it open.
-  const style = useBeatStyle(p, span, holdToEnd);
+  // Every show is a book that flips open — and, like a real book, NEVER fades away
+  // once opened. The closed cover arrives, flips open, and the page then holds put.
+  // The next show's book simply arrives ON TOP (higher z-index) and covers it.
+  const style = useShowBeatStyle(p, span);
 
-  // Content write-on timing. The leaf flips open + fades by ~42% of the span, so
-  // the page content reveals right after and is FULLY written by ~62%, leaving a
-  // long static, readable hold (to the beat's fade-out at 90%). The snap settles
-  // the scroll inside that hold, so each show comes to rest open and readable.
-  const tagAt = slice(span, 0.4, 0.48);
-  const nameAt = slice(span, 0.43, 0.52);
-  const underlineAt = slice(span, 0.48, 0.56);
-  const valueAt = slice(span, 0.5, 0.58);
-  const pitchAt = slice(span, 0.54, 0.62);
+  // Content write-on timing. Like a real book the page is ALREADY printed under
+  // the cover — so the content writes on EARLY, while the slowly-opening cover
+  // (0→58% of span) still hides most of the page, and is FULLY there by ~46% (just
+  // as the cover passes edge-on and fades). The cover therefore lifts to reveal a
+  // page that's already written, never a blank black page. The open page then
+  // holds put for the rest of the span; the snap rests inside that hold.
+  const tagAt = slice(span, 0.12, 0.22);
+  const nameAt = slice(span, 0.16, 0.28);
+  const underlineAt = slice(span, 0.24, 0.34);
+  const valueAt = slice(span, 0.28, 0.38);
+  const pitchAt = slice(span, 0.34, 0.46);
 
   const tag = useWriteOn(p, tagAt);
   const name = useWriteOn(p, nameAt);
@@ -590,9 +914,11 @@ function ShowBeat({
   const underlineScale = useTransform(p, underlineAt, [0, 1], { clamp: true });
 
   // The whole panel = the inner right page of a book; the spec content writes on.
+  // The page is FULLY OPAQUE (not translucent) so that, when the next show's book
+  // arrives on top, it cleanly covers the page beneath — like turning a real page.
   const panel = (
     <div
-      className="mx-auto max-w-[760px] border border-white/10 bg-[#101213]/85 px-6 py-8 text-center backdrop-blur-sm sm:px-8 md:px-12 md:py-11"
+      className="mx-auto max-w-[760px] border border-white/10 bg-[#101213] px-6 py-8 text-center sm:px-8 md:px-12 md:py-11"
       style={{ borderLeft: `3px solid ${show.accent}` }}
     >
         {/* tag — squared BMW eyebrow. Popular = solid accent block; others a
@@ -657,10 +983,15 @@ function ShowBeat({
   );
 
   return (
-    <motion.div className="absolute inset-x-4 top-1/2 -translate-y-1/2 sm:inset-x-6" style={style}>
+    <motion.div
+      className="absolute inset-x-4 top-1/2 -translate-y-1/2 sm:inset-x-6"
+      // Later shows stack ABOVE earlier ones, so each arriving book covers the
+      // open page before it (a real page-turn) instead of cross-fading.
+      style={{ ...style, zIndex: 10 + index }}
+    >
       {/* Every show flips open like a real book — the cover carries the show's
           name, and turns off the spine on scroll to reveal the panel beneath. */}
-      <BookTurn p={p} span={span} show={show}>
+      <BookTurn p={p} span={span} show={show} index={index}>
         {panel}
       </BookTurn>
     </motion.div>

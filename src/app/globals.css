@@ -617,10 +617,11 @@
    strong ~15:1 contrast with off-white text while being far easier to read for
    sustained copy. */
 .sketchpad {
-  background-color: #121316;
+  background-color: #0c0d12;
   background-image:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(124, 92, 252, 0.12), transparent 60%),
-    radial-gradient(ellipse 60% 50% at 50% 100%, rgba(252, 25, 237, 0.06), transparent 65%);
+    radial-gradient(ellipse 90% 55% at 50% -5%, rgba(124, 92, 252, 0.28), transparent 62%),
+    radial-gradient(ellipse 70% 55% at 12% 100%, rgba(54, 207, 255, 0.16), transparent 65%),
+    radial-gradient(ellipse 70% 55% at 88% 100%, rgba(252, 25, 237, 0.16), transparent 65%);
   isolation: isolate;
 }
 
@@ -767,6 +768,62 @@
   fill: #fff;
   opacity: 0.9;
   filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.9));
+}
+
+/* ── Neon stage light-rig (ShowRounds backdrop) ──────────────────────────────
+   Bright glowing neon tubing + drifting coloured spotlight blooms behind the
+   game-show books. The SVG <g filter="#neon-bloom"> does the soft glow; here we
+   add the lit-tube look (round caps, a faint core flicker) and the moving wash. */
+.neon-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: neon-pulse 3.4s ease-in-out infinite;
+}
+@keyframes neon-pulse {
+  0%, 100% { opacity: 0.82; }
+  50% { opacity: 1; }
+}
+
+/* Soft coloured spotlight blooms — big blurred radial discs that slowly drift,
+   like stage lights washing the set. Screen-blended so they add light. */
+.bg-spot {
+  filter: blur(48px);
+  mix-blend-mode: screen;
+  opacity: 0.9;
+  will-change: transform;
+}
+.bg-spot--blue {
+  background: radial-gradient(circle, rgba(54, 207, 255, 0.55) 0%, rgba(54, 207, 255, 0) 62%);
+  animation: spot-drift-a 17s ease-in-out infinite;
+}
+.bg-spot--pink {
+  background: radial-gradient(circle, rgba(255, 79, 216, 0.5) 0%, rgba(255, 79, 216, 0) 62%);
+  animation: spot-drift-b 21s ease-in-out infinite;
+}
+.bg-spot--violet {
+  background: radial-gradient(circle, rgba(124, 92, 252, 0.5) 0%, rgba(124, 92, 252, 0) 60%);
+  animation: spot-drift-c 25s ease-in-out infinite;
+}
+@keyframes spot-drift-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(8vmax, 6vmax) scale(1.12); }
+}
+@keyframes spot-drift-b {
+  0%, 100% { transform: translate(0, 0) scale(1.05); }
+  50% { transform: translate(-7vmax, -5vmax) scale(0.95); }
+}
+@keyframes spot-drift-c {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-44%, -56%) scale(1.15); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .neon-line,
+  .bg-spot--blue,
+  .bg-spot--pink,
+  .bg-spot--violet {
+    animation: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

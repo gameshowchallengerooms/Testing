@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { Star } from "lucide-react";
+import { ArrowUp, Star } from "lucide-react";
 import {
   motion,
   useScroll,
@@ -244,6 +244,18 @@ const PHASE: Record<"headline" | "para" | "pill", [number, number]> = {
 // scroll, not a fixed pixel count.
 const TRACK_VIEWPORTS = 3;
 
+// Headline size. The height budget is what keeps the hero fully on-screen:
+// the headline is WORDS.length lines tall, so its per-line size must be a
+// fraction of the viewport height that leaves room for everything else in the
+// column (header clearance, setup copy, fill paragraph, pill, and the gaps).
+//
+// Budgeting ~46dvh for the whole headline across 4 lines gives ~11.5dvh per
+// line. The earlier 14dvh/line spent ~56dvh on the headline alone, which
+// overflowed the bottom of short-wide screens (1280x720, 1440x800) and clipped
+// the gold pill. The vw term still caps it on narrow phones, where the words
+// are width-bound rather than height-bound.
+const HEADLINE_FONT_SIZE = "clamp(44px, min(16.5vw, 11.5dvh), 156px)";
+
 /**
  * The hero section.
  *
@@ -317,7 +329,7 @@ export function HeroSection() {
     <div
       ref={stickyRef}
       className="sticky top-0 w-full overflow-hidden"
-      style={{ height: "100dvh", minHeight: "600px" }}
+      style={{ height: "100dvh" }}
     >
       {/* next/image fill requires a positioned ancestor — relative wrapper here */}
       <div className="absolute inset-0">
@@ -362,16 +374,12 @@ export function HeroSection() {
           header, the pill sits near the bottom, and the headline gets the big
           middle space. ~20px breathing room top and bottom (plus header clear). */}
       <div
-        className="absolute inset-0 z-5 flex flex-col items-center justify-between px-5 text-center md:px-10"
-        style={{
-          paddingTop: "max(5.5rem, calc(env(safe-area-inset-top) + 5.5rem))",
-          paddingBottom: "20px",
-        }}
+        className="hero-content absolute inset-0 z-5 flex flex-col items-center justify-between px-5 text-center md:px-10"
       >
-        <div className="flex w-full max-w-260 flex-1 flex-col items-center justify-center gap-[clamp(1rem,4dvh,2.5rem)]">
+        <div className="flex min-h-0 w-full max-w-260 flex-1 flex-col items-center justify-center gap-[clamp(0.5rem,2.5dvh,2.5rem)]">
 
           {/* ── Top row: setup copy ── */}
-          <p className="hero-enter hero-enter-1 max-w-180 text-sm font-medium leading-relaxed text-white/80 md:text-lg">
+          <p className="hero-setup hero-enter hero-enter-1 max-w-180 shrink-0 text-sm font-medium leading-relaxed text-white/80 md:text-lg">
             For years, you watched celebrities play exciting game shows on TV.{" "}
             Now,{" "}
             <span className="font-semibold text-white">
@@ -391,14 +399,14 @@ export function HeroSection() {
               {reduce ? (
                 WORDS.map((w) => (
                   <span key={w} className="block font-black tracking-tight"
-                    style={{ fontSize: "clamp(50px, min(16.5vw, 14dvh), 156px)", lineHeight: 0.97 }}>
+                    style={{ fontSize: HEADLINE_FONT_SIZE, lineHeight: 0.97 }}>
                     {w}
                   </span>
                 ))
               ) : (
                 WORDS.map((w, i) => (
                   <span key={w} className="block font-black tracking-tight"
-                    style={{ fontSize: "clamp(50px, min(16.5vw, 14dvh), 156px)", lineHeight: 0.97 }}>
+                    style={{ fontSize: HEADLINE_FONT_SIZE, lineHeight: 0.97 }}>
                     <RevealWord word={w} progress={headlineProgress} index={i} total={WORDS.length} />
                   </span>
                 ))
@@ -446,7 +454,105 @@ export function HeroSection() {
 
         </div>
       </div>
+
+      {/* Scroll cue — invites the first scroll, then fades out as the reveal
+          takes over. Absolutely positioned over the frame (not in the flex
+          column) so it can never push the content out of the viewport. */}
+      {!reduce && <ScrollCue progress={progress} />}
     </div>
     </section>
+  );
+}
+
+/**
+ * "Scroll to play" pop-up, centred over the hero.
+ *
+ * Silent while the visitor is moving. If the page has been open for 5 seconds
+ * with NO scroll, a big centred card pops in — a swipe-up arrow animation plus
+ * the label — shows for just 3 seconds, then dismisses itself; after a 4-second
+ * breather it pops in again, cycling show → hide until the FIRST real scroll,
+ * at which point it's gone for good. It never stays up permanently — that would
+ * sit over the hero and hurt the experience. `pointer-events-none` keeps it
+ * from intercepting clicks, and it's aria-hidden since it's a visual affordance
+ * for a scroll the page already supports.
+ */
+const CUE_FIRST_DELAY = 5000; // ms with no scroll before the first pop-in
+const CUE_SHOW_FOR = 3000; // ms the card stays up per cycle
+const CUE_REST_FOR = 4000; // ms hidden between cycles
+
+function ScrollCue({ progress }: { progress: MotionValue<number> }) {
+  const [phase, setPhase] = useState<"waiting" | "showing" | "done">("waiting");
+
+  useEffect(() => {
+    let done = false;
+    let timer: ReturnType<typeof setTimeout>;
+    // The show/hide cycle: pop in for 3s, rest for 4s, repeat until they scroll.
+    const show = () => {
+      if (done) return;
+      setPhase("showing");
+      timer = setTimeout(hide, CUE_SHOW_FOR);
+    };
+    const hide = () => {
+      if (done) return;
+      setPhase("waiting");
+      timer = setTimeout(show, CUE_REST_FOR);
+    };
+    // The hero is the top of the page, so "the page has been open 5s with no
+    // scroll" is simply a timer from mount.
+    timer = setTimeout(show, CUE_FIRST_DELAY);
+    // First real scroll → gone for good.
+    const unsub = progress.on("change", (v) => {
+      if (!done && v > 0.05) {
+        done = true;
+        clearTimeout(timer);
+        setPhase("done");
+      }
+    });
+    return () => {
+      unsub();
+      clearTimeout(timer);
+    };
+  }, [progress]);
+
+  const showing = phase === "showing";
+
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 z-6 flex items-center justify-center"
+    >
+      <motion.div
+        className="flex flex-col items-center gap-4 rounded-2xl border border-white/20 bg-black/85 px-10 py-8 text-center shadow-[0_18px_70px_rgba(0,0,0,0.75)] md:px-14 md:py-10"
+        initial={{ opacity: 0, scale: 0.85 }}
+        // One quick swell on each pop-in; the card dismisses itself after 3s so
+        // there's no need for a looping flash while it's up.
+        animate={showing ? { opacity: 1, scale: [0.9, 1.05, 1] } : { opacity: 0, scale: 0.85 }}
+        transition={
+          showing
+            ? { opacity: { duration: 0.35, ease: "easeOut" }, scale: { duration: 0.55, ease: "easeOut" } }
+            : { duration: 0.3, ease: "easeOut" }
+        }
+      >
+        <span className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-white text-black md:h-16 md:w-16">
+          {/* Swipe-up motion: the arrow rises through the badge and loops. */}
+          <motion.span
+            animate={showing ? { y: [12, -2, -14], opacity: [0, 1, 0] } : { y: 0, opacity: 1 }}
+            transition={
+              showing
+                ? { duration: 1.1, repeat: Infinity, repeatDelay: 0.35, ease: "easeOut" }
+                : { duration: 0.2 }
+            }
+          >
+            <ArrowUp size={28} strokeWidth={2.5} />
+          </motion.span>
+        </span>
+        <span className="text-lg font-bold uppercase tracking-[0.22em] text-white md:text-2xl">
+          Scroll to play
+        </span>
+        <span className="text-[12px] font-medium uppercase tracking-[0.18em] text-white/55 md:text-[13px]">
+          Swipe up — the show starts as you scroll
+        </span>
+      </motion.div>
+    </div>
   );
 }

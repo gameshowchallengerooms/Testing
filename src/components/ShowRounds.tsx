@@ -11,7 +11,6 @@ import {
   useSpring,
   useTransform,
   useVelocity,
-  useMotionTemplate,
   useReducedMotion,
   cubicBezier,
   type MotionValue,
@@ -54,6 +53,15 @@ const GOLD_TEXT: React.CSSProperties = {
   WebkitTextFillColor: "transparent",
   color: "transparent",
 };
+
+// Static overlay gradients for the book-turn: the specular sheen that sweeps the
+// cover and the gutter shadow it casts on the revealed page. The gradient images
+// are FIXED — only their layer opacity animates (GPU-composited), so scrubbing
+// them never triggers a repaint (animating the gradient itself did, every frame).
+const SHEEN =
+  "linear-gradient(105deg, rgba(255,255,255,0) 30%, rgba(255,255,255,0.3) 58%, rgba(255,255,255,0) 74%)";
+const CURL_SHADOW =
+  "linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.33) 18%, rgba(0,0,0,0) 46%)";
 
 /* ── Content ─────────────────────────────────────────────────────────────── */
 
@@ -306,8 +314,6 @@ export function ShowRounds() {
     };
   }, [lenis, viewportH, isMobile]);
 
-  const hintOpacity = useTransform(p, [0, 0.04], [1, 0]);
-
   // The stage stays the dark game-show set the whole way; the neon light-rig glows
   // bright behind the books, easing back a touch toward the end so the last held
   // show reads clean as you scroll on into pricing (kept well above the text via a
@@ -403,12 +409,7 @@ export function ShowRounds() {
             even a tiny scroll visibly advances the fill + lights the head. */}
         <ProgressRail p={p} energy={energy} />
 
-        <motion.div
-          className="pointer-events-none absolute bottom-10 left-1/2 z-20 -translate-x-1/2 text-[11px] font-medium uppercase tracking-[0.3em] text-white/40"
-          style={{ opacity: hintOpacity }}
-        >
-          Scroll
-        </motion.div>
+        <ScrollHint p={p} />
       </div>
     </section>
   );
@@ -463,6 +464,122 @@ function ProgressRail({ p, energy }: { p: MotionValue<number>; energy: MotionVal
   );
 }
 
+/** "Scroll to play" prompt. Nothing shows while the visitor is moving; if the
+ *  stage has been on screen for 5 seconds with NO story scroll, a big overlay
+ *  card pops in for just 3 seconds, dismisses itself, rests 4 seconds and pops
+ *  in again — cycling until their first real scroll through the story, after
+ *  which it's gone for good. It never stays up permanently (that would sit over
+ *  the books and hurt the experience). */
+function ScrollHint({ p }: { p: MotionValue<number> }) {
+  const [phase, setPhase] = useState<"waiting" | "showing" | "done">("waiting");
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let done = false;
+    let inView = false;
+
+    const clear = () => {
+      if (timer) clearTimeout(timer);
+      timer = undefined;
+    };
+    // The show/hide cycle: pop in for 3s, rest for 4s, repeat until they scroll
+    // (only ever while the stage is on screen).
+    const show = () => {
+      if (done || !inView) return;
+      setPhase("showing");
+      timer = setTimeout(hide, 3000);
+    };
+    const hide = () => {
+      if (done) return;
+      setPhase("waiting");
+      timer = setTimeout(show, 4000);
+    };
+
+    // First REAL scroll of the story dismisses the prompt forever. The threshold
+    // sits just past the intro span so arriving at the section (and Lenis snapping
+    // to the intro rest point) doesn't count as "they scrolled".
+    const unsub = p.on("change", (v) => {
+      if (!done && v > 0.07) {
+        done = true;
+        clear();
+        setPhase("done");
+      }
+    });
+
+    // Arm the 5s no-scroll timer only while the stage is actually on screen; if
+    // they leave the section without engaging, reset so a return re-arms it.
+    const el = rootRef.current;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (done) return;
+        inView = entry.isIntersecting;
+        if (inView) {
+          timer ??= setTimeout(show, 5000);
+        } else {
+          clear();
+          setPhase((ph) => (ph === "done" ? ph : "waiting"));
+        }
+      },
+      { threshold: 0.5 }
+    );
+    if (el) io.observe(el);
+
+    return () => {
+      unsub();
+      io.disconnect();
+      clear();
+    };
+  }, [p]);
+
+  const showing = phase === "showing";
+
+  return (
+    // Centred over the stage, pop-up style — pointer-events-none throughout so it
+    // never blocks scrolling or clicks while it's up.
+    <div
+      ref={rootRef}
+      className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center"
+    >
+      <motion.div
+        className="flex flex-col items-center gap-4 rounded-2xl border border-white/20 bg-black/85 px-10 py-8 text-center shadow-[0_18px_70px_rgba(0,0,0,0.75)] md:px-14 md:py-10"
+        initial={{ opacity: 0, scale: 0.85 }}
+        // One quick swell on each pop-in; the card dismisses itself after 3s so
+        // there's no need for a looping flash while it's up.
+        animate={
+          showing
+            ? { opacity: 1, scale: [0.9, 1.05, 1] }
+            : { opacity: 0, scale: 0.85 }
+        }
+        transition={
+          showing
+            ? { opacity: { duration: 0.35, ease: "easeOut" }, scale: { duration: 0.55, ease: "easeOut" } }
+            : { duration: 0.3, ease: "easeOut" }
+        }
+      >
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-black md:h-16 md:w-16">
+          <motion.span
+            animate={showing ? { y: [-3, 4, -3] } : { y: 0 }}
+            transition={
+              showing
+                ? { duration: 1.3, repeat: Infinity, ease: "easeInOut" }
+                : { duration: 0.2 }
+            }
+          >
+            <ArrowDown size={28} strokeWidth={2.5} aria-hidden />
+          </motion.span>
+        </span>
+        <span className="text-lg font-bold uppercase tracking-[0.22em] text-white md:text-2xl">
+          Scroll to play
+        </span>
+        <span className="text-[12px] font-medium uppercase tracking-[0.18em] text-white/55 md:text-[13px]">
+          The show moves as you scroll
+        </span>
+      </motion.div>
+    </div>
+  );
+}
+
 /* SVG defs — the rough-ink filter + champ gradient kept for the cover/recap art. */
 function SketchDefs() {
   return (
@@ -490,21 +607,31 @@ function SketchDefs() {
  *
  *  Because everything tracks the spring-smoothed scroll position, motion is silky
  *  and continuous; there's no velocity-reactive flare to cause the jittery
- *  "heart-attack" strobing. Sits far behind the panels; the heavy blur + the panel
- *  backdrop keep it from hurting legibility. */
+ *  "heart-attack" strobing. Sits far behind the panels; the soft gradient falloff +
+ *  the panel backdrop keep it from hurting legibility.
+ *
+ *  PERF: the travelling spot + hue shift are built from STATIC gradient layers that
+ *  only ever animate transform (the pan) and opacity (the hue cross-fade) — both
+ *  GPU-composited. The old version regenerated the gradient image every frame and
+ *  ran a 64px blur over the full viewport, repainting two huge layers per scroll
+ *  frame — the main source of the scroll flicker. */
 function BackdropArt({ p, inkOpacity }: { p: MotionValue<number>; inkOpacity: MotionValue<number> }) {
-  // The active show's accent, interpolated smoothly across the scroll: blue →
-  // violet → orange. Two glow layers cross-blend so the colour shift reads as the
-  // room re-lighting around the book you're on.
-  const hueStops = [0, 0.25, 0.55, 0.85, 1];
-  const glowA = useTransform(p, hueStops, ["#1FA2FF", "#1FA2FF", "#7C5CFC", "#FF8A1E", "#FF8A1E"]);
-  const glowB = useTransform(p, hueStops, ["#36CFFF", "#36CFFF", "#9A7BFF", "#FFA94D", "#FFA94D"]);
   // The glow GLIDES across the stage with scroll position — a gentle pan so a swipe
-  // visibly moves the light, with no jitter (position is spring-smoothed upstream).
-  const glowX = useTransform(p, [0, 1], ["28%", "72%"]);
-  const glowY = useTransform(p, [0, 1], ["34%", "60%"]);
-  const wash = useMotionTemplate`radial-gradient(60vmax 60vmax at ${glowX} ${glowY}, ${glowA} 0%, transparent 60%)`;
-  const washB = useMotionTemplate`radial-gradient(46vmax 46vmax at ${glowY} ${glowX}, ${glowB} 0%, transparent 58%)`;
+  // visibly moves the light. Offsets are from stage-centre: wash A pans 28%→72%
+  // across, wash B drifts the opposite diagonal (same paths as before, now as
+  // transforms instead of gradient positions).
+  const glowX = useTransform(p, [0, 1], ["-22vw", "22vw"]);
+  const glowY = useTransform(p, [0, 1], ["-16vh", "10vh"]);
+  const glowXB = useTransform(p, [0, 1], ["-16vw", "10vw"]);
+  const glowYB = useTransform(p, [0, 1], ["-22vh", "22vh"]);
+  // Hue cross-fade — blue holds through Classic, violet peaks on Prime Time, orange
+  // takes over for Elite. Opposing ramps keep total brightness roughly level.
+  const blueA = useTransform(p, [0.25, 0.55], [0.5, 0]);
+  const violetA = useTransform(p, [0.25, 0.55, 0.85], [0, 0.5, 0]);
+  const orangeA = useTransform(p, [0.55, 0.85], [0, 0.5]);
+  const blueB = useTransform(p, [0.25, 0.55], [0.38, 0]);
+  const violetB = useTransform(p, [0.25, 0.55, 0.85], [0, 0.38, 0]);
+  const orangeB = useTransform(p, [0.55, 0.85], [0, 0.38]);
 
   return (
     <motion.div
@@ -519,17 +646,36 @@ function BackdropArt({ p, inkOpacity }: { p: MotionValue<number>; inkOpacity: Mo
       />
       <span className="bg-spot bg-spot--violet absolute left-1/2 top-1/2 h-[50vmax] w-[50vmax] -translate-x-1/2 -translate-y-1/2 rounded-full" />
 
-      {/* Scroll-driven colour wash — travels + shifts hue per show. Screen-blended
-          and heavily soft so it re-lights the room around the active book. */}
-      <motion.span
-        className="absolute inset-0 blur-3xl"
-        style={{ backgroundImage: wash, opacity: 0.5, mixBlendMode: "screen" }}
-      />
-      <motion.span
-        className="absolute inset-0 blur-3xl"
-        style={{ backgroundImage: washB, opacity: 0.38, mixBlendMode: "screen" }}
-      />
+      {/* Scroll-driven colour wash — the pan is a transform, the hue shift an
+          opacity cross-fade between fixed-colour spots. */}
+      <motion.div className="absolute inset-0" style={{ x: glowX, y: glowY }}>
+        <GlowSpot color="#1FA2FF" size="120vmax" opacity={blueA} />
+        <GlowSpot color="#7C5CFC" size="120vmax" opacity={violetA} />
+        <GlowSpot color="#FF8A1E" size="120vmax" opacity={orangeA} />
+      </motion.div>
+      <motion.div className="absolute inset-0" style={{ x: glowXB, y: glowYB }}>
+        <GlowSpot color="#36CFFF" size="92vmax" opacity={blueB} />
+        <GlowSpot color="#9A7BFF" size="92vmax" opacity={violetB} />
+        <GlowSpot color="#FFA94D" size="92vmax" opacity={orangeB} />
+      </motion.div>
     </motion.div>
+  );
+}
+
+/** One fixed-colour soft glow spot, centred on its pan layer. The radial falloff is
+ *  baked into the (static) gradient — only the layer's opacity ever animates. */
+function GlowSpot({ color, size, opacity }: { color: string; size: string; opacity: MotionValue<number> }) {
+  return (
+    <motion.span
+      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+      style={{
+        width: size,
+        height: size,
+        opacity,
+        background: `radial-gradient(closest-side, ${color} 0%, transparent 62%)`,
+        mixBlendMode: "screen",
+      }}
+    />
   );
 }
 
@@ -901,20 +1047,14 @@ function BookTurn({
   );
 
   // Specular highlight sweeps across the FRONT of the cover as it tilts into the
-  // light: dim → bright mid-turn → gone by edge-on.
-  const frontGlow = useTransform(p, [fa, fmid, fb], [0, 0.3, 0], { clamp: true });
-  const frontGlowBg = useTransform(
-    frontGlow,
-    (v) => `linear-gradient(105deg, rgba(255,255,255,0) 30%, rgba(255,255,255,${v}) 58%, rgba(255,255,255,0) 74%)`
-  );
+  // light: dim → bright mid-turn → gone by edge-on. The gradient (SHEEN) is static;
+  // only this layer opacity animates, so the sweep never repaints.
+  const frontGlow = useTransform(p, [fa, fmid, fb], [0, 1, 0], { clamp: true });
 
   // Gutter shadow the lifting cover casts on the revealed page: a soft curved band
   // near the spine, deepest mid-lift, fading as the cover clears so the page reads.
-  const curl = useTransform(p, [fa, fmid, fb], [0.6, 0.45, 0], { clamp: true });
-  const curlBg = useTransform(
-    curl,
-    (v) => `linear-gradient(90deg, rgba(0,0,0,${v}) 0%, rgba(0,0,0,${v * 0.55}) 18%, rgba(0,0,0,0) 46%)`
-  );
+  // Same deal — static gradient (CURL_SHADOW), opacity-only animation.
+  const curl = useTransform(p, [fa, fmid, fb], [1, 0.75, 0], { clamp: true });
 
   // The page block has real depth; PAGES = px of stacked-paper edge shown. Kept
   // modest so, viewed head-on, the fore-edge reads as a slim warm stack of leaves
@@ -1009,7 +1149,7 @@ function BookTurn({
         {/* Gutter valley shadow cast by the lifting cover, near the spine. */}
         <motion.span
           className="pointer-events-none absolute inset-0"
-          style={{ backgroundImage: curlBg }}
+          style={{ backgroundImage: CURL_SHADOW, opacity: curl }}
           aria-hidden
         />
         {/* Permanent soft page-curve near the spine, so the open page bows like a
@@ -1120,7 +1260,7 @@ function BookTurn({
           {/* Cover face — clear, glanceable choice copy. */}
           <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center">
             <span
-              className="mb-5 inline-flex items-center gap-2 border border-[#f7e7a6]/50 bg-black/70 px-4 py-2 text-[12px] font-black uppercase tracking-[0.18em] text-white shadow-lg backdrop-blur-sm md:text-sm"
+              className="mb-5 inline-flex items-center gap-2 border border-[#f7e7a6]/50 bg-black/85 px-4 py-2 text-[12px] font-black uppercase tracking-[0.18em] text-white shadow-lg md:text-sm"
               style={{ boxShadow: `0 0 22px color-mix(in srgb, ${accent} 50%, transparent)` }}
             >
               <span className="h-2 w-2 rounded-full" style={{ background: accent, boxShadow: `0 0 10px ${accent}` }} />
@@ -1148,10 +1288,12 @@ function BookTurn({
             </span>
             <span
               className="mt-3 text-[46px] font-bold leading-none tracking-[-0.02em] sm:text-[62px] md:text-[72px]"
+              // NOTE: no `filter` here — drop-shadow on background-clipped text
+              // inside the animated 3D cover made Chrome/Safari flash the title
+              // during scroll. The dark cover vignette keeps it legible instead.
               style={{
                 fontFamily: "var(--font-inter-tight, var(--font-display))",
                 ...GOLD_TEXT,
-                filter: "drop-shadow(0 2px 0 rgba(0,0,0,0.75)) drop-shadow(0 8px 18px rgba(0,0,0,0.72))",
               }}
             >
               {show.label}
@@ -1168,7 +1310,7 @@ function BookTurn({
               {show.value}
             </span>
             <span
-              className="mt-3 inline-flex items-baseline gap-1.5 border border-[#f7e7a6]/55 bg-black/60 px-4 py-2 text-[15px] font-black text-white shadow-lg backdrop-blur-sm md:mt-7 md:px-6 md:py-3 md:text-[30px]"
+              className="mt-3 inline-flex items-baseline gap-1.5 border border-[#f7e7a6]/55 bg-black/80 px-4 py-2 text-[15px] font-black text-white shadow-lg md:mt-7 md:px-6 md:py-3 md:text-[30px]"
               style={{
                 boxShadow:
                   "inset 0 0 18px rgba(255,210,63,0.12), 0 0 24px rgba(0,0,0,0.45), 0 0 18px rgba(255,210,63,0.18)",
@@ -1184,7 +1326,10 @@ function BookTurn({
           </div>
 
           {/* moving specular sheen as the cover tilts into the light */}
-          <motion.span className="pointer-events-none absolute inset-0" style={{ backgroundImage: frontGlowBg }} />
+          <motion.span
+            className="pointer-events-none absolute inset-0"
+            style={{ backgroundImage: SHEEN, opacity: frontGlow }}
+          />
         </span>
       </motion.div>
 

@@ -382,6 +382,59 @@
 .hero-enter-6 { animation-delay: 610ms; }
 .hero-enter-7 { animation-delay: 700ms; }
 
+/* Scroll cue — the wheel dot drifts down the mouse body on a loop, hinting at
+   the scroll gesture that drives the hero reveal. */
+@keyframes scroll-cue-wheel {
+  0%        { transform: translate(-50%, 0);    opacity: 0; }
+  20%       { opacity: 1; }
+  70%       { transform: translate(-50%, 10px); opacity: 0; }
+  100%      { transform: translate(-50%, 10px); opacity: 0; }
+}
+
+.scroll-cue-wheel {
+  animation: scroll-cue-wheel 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Hide the cue on short viewports, where the headline, copy and pill already
+   use every vertical pixel and the cue would collide with the gold pill. */
+@media (max-height: 700px) {
+  .scroll-cue {
+    display: none;
+  }
+}
+
+/* Hero content padding: clears the fixed header, but scales down on short
+   viewports so a 4-line headline + copy + pill still fit on one screen. */
+.hero-content {
+  padding-top: max(5.5rem, calc(env(safe-area-inset-top) + 5.5rem));
+  /* Bottom padding reserves the strip the scroll cue is pinned to, so the gold
+     pill (the column's last child) can never sit underneath it. The cue is
+     ~50px tall and sits 1rem off the bottom, plus a little breathing room. */
+  padding-bottom: calc(env(safe-area-inset-bottom) + 6rem);
+}
+
+/* Short viewports (phone landscape, very short laptops): the column can't hold
+   every block at a readable size, so drop the setup copy — the headline, the
+   fill paragraph and the gold pill are the ones that must stay fully visible. */
+/* Cue is hidden at this height, so reclaim the strip reserved for it. */
+@media (max-height: 700px) {
+  .hero-content {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 1.25rem);
+  }
+}
+
+/* Very short viewports (phone landscape): the column can't hold every block at
+   a readable size, so drop the setup copy and tighten the header clearance —
+   the headline, fill paragraph and gold pill are what must stay visible. */
+@media (max-height: 520px) {
+  .hero-content {
+    padding-top: max(3.5rem, calc(env(safe-area-inset-top) + 3.5rem));
+  }
+  .hero-setup {
+    display: none;
+  }
+}
+
 /* Cinematic line reveal: a clipped wipe + lift, one line after another */
 @keyframes line-reveal {
   from {
@@ -566,6 +619,7 @@
   .beam-left,
   .beam-right,
   .beam-center,
+  .scroll-cue-wheel,
   .animate-shine::after {
     animation: none;
   }

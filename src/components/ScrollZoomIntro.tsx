@@ -8,7 +8,6 @@ import {
   useSpring,
   useTransform,
   useReducedMotion,
-  type MotionValue,
 } from "motion/react";
 
 /**
@@ -25,81 +24,13 @@ import {
  *                recedes (parallax) as we dive.
  *   0.52 – 0.66  A dark-room veil fades in once the logo fills the screen, so we
  *                "fall inside" the image. The logo fades out under the veil.
- *   0.62 – 1.00  Inside, the "About the Show" content reveals with a staggered,
- *                scroll-scrubbed animation: badge → heading (word-by-word rise &
- *                un-blur) → paragraph one → paragraph two.
+ *   0.62 – 1.00  Inside, the illustrated "About the Show" poster rises into the
+ *                studio light, settles flat, and catches a moving reflection.
  */
 
 const TRACK_VIEWPORTS = 6; // how many screens of scroll the whole sequence spans
-
-const HEADING_WORDS = ["What", "is", "Game", "Show", "Challenge", "Rooms"];
-// Body paragraphs revealed under the heading, in order. The last line is the
-// punchy closing call-to-play.
-const PARAS = [
-  "Game Show Challenge Rooms is a live, interactive game show experience made for you and your gang.",
-  "Bring your friends, family, coworkers, teammates, or classmates and step into our custom game arenas. Compete in exciting challenges, hit the buzzer, work as a team, and enjoy the thrill of a real game show — with lights, energy, and live hosts guiding every round.",
-  "It is not just a game night. It is your chance to be part of the show.",
-];
-const CLOSING = "Make your team. Book your slot. It’s time to play!";
-
-/** A heading word that rises up and un-blurs across its own slice of `t` (0→1). */
-function HeadingWord({
-  word,
-  t,
-  index,
-  total,
-}: {
-  word: string;
-  t: MotionValue<number>;
-  index: number;
-  total: number;
-}) {
-  const span = 1 / total;
-  const start = index * span * 0.7; // overlap so words cascade, not march
-  const end = Math.min(start + span * 1.8, 1);
-  const opacity = useTransform(t, [start, end], [0, 1]);
-  const y = useTransform(t, [start, end], ["0.5em", "0em"]);
-  const filter = useTransform(t, [start, end], ["blur(12px)", "blur(0px)"]);
-  return (
-    <span className="inline-block overflow-hidden align-bottom">
-      <motion.span
-        className="inline-block"
-        style={{ opacity, y, filter, willChange: "transform, opacity, filter" }}
-      >
-        {word}&nbsp;
-      </motion.span>
-    </span>
-  );
-}
-
-/** A body line that fades, rises and un-blurs across its [start, end] scroll
- *  window — the staggered reveal under the heading. */
-function RevealParagraph({
-  progress,
-  start,
-  end,
-  className,
-  children,
-}: {
-  progress: MotionValue<number>;
-  start: number;
-  end: number;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  const opacity = useTransform(progress, [start, end], [0, 1]);
-  const y = useTransform(progress, [start, end], [40, 0]);
-  const blur = useTransform(progress, [start, end], [8, 0]);
-  const filter = useTransform(blur, (b) => `blur(${b}px)`);
-  return (
-    <motion.p
-      className={className}
-      style={{ opacity, y, filter, willChange: "transform, opacity, filter" }}
-    >
-      {children}
-    </motion.p>
-  );
-}
+const POSTER_COPY =
+  "Imagine being picked as a contestant on your favorite game show. The host calls your name—your face glows with studio lights. Through the theme music, you hear the opposing team trash-talking from across the stage. That’s Game Show Challenge Rooms. Instead of watching from your couch, you’re on stage, competing in mini-games that test everything from speed to strategy. There’s a live host, lights, and music. When you slam the buzzer and nail the answer, you’ll feel like a game show legend.";
 
 export function ScrollZoomIntro() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -169,18 +100,14 @@ export function ScrollZoomIntro() {
   // inside" into a dark room.
   const veilOpacity = useTransform(progress, [0.52, 0.66], [0, 1]);
 
-  // ── About scene ── the container drifts up gently across the whole reveal so
-  // the block has continuous parallax under the staggered word/para animations.
+  // ── Poster scene ── the completed infographic rises out of the logo dive,
+  // settles flat, and holds while its stage-light reflections drift across it.
   const sceneOpacity = useTransform(progress, [0.6, 0.68], [0, 1]);
-  const sceneY = useTransform(progress, [0.6, 1], ["8%", "-4%"]);
-
-  // Each element animates across its own slice of progress (scrubbed).
-  const eyebrowOpacity = useTransform(progress, [0.6, 0.66], [0, 1]);
-  const eyebrowX = useTransform(progress, [0.6, 0.68], [-24, 0]);
-
-  // Heading words cascade over 0.62 → 0.76. We remap progress into that window
-  // and feed the local 0→1 to each word.
-  const headingT = useTransform(progress, [0.62, 0.76], [0, 1]);
+  const sceneY = useTransform(progress, [0.6, 1], ["8%", "-2%"]);
+  const posterOpacity = useTransform(progress, [0.64, 0.74], [0, 1]);
+  const posterY = useTransform(progress, [0.64, 0.84], [110, 0]);
+  const posterScale = useTransform(progress, [0.64, 0.86], [0.8, 1]);
+  const posterRotate = useTransform(progress, [0.64, 0.86], [3.5, 0]);
 
   // Scroll hint fades out as soon as you start scrolling.
   const hintOpacity = useTransform(progress, [0, 0.06], [1, 0]);
@@ -188,7 +115,7 @@ export function ScrollZoomIntro() {
   if (reduce) {
     return (
       <section ref={sectionRef} className="relative w-full">
-        <div className="mx-auto flex max-w-3xl flex-col items-center px-6 pb-12 pt-24 text-center">
+        <div className="mx-auto flex max-w-6xl flex-col items-center px-4 pb-16 pt-24 text-center sm:px-6">
           <span className="mb-3 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-[#FFD23F] sm:text-xs">
             <span className="h-px w-6 bg-[#FFD23F]/50" />
             First time in India
@@ -204,25 +131,17 @@ export function ScrollZoomIntro() {
             height={232}
             className="mb-12 h-auto w-64"
           />
-          <div className="w-full max-w-2xl text-left">
-            <span className="mb-4 inline-block text-sm font-normal text-white/80">
-              — About the Show
-            </span>
-            <h2
-              className="mb-6 text-3xl font-bold uppercase tracking-tight text-white sm:text-4xl"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              What is Game Show Challenge Rooms
-            </h2>
-            {PARAS.map((para, i) => (
-              <p key={i} className="mb-4 text-base leading-snug text-white/90 sm:text-lg">
-                {para}
-              </p>
-            ))}
-            <p className="mt-2 text-lg font-bold leading-snug text-[#FFD23F] sm:text-xl">
-              {CLOSING}
-            </p>
-          </div>
+          <figure className="w-full overflow-hidden rounded-[1.75rem] border border-white/20 shadow-[0_32px_100px_rgba(14,8,40,0.45)] sm:rounded-[2.25rem]">
+            <Image
+              src="/images/what-is-game-show-poster.png"
+              alt=""
+              width={1456}
+              height={1080}
+              sizes="(max-width: 768px) 96vw, 1152px"
+              className="h-auto w-full"
+            />
+            <figcaption className="sr-only">{POSTER_COPY}</figcaption>
+          </figure>
         </div>
       </section>
     );
@@ -306,66 +225,74 @@ export function ScrollZoomIntro() {
           aria-hidden
         />
 
-        {/* ── ABOUT SCENE ── staggered, scroll-scrubbed reveal of what the show
-            is about, inside the image. ── */}
+        {/* ── ABOUT POSTER ── the complete infographic rises into the dark room. */}
         <motion.div
-          className="absolute inset-0 z-30 flex items-center justify-center px-6"
+          className="absolute inset-0 z-30 flex items-center justify-center px-3 sm:px-6"
           style={{ opacity: sceneOpacity, y: sceneY, willChange: "transform, opacity" }}
         >
-          <div className="w-full max-w-3xl">
-            {/* Eyebrow */}
+          {/* Slow stage-light sweeps keep the dark room alive behind the card. */}
+          <motion.div
+            className="pointer-events-none absolute -left-[8%] -top-[20%] h-[100%] w-[42%] origin-top bg-[linear-gradient(180deg,rgba(20,126,255,0.34),transparent_74%)] blur-2xl"
+            animate={{ rotate: [-10, -3, -10], opacity: [0.28, 0.52, 0.28] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+            aria-hidden
+          />
+          <motion.div
+            className="pointer-events-none absolute -right-[8%] -top-[20%] h-[100%] w-[42%] origin-top bg-[linear-gradient(180deg,rgba(252,25,237,0.3),transparent_74%)] blur-2xl"
+            animate={{ rotate: [10, 3, 10], opacity: [0.26, 0.48, 0.26] }}
+            transition={{ duration: 7.8, repeat: Infinity, ease: "easeInOut" }}
+            aria-hidden
+          />
+
+          <motion.figure
+            className="relative w-full max-w-6xl rounded-[1.5rem] border border-white/20 bg-[#080b14] p-1.5 shadow-[0_0_0_1px_rgba(124,92,252,0.2),0_36px_120px_rgba(0,0,0,0.7),0_0_90px_rgba(20,126,255,0.2),0_0_120px_rgba(252,25,237,0.14)] sm:rounded-[2.25rem] sm:p-2"
+            style={{
+              opacity: posterOpacity,
+              y: posterY,
+              scale: posterScale,
+              rotate: posterRotate,
+              willChange: "transform, opacity",
+            }}
+          >
             <motion.div
-              className="mb-6 flex items-center gap-4"
-              style={{ opacity: eyebrowOpacity, x: eyebrowX }}
+              className="relative overflow-hidden rounded-[1.15rem] sm:rounded-[1.75rem]"
+              animate={{ y: [0, -5, 0], rotate: [0, 0.2, 0] }}
+              transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
             >
-              <span className="block h-px w-15 bg-white/50" />
-              <span className="text-sm font-normal text-white/80 sm:text-base">
-                About the Show
-              </span>
+              <Image
+                src="/images/what-is-game-show-poster.png"
+                alt=""
+                width={1456}
+                height={1080}
+                sizes="(max-width: 768px) 98vw, 1152px"
+                className="h-auto max-h-[86svh] w-full object-contain"
+              />
+
+              {/* A narrow moving reflection sells the poster as a bright studio
+                  screen inside the dark room without changing its artwork. */}
+              <motion.span
+                className="pointer-events-none absolute -inset-y-[20%] w-[20%] -skew-x-12 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)] blur-md"
+                animate={{ left: ["-30%", "120%"] }}
+                transition={{ duration: 4.8, repeat: Infinity, repeatDelay: 2.4, ease: "easeInOut" }}
+                aria-hidden
+              />
             </motion.div>
 
-            {/* Heading — words cascade up & un-blur */}
-            <h2
-              className="mb-8 text-[28px] font-black uppercase leading-[1.04] tracking-tight text-white sm:text-5xl md:text-6xl"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              {HEADING_WORDS.map((w, i) => (
-                <HeadingWord
-                  key={`${w}-${i}`}
-                  word={w}
-                  t={headingT}
-                  index={i}
-                  total={HEADING_WORDS.length}
-                />
-              ))}
-            </h2>
+            <motion.span
+              className="pointer-events-none absolute -left-3 -top-3 h-7 w-7 rounded-full bg-[#147EFF] shadow-[0_0_32px_rgba(20,126,255,0.9)] sm:h-9 sm:w-9"
+              animate={{ scale: [0.8, 1.15, 0.8], opacity: [0.55, 1, 0.55] }}
+              transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+              aria-hidden
+            />
+            <motion.span
+              className="pointer-events-none absolute -bottom-3 -right-3 h-7 w-7 rounded-full bg-[#FC19ED] shadow-[0_0_32px_rgba(252,25,237,0.9)] sm:h-9 sm:w-9"
+              animate={{ scale: [1.15, 0.8, 1.15], opacity: [1, 0.55, 1] }}
+              transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+              aria-hidden
+            />
 
-            {/* Body paragraphs — fade/rise/un-blur, staggered in sequence */}
-            {PARAS.map((para, i) => {
-              const start = 0.76 + i * 0.05;
-              return (
-                <RevealParagraph
-                  key={i}
-                  progress={progress}
-                  start={start}
-                  end={start + 0.08}
-                  className="mb-4 text-sm font-medium leading-snug text-white/90 sm:text-lg md:text-xl"
-                >
-                  {para}
-                </RevealParagraph>
-              );
-            })}
-
-            {/* Closing call-to-play line */}
-            <RevealParagraph
-              progress={progress}
-              start={0.92}
-              end={1}
-              className="mt-2 text-base font-bold leading-snug text-[#FFD23F] sm:text-xl md:text-2xl"
-            >
-              {CLOSING}
-            </RevealParagraph>
-          </div>
+            <figcaption className="sr-only">{POSTER_COPY}</figcaption>
+          </motion.figure>
         </motion.div>
 
         {/* Scroll hint, only while at the very top */}

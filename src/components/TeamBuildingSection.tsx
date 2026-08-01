@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   PartyPopper,
   Building2,
@@ -16,6 +15,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
+import { Cta } from "@/components/ui/cta";
 
 const eventTypes = [
   { icon: PartyPopper, label: "Festive & Diwali Parties" },
@@ -50,7 +50,7 @@ export function TeamBuildingSection() {
   return (
     <section
       id="team-building"
-      className="relative overflow-hidden bg-[#0a0a0c] px-5 py-20 md:px-10 md:py-28"
+      className="relative overflow-hidden bg-gs-surface-deeper px-5 py-20 md:px-10 md:py-28"
     >
       {/* ambient */}
       <div
@@ -82,7 +82,7 @@ export function TeamBuildingSection() {
               Hyderabad&apos;s most{" "}
               <span
                 style={{
-                  background: "linear-gradient(90deg, #147EFF, #FC19ED)",
+                  background: "linear-gradient(90deg, var(--gs-blue), var(--gs-magenta))",
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",
@@ -124,7 +124,7 @@ export function TeamBuildingSection() {
                       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
                       style={{ background: "rgba(124,92,252,0.18)" }}
                     >
-                      <Icon size={17} className="text-[#B49BFF]" />
+                      <Icon size={17} className="text-gs-violet-bright" />
                     </span>
                     <span className="text-sm font-medium text-white/85">
                       {e.label}
@@ -161,10 +161,10 @@ export function TeamBuildingSection() {
               const Icon = a.icon;
               return (
                 <Reveal key={a.title} delay={i * 100} className="h-full">
-                  <div className="group flex h-full flex-col gap-3 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[#161618] to-[#0d0d0f] p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-white/25">
+                  <div className="group flex h-full flex-col gap-3 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-gs-surface to-gs-surface-deep p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-white/25">
                     <span
                       className="flex h-11 w-11 items-center justify-center rounded-2xl text-white"
-                      style={{ background: "linear-gradient(135deg,#147EFF,#FC19ED)" }}
+                      style={{ background: "linear-gradient(135deg, var(--gs-blue), var(--gs-magenta))" }}
                     >
                       <Icon size={20} />
                     </span>
@@ -188,7 +188,7 @@ export function TeamBuildingSection() {
             className="mt-16 flex flex-col items-center gap-5 overflow-hidden rounded-3xl p-8 text-center md:flex-row md:justify-between md:p-10 md:text-left"
             style={{
               background:
-                "linear-gradient(120deg, #147EFF 0%, #7C5CFC 50%, #FC19ED 100%)",
+                "var(--gs-gradient-brand)",
             }}
           >
             <div>
@@ -203,13 +203,10 @@ export function TeamBuildingSection() {
                 your team.
               </p>
             </div>
-            <Link
-              href="#tickets"
-              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-black/30 px-7 py-4 text-base font-bold text-white transition-colors hover:bg-black/50"
-            >
+            <Cta href="#tickets" variant="contrast" size="lg">
               Book Your Show
               <ArrowUpRight size={18} />
-            </Link>
+            </Cta>
           </div>
         </Reveal>
       </div>

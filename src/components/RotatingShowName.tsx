@@ -25,7 +25,7 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 
 const GRADIENT = {
   backgroundImage:
-    "linear-gradient(92deg, #1FA2FF 0%, #7C5CFC 45%, #FF35E5 100%)",
+    "linear-gradient(92deg, var(--gs-sky-bright) 0%, var(--gs-violet) 45%, var(--gs-magenta-soft) 100%)",
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
 } as const;

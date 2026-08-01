@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Image, { getImageProps } from "next/image";
 import {
   motion,
   useScroll,
@@ -9,6 +9,7 @@ import {
   useTransform,
   useReducedMotion,
 } from "motion/react";
+import { useLowPowerMode } from "@/hooks/useLowPowerMode";
 
 /**
  * Cinematic scroll-zoom intro — "zoom deep into the logo, fall inside, reveal
@@ -32,9 +33,43 @@ const TRACK_VIEWPORTS = 6; // how many screens of scroll the whole sequence span
 const POSTER_COPY =
   "Imagine being picked as a contestant on your favorite game show. The host calls your name—your face glows with studio lights. Through the theme music, you hear the opposing team trash-talking from across the stage. That’s Game Show Challenge Rooms. Instead of watching from your couch, you’re on stage, competing in mini-games that test everything from speed to strategy. There’s a live host, lights, and music. When you slam the buzzer and nail the answer, you’ll feel like a game show legend.";
 
+const posterCommonProps = {
+  alt: "",
+  sizes: "(max-width: 639px) 98vw, 1152px",
+};
+
+const {
+  props: { srcSet: desktopPosterSrcSet },
+} = getImageProps({
+  ...posterCommonProps,
+  src: "/images/what-is-game-show-poster.webp",
+  width: 1456,
+  height: 1080,
+});
+
+const {
+  props: { srcSet: mobilePosterSrcSet, ...mobilePosterProps },
+} = getImageProps({
+  ...posterCommonProps,
+  src: "/images/what-is-game-show-poster-mobile.webp",
+  width: 941,
+  height: 1672,
+});
+
+function ResponsivePoster({ className }: { className: string }) {
+  return (
+    <picture>
+      <source media="(min-width: 640px)" srcSet={desktopPosterSrcSet} />
+      <source media="(max-width: 639px)" srcSet={mobilePosterSrcSet} />
+      <img {...mobilePosterProps} alt="" className={className} />
+    </picture>
+  );
+}
+
 export function ScrollZoomIntro() {
   const sectionRef = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
+  const lowPower = useLowPowerMode();
 
   // iOS Safari changes `window.innerHeight` as the URL bar collapses/expands
   // while scrolling. If we recompute the track height on every resize, `useScroll`
@@ -80,19 +115,45 @@ export function ScrollZoomIntro() {
     restDelta: 0.0004,
   });
 
-  // ── Logo zoom ── DEEP dive. Scales hard (1 → 42×) so the shield blows past the
-  // screen edges and we plunge through it. A touch of rotation + brightening
-  // gives the dive some life. Stays opaque until the veil covers it.
-  const logoScale = useTransform(progress, [0, 0.58], [1, 42]);
+  // ── Logo zoom ── DEEP dive. Scales hard so the shield blows past the screen
+  // edges and we plunge through it. A touch of rotation gives the dive life.
+  // Stays opaque until the veil covers it.
+  //
+  // The scale ceiling is a HARDWARE limit, not a taste call. The compositor must
+  // rasterize `logoCssWidth * scale * devicePixelRatio` px of texture, and GPUs
+  // cap a single texture at 4096–8192px. Past that the browser falls back to a
+  // blurry re-raster, drops the layer for a frame (a visible blink), or
+  // OOM-kills the tab — the exact failure this section used to show. The old 42×
+  // meant a ~65,000px surface on a 3× phone.
+  //
+  // DPR is the term that is easy to miss: a 3× phone triples the texture for the
+  // same visual scale, so the ceiling has to be computed, not hard-coded.
+  const maxZoom = useMemo(() => {
+    if (typeof window === "undefined") return 10;
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    const logoCssWidth = Math.min(window.innerWidth * 0.6, 360);
+    // Stay under 8192px of texture with headroom; never below 4× or the dive
+    // stops reading as "we punched through the logo".
+    const ceiling = 7600 / (logoCssWidth * dpr);
+    return Math.max(4, Math.min(lowPower ? 8 : 12, ceiling));
+  }, [lowPower]);
+
+  const logoScale = useTransform(progress, [0, 0.58], [1, maxZoom]);
   const logoOpacity = useTransform(progress, [0, 0.52, 0.62], [1, 1, 0]);
   const logoRotate = useTransform(progress, [0, 0.58], [0, -4]);
-  const logoBrightness = useTransform(progress, [0, 0.45, 0.58], [1, 1, 1.4]);
-  const logoFilter = useTransform(logoBrightness, (b) => `brightness(${b})`);
+
+  // The "we're punching through into the light" brightening at the end of the
+  // dive. This used to be an animated `filter: brightness()` on the logo itself,
+  // which forced a full re-raster of that (enormous) layer every frame. A white
+  // overlay whose *opacity* animates reads the same but stays on the compositor.
+  const flashOpacity = useTransform(progress, [0.45, 0.58], [0, 0.45]);
 
   // ── Intro kicker ── visible at rest, then recedes (parallax) and fades as the
   // dive into the logo begins.
   const kickerOpacity = useTransform(progress, [0, 0.12], [1, 0]);
   const kickerScale = useTransform(progress, [0, 0.18], [1, 0.78]);
+  // Animated blur re-rasters the layer every frame; on weak GPUs the parallax
+  // recede alone (scale + opacity) carries the same read for free.
   const kickerBlur = useTransform(progress, [0, 0.16], [0, 6]);
   const kickerFilter = useTransform(kickerBlur, (b) => `blur(${b}px)`);
 
@@ -116,30 +177,23 @@ export function ScrollZoomIntro() {
     return (
       <section ref={sectionRef} className="relative w-full">
         <div className="mx-auto flex max-w-6xl flex-col items-center px-4 pb-16 pt-24 text-center sm:px-6">
-          <span className="mb-3 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-[#FFD23F] sm:text-xs">
-            <span className="h-px w-6 bg-[#FFD23F]/50" />
+          <span className="mb-3 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-gs-gold sm:text-xs">
+            <span className="h-px w-6 bg-gs-gold/50" />
             First time in India
-            <span className="h-px w-6 bg-[#FFD23F]/50" />
+            <span className="h-px w-6 bg-gs-gold/50" />
           </span>
           <span className="mb-6 text-sm font-medium text-white/70 sm:text-base">
             Introducing
           </span>
           <Image
-            src="/images/logo-transparent.png"
+            src="/images/logo-transparent.webp"
             alt="Game Show Challenge Rooms"
             width={360}
             height={232}
             className="mb-12 h-auto w-64"
           />
           <figure className="w-full overflow-hidden rounded-[1.75rem] border border-white/20 shadow-[0_32px_100px_rgba(14,8,40,0.45)] sm:rounded-[2.25rem]">
-            <Image
-              src="/images/what-is-game-show-poster.png"
-              alt=""
-              width={1456}
-              height={1080}
-              sizes="(max-width: 768px) 96vw, 1152px"
-              className="h-auto w-full"
-            />
+            <ResponsivePoster className="h-auto w-full" />
             <figcaption className="sr-only">{POSTER_COPY}</figcaption>
           </figure>
         </div>
@@ -177,13 +231,13 @@ export function ScrollZoomIntro() {
             top: "calc(50% - min(34vw,210px))",
             opacity: kickerOpacity,
             scale: kickerScale,
-            filter: kickerFilter,
+            ...(lowPower ? {} : { filter: kickerFilter }),
           }}
         >
-          <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-[#FFD23F] sm:text-xs">
-            <span className="h-px w-6 bg-[#FFD23F]/50" />
+          <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-gs-gold sm:text-xs">
+            <span className="h-px w-6 bg-gs-gold/50" />
             First time in India
-            <span className="h-px w-6 bg-[#FFD23F]/50" />
+            <span className="h-px w-6 bg-gs-gold/50" />
           </span>
           <span className="mt-2 text-sm font-medium text-white/70 sm:text-base">
             Introducing
@@ -191,28 +245,44 @@ export function ScrollZoomIntro() {
         </motion.div>
 
         {/* ── THE LOGO ── the camera flies deep into this ── */}
+        {/* The scaled element is the LOGO itself, not a full-viewport wrapper.
+            Scaling an `inset-0` wrapper makes the rasterized surface
+            `viewportWidth × scale × dpr` — at 390px/3× DPR that was a 65,000px
+            texture, far past the 4096–8192px GPU cap, which is exactly the
+            blink/blur/tab-kill failure this section showed. Scaling the image
+            keeps it at `360 × scale × dpr` instead. */}
         <motion.div
           className="absolute inset-0 z-10 flex items-center justify-center"
-          style={{
-            scale: logoScale,
-            opacity: logoOpacity,
-            rotate: logoRotate,
-            filter: logoFilter,
-            transformOrigin: "50% 50%",
-            willChange: "transform, opacity, filter",
-          }}
+          style={{ opacity: logoOpacity }}
         >
-          <Image
-            src="/images/logo-transparent.png"
-            alt="Game Show Challenge Rooms"
-            width={1497}
-            height={966}
-            priority
-            quality={100}
-            sizes="(max-width: 640px) 60vw, 360px"
-            className="h-auto w-[min(60vw,360px)] drop-shadow-[0_20px_80px_rgba(0,0,0,0.6)]"
-          />
+          <motion.div
+            style={{
+              scale: logoScale,
+              rotate: logoRotate,
+              transformOrigin: "50% 50%",
+              willChange: "transform",
+            }}
+          >
+            <Image
+              src="/images/logo-transparent.webp"
+              alt="Game Show Challenge Rooms"
+              width={1497}
+              height={966}
+              priority
+              quality={100}
+              sizes="(max-width: 640px) 60vw, 360px"
+              className="h-auto w-[min(60vw,360px)] drop-shadow-[0_20px_80px_rgba(0,0,0,0.6)]"
+            />
+          </motion.div>
         </motion.div>
+
+        {/* ── DIVE FLASH ── the light we punch through as the shield engulfs the
+            screen. An opacity-only overlay, so it never re-rasters the logo. */}
+        <motion.div
+          className="pointer-events-none absolute inset-0 z-15 bg-white"
+          style={{ opacity: flashOpacity }}
+          aria-hidden
+        />
 
         {/* ── DARK-ROOM VEIL ── we fall inside the logo into a dark room ── */}
         <motion.div
@@ -230,22 +300,26 @@ export function ScrollZoomIntro() {
           className="absolute inset-0 z-30 flex items-center justify-center px-3 sm:px-6"
           style={{ opacity: sceneOpacity, y: sceneY, willChange: "transform, opacity" }}
         >
-          {/* Slow stage-light sweeps keep the dark room alive behind the card. */}
+          {/* Slow stage-light sweeps keep the dark room alive behind the card.
+              On low-power devices they render static: the blur stays (it costs
+              one raster) but the never-ending transform loop does not. */}
           <motion.div
             className="pointer-events-none absolute -left-[8%] -top-[20%] h-[100%] w-[42%] origin-top bg-[linear-gradient(180deg,rgba(20,126,255,0.34),transparent_74%)] blur-2xl"
-            animate={{ rotate: [-10, -3, -10], opacity: [0.28, 0.52, 0.28] }}
+            style={lowPower ? { rotate: -6, opacity: 0.4 } : undefined}
+            animate={lowPower ? undefined : { rotate: [-10, -3, -10], opacity: [0.28, 0.52, 0.28] }}
             transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
             aria-hidden
           />
           <motion.div
             className="pointer-events-none absolute -right-[8%] -top-[20%] h-[100%] w-[42%] origin-top bg-[linear-gradient(180deg,rgba(252,25,237,0.3),transparent_74%)] blur-2xl"
-            animate={{ rotate: [10, 3, 10], opacity: [0.26, 0.48, 0.26] }}
+            style={lowPower ? { rotate: 6, opacity: 0.37 } : undefined}
+            animate={lowPower ? undefined : { rotate: [10, 3, 10], opacity: [0.26, 0.48, 0.26] }}
             transition={{ duration: 7.8, repeat: Infinity, ease: "easeInOut" }}
             aria-hidden
           />
 
           <motion.figure
-            className="relative w-full max-w-6xl rounded-[1.5rem] border border-white/20 bg-[#080b14] p-1.5 shadow-[0_0_0_1px_rgba(124,92,252,0.2),0_36px_120px_rgba(0,0,0,0.7),0_0_90px_rgba(20,126,255,0.2),0_0_120px_rgba(252,25,237,0.14)] sm:rounded-[2.25rem] sm:p-2"
+            className="relative w-full max-w-6xl rounded-[1.5rem] border border-white/20 bg-gs-surface-screen p-1.5 shadow-[0_0_0_1px_rgba(124,92,252,0.2),0_36px_120px_rgba(0,0,0,0.7),0_0_90px_rgba(20,126,255,0.2),0_0_120px_rgba(252,25,237,0.14)] sm:rounded-[2.25rem] sm:p-2"
             style={{
               opacity: posterOpacity,
               y: posterY,
@@ -256,37 +330,34 @@ export function ScrollZoomIntro() {
           >
             <motion.div
               className="relative overflow-hidden rounded-[1.15rem] sm:rounded-[1.75rem]"
-              animate={{ y: [0, -5, 0], rotate: [0, 0.2, 0] }}
+              animate={lowPower ? undefined : { y: [0, -5, 0], rotate: [0, 0.2, 0] }}
               transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
             >
-              <Image
-                src="/images/what-is-game-show-poster.png"
-                alt=""
-                width={1456}
-                height={1080}
-                sizes="(max-width: 768px) 98vw, 1152px"
-                className="h-auto max-h-[86svh] w-full object-contain"
-              />
+              <ResponsivePoster className="mx-auto h-auto max-h-[86svh] w-auto max-w-full object-contain sm:w-full" />
 
               {/* A narrow moving reflection sells the poster as a bright studio
-                  screen inside the dark room without changing its artwork. */}
-              <motion.span
-                className="pointer-events-none absolute -inset-y-[20%] w-[20%] -skew-x-12 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)] blur-md"
-                animate={{ left: ["-30%", "120%"] }}
-                transition={{ duration: 4.8, repeat: Infinity, repeatDelay: 2.4, ease: "easeInOut" }}
-                aria-hidden
-              />
+                  screen inside the dark room without changing its artwork.
+                  Animates `x`, not `left` — `left` is a layout property, so it
+                  forced a reflow of the poster subtree on every single frame. */}
+              {!lowPower && (
+                <motion.span
+                  className="pointer-events-none absolute -inset-y-[20%] left-0 w-[20%] -skew-x-12 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)] blur-md"
+                  animate={{ x: ["-150%", "600%"] }}
+                  transition={{ duration: 4.8, repeat: Infinity, repeatDelay: 2.4, ease: "easeInOut" }}
+                  aria-hidden
+                />
+              )}
             </motion.div>
 
             <motion.span
-              className="pointer-events-none absolute -left-3 -top-3 h-7 w-7 rounded-full bg-[#147EFF] shadow-[0_0_32px_rgba(20,126,255,0.9)] sm:h-9 sm:w-9"
-              animate={{ scale: [0.8, 1.15, 0.8], opacity: [0.55, 1, 0.55] }}
+              className="pointer-events-none absolute -left-3 -top-3 h-7 w-7 rounded-full bg-gs-blue shadow-[0_0_32px_rgba(20,126,255,0.9)] sm:h-9 sm:w-9"
+              animate={lowPower ? undefined : { scale: [0.8, 1.15, 0.8], opacity: [0.55, 1, 0.55] }}
               transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
               aria-hidden
             />
             <motion.span
-              className="pointer-events-none absolute -bottom-3 -right-3 h-7 w-7 rounded-full bg-[#FC19ED] shadow-[0_0_32px_rgba(252,25,237,0.9)] sm:h-9 sm:w-9"
-              animate={{ scale: [1.15, 0.8, 1.15], opacity: [1, 0.55, 1] }}
+              className="pointer-events-none absolute -bottom-3 -right-3 h-7 w-7 rounded-full bg-gs-magenta shadow-[0_0_32px_rgba(252,25,237,0.9)] sm:h-9 sm:w-9"
+              animate={lowPower ? undefined : { scale: [1.15, 0.8, 1.15], opacity: [1, 0.55, 1] }}
               transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
               aria-hidden
             />

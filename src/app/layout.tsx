@@ -256,7 +256,7 @@ const localBusiness = {
   alternateName: "Game Show Challenge Rooms Hyderabad",
   description:
     "Hyderabad's first live game show experience — a real host, studio lights and buzzers, for groups of 4–15 players. Great for team building, birthdays, bachelorette parties, corporate outings and family fun.",
-  slogan: "All your life you watched it on TV. Tonight, you're on the show.",
+  slogan: "All your life you watched it on TV. Today, you're on the show.",
   url: SITE_URL,
   image: `${SITE_URL}/images/logo.png`,
   logo: `${SITE_URL}/images/logo.png`,
@@ -391,7 +391,7 @@ const faqPage = {
     },
     {
       q: "What is the price?",
-      a: "Pricing is per person and depends on your group size and the day. Weekdays (Mon-Thu) range from ₹900 per person for a group of 4 down to ₹750 per person for groups of 6 or more. Weekends and public holidays range from ₹1000 per person for 4 down to ₹850 per person for 6 or more. Kids play is ₹500 (ages 5-8). All prices include applicable taxes.",
+      a: "Pricing is per person and depends on your group size and the day. Weekdays (Mon-Thu) range from ₹900 per person for a group of 4 down to ₹750 per person for groups of 6 or more. Weekends and public holidays range from ₹1000 per person for 4 down to ₹850 per person for 6 or more. All prices include applicable taxes.",
     },
     {
       q: "Do I need to book in advance?",

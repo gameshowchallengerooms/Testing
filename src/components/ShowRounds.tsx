@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { ArrowUpRight, Check, Sparkles } from "lucide-react";
+import { ArrowUpRight, Check, Mic, Sparkles } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
+import { Cta } from "@/components/ui/cta";
 
 interface Show {
   label: string;
@@ -39,14 +39,14 @@ const shows: Show[] = [
       "Scores, fun twists & winner moments",
       "Approx. 45 minutes of play",
     ],
-    image: "/images/shows/the-classic.png",
+    image: "/images/shows/the-classic.webp",
     imageAlt:
       "A live host leading two teams in a fast-paced buzzer challenge under blue studio lights",
-    accentText: "text-[#45a6ff]",
-    accentBorder: "border-[#2e9bff]/45",
-    accentSurface: "bg-[#2e9bff]/10",
+    accentText: "text-gs-show-classic",
+    accentBorder: "border-gs-show-classic-base/45",
+    accentSurface: "bg-gs-show-classic-base/10",
     accentGlow: "shadow-[0_24px_100px_-48px_rgba(46,155,255,0.85)]",
-    imageWash: "from-[#071b31]/95 via-[#07121f]/32 to-transparent",
+    imageWash: "from-gs-wash-classic/95 via-gs-wash-classic-deep/32 to-transparent",
   },
   {
     label: "Prime Time",
@@ -63,54 +63,29 @@ const shows: Show[] = [
       "Lively moments & big group fun",
       "Approx. 60 minutes of play",
     ],
-    image: "/images/shows/prime-time.png",
+    image: "/images/shows/prime-time-group.webp",
     imageAlt:
-      "A lively group laughing and playing party-style game show challenges under purple lights",
-    accentText: "text-[#a579ff]",
-    accentBorder: "border-[#9b6bff]/50",
-    accentSurface: "bg-[#9b6bff]/10",
+      "Two teams of friends laughing, cheering, and playing a buzzer challenge with a live host under purple party lights",
+    accentText: "text-gs-show-prime",
+    accentBorder: "border-gs-show-prime-base/50",
+    accentSurface: "bg-gs-show-prime-base/10",
     accentGlow: "shadow-[0_24px_100px_-48px_rgba(155,107,255,0.95)]",
-    imageWash: "from-[#1d0c38]/95 via-[#120b22]/32 to-transparent",
+    imageWash: "from-gs-wash-prime/95 via-gs-wash-prime-deep/32 to-transparent",
     popular: true,
-  },
-  {
-    label: "Elite Edition",
-    tag: "The premium show.",
-    value: "An elevated celebration show for special days.",
-    fromPrice: 1049,
-    bestFor: "Best for birthdays & special occasions.",
-    pitch:
-      "The premium, more curated version of the show — a more exclusive setup, bigger celebration moments and a standout finale built for the days that matter most. The one to book when it's a special occasion.",
-    features: [
-      "Live host & full game show",
-      "A more curated, premium setup",
-      "Bigger celebration moments",
-      "A standout finale to remember",
-      "Best for birthdays & special occasions",
-      "Approx. 60 minutes of play",
-    ],
-    image: "/images/shows/elite-edition.png",
-    imageAlt:
-      "A premium birthday game show finale with a host, trophy, golden lights and confetti",
-    accentText: "text-[#ffb23e]",
-    accentBorder: "border-[#ffb23e]/50",
-    accentSurface: "bg-[#ffb23e]/10",
-    accentGlow: "shadow-[0_24px_100px_-48px_rgba(255,178,62,0.9)]",
-    imageWash: "from-[#301805]/95 via-[#1e1108]/32 to-transparent",
   },
 ];
 
 function HostBadge() {
   return (
     <div className="flex items-center gap-3">
-      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border-2 border-white/75 bg-[#191b20] shadow-[0_0_0_4px_rgba(255,255,255,0.08)] md:h-14 md:w-14">
-        <Image
-          src="/images/shows/host-face.png"
-          alt="Your live game show host"
-          fill
-          sizes="56px"
-          className="object-cover"
-        />
+      {/* Mic glyph rather than a photo: there is no real host portrait asset in
+          the repo (the old `host-face.png` path 404'd on every page load), and a
+          stand-in face would misrepresent a real person. */}
+      <div
+        className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-white/75 bg-[linear-gradient(140deg,var(--gs-avatar-from),var(--gs-avatar-to))] shadow-[0_0_0_4px_rgba(255,255,255,0.08)] md:h-14 md:w-14"
+        aria-hidden="true"
+      >
+        <Mic className="h-5 w-5 text-gs-gold md:h-6 md:w-6" strokeWidth={2.2} />
       </div>
       <div>
         <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/45">
@@ -134,7 +109,7 @@ function ShowPanel({ show, index }: { show: Show; index: number }) {
       whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-      className={`group relative overflow-hidden rounded-[28px] border bg-[#0d0f13] ${show.accentBorder} ${show.accentGlow}`}
+      className={`group relative overflow-hidden rounded-[28px] border bg-gs-surface-deep ${show.accentBorder} ${show.accentGlow}`}
     >
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.045),transparent_34%,transparent_70%,rgba(255,255,255,0.025))]" />
 
@@ -152,7 +127,7 @@ function ShowPanel({ show, index }: { show: Show; index: number }) {
             className="object-cover transition duration-700 ease-out group-hover:scale-[1.035]"
           />
           <div className={`absolute inset-0 bg-gradient-to-t ${show.imageWash} lg:bg-gradient-to-r`} />
-          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#0d0f13] to-transparent lg:hidden" />
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-gs-surface-deep to-transparent lg:hidden" />
 
           <div className="absolute left-5 top-5 flex items-center gap-2 sm:left-7 sm:top-7">
             <span
@@ -224,13 +199,16 @@ function ShowPanel({ show, index }: { show: Show; index: number }) {
               </p>
             </div>
 
-            <Link
+            {/* Tinted with this show's accent, but the shape/motion come from
+                the shared CTA so it matches every other button on the site. */}
+            <Cta
               href="#tickets"
-              className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-full border px-6 text-sm font-bold uppercase tracking-[0.08em] text-white transition duration-300 hover:-translate-y-0.5 hover:bg-white hover:text-black ${show.accentBorder} ${show.accentSurface}`}
+              variant="secondary"
+              className={`min-h-12 uppercase tracking-[0.08em] hover:bg-white hover:text-black ${show.accentBorder} ${show.accentSurface}`}
             >
               Book Your Show
               <ArrowUpRight size={18} strokeWidth={2.5} aria-hidden="true" />
-            </Link>
+            </Cta>
           </div>
         </div>
       </div>
@@ -243,7 +221,7 @@ export function ShowRounds() {
     <section
       id="show-rounds"
       data-show-rounds
-      className="relative isolate overflow-hidden bg-[#07080b] px-4 py-24 text-white sm:px-6 md:py-32 lg:px-10"
+      className="relative isolate overflow-hidden bg-gs-surface-black px-4 py-24 text-white sm:px-6 md:py-32 lg:px-10"
     >
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_12%_10%,rgba(46,155,255,0.12),transparent_31%),radial-gradient(circle_at_88%_45%,rgba(155,107,255,0.11),transparent_30%),radial-gradient(circle_at_35%_92%,rgba(255,178,62,0.08),transparent_32%)]" />
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:linear-gradient(to_bottom,black,transparent_80%)]" />
@@ -252,7 +230,7 @@ export function ShowRounds() {
         <div className="grid items-end gap-8 border-b border-white/10 pb-10 lg:grid-cols-[1fr_auto] lg:pb-12">
           <div>
             <p className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.25em] text-white/45">
-              <span className="h-px w-9 bg-gradient-to-r from-[#2e9bff] via-[#9b6bff] to-[#ffb23e]" />
+              <span className="h-px w-9 bg-gradient-to-r from-gs-show-classic-base via-gs-show-prime-base to-gs-gold-deep" />
               Choose your experience
             </p>
             <h2 className="mt-5 max-w-4xl text-5xl font-black tracking-[-0.055em] text-white sm:text-6xl lg:text-7xl">

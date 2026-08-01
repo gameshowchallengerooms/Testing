@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { MapPin, Navigation, Clock, Users, Mail, Phone } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
+import { Cta } from "@/components/ui/cta";
 
 const ADDRESS =
   "4th Floor, Survey No. 1, Khajaguda - Nanakramguda Rd, Khajaguda, Hyderabad, Telangana 500104";
@@ -38,13 +39,13 @@ export function LocationSection() {
   return (
     <section
       id="location"
-      className="relative overflow-hidden bg-[#08080a] px-5 py-20 md:px-10 md:py-28"
+      className="relative overflow-hidden bg-gs- px-5 py-20 md:px-10 md:py-28"
     >
       <div
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 50% 40% at 15% 10%, rgba(20,126,255,0.12), transparent 60%), radial-gradient(ellipse 50% 40% at 85% 90%, rgba(252,25,237,0.10), transparent 60%)",
+            "radial-gradient(ellipse 55% 45% at 12% 8%, rgba(252,25,237,0.13), transparent 62%)",
         }}
         aria-hidden="true"
       />
@@ -54,8 +55,8 @@ export function LocationSection() {
         <div className="flex flex-col justify-center">
           <Reveal>
             <div className="mb-4 flex items-center gap-4">
-              <span className="block h-[2px] w-[60px] bg-white/50" />
-              <span className="font-sans text-base font-normal text-white/80">
+              <span className="block h-px w-[60px] bg-gs-" />
+              <span className="font-sans text-xs font-semibold uppercase tracking-[0.24em] text-white/60">
                 Find Us
               </span>
             </div>
@@ -67,22 +68,13 @@ export function LocationSection() {
               style={{ fontFamily: "var(--font-display)", letterSpacing: "-1.5px" }}
             >
               Your stage is{" "}
-              <span
-                style={{
-                  background: "linear-gradient(90deg, #147EFF, #FC19ED)",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                ready &amp; waiting
-              </span>
+              <span className="text-gs-">ready &amp; waiting</span>
             </h2>
           </Reveal>
 
           <Reveal delay={130}>
             <p className="mt-4 flex items-start gap-3 text-base leading-relaxed text-white/70">
-              <MapPin size={20} className="mt-0.5 shrink-0 text-[#FC19ED]" />
+              <MapPin size={20} className="mt-0.5 shrink-0 text-gs-" />
               {ADDRESS}
             </p>
           </Reveal>
@@ -95,9 +87,9 @@ export function LocationSection() {
                 return (
                   <span
                     key={f.label}
-                    className="flex items-center gap-2 rounded-full bg-white/[0.06] px-3 py-1.5 text-xs font-medium text-white/75"
+                    className="flex items-center gap-2 rounded-sm border border-white/12 bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium text-white/70"
                   >
-                    <Icon size={14} className="text-[#B49BFF]" />
+                    <Icon size={14} className="text-gs-" />
                     {f.label}
                   </span>
                 );
@@ -109,14 +101,14 @@ export function LocationSection() {
           <Reveal delay={210}>
             <div className="mt-7">
               <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/45">
-                <Navigation size={13} className="text-[#FFD23F]" />
+                <Navigation size={13} className="text-gs-" />
                 Easy to reach
               </p>
               <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                 {landmarks.map((l) => (
                   <div
                     key={l.name}
-                    className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5"
+                    className="flex items-center justify-between gap-2 rounded-sm border-l-2 border-white/15 bg-white/[0.03] px-3.5 py-2.5 transition-colors hover:border-gs-"
                   >
                     <span className="text-sm text-white/80">{l.name}</span>
                     <span
@@ -134,25 +126,23 @@ export function LocationSection() {
           {/* CTAs */}
           <Reveal delay={230}>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
+              <Cta
                 href={DIRECTIONS_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold text-white transition-transform hover:scale-[1.03]"
-                style={{
-                  background: "linear-gradient(135deg, #147EFF, #7C5CFC, #FC19ED)",
-                  boxShadow: "0 12px 36px rgba(124,92,252,0.4)",
-                }}
+                variant="solid"
+                className="uppercase tracking-[0.12em]"
               >
-                <Navigation size={17} />
+                <Navigation size={16} />
                 Get Directions
-              </Link>
-              <Link
+              </Cta>
+              <Cta
                 href="#tickets"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur transition-colors hover:bg-white/20"
+                variant="secondary"
+                className="uppercase tracking-[0.12em]"
               >
                 Book Your Show
-              </Link>
+              </Cta>
             </div>
           </Reveal>
 
@@ -163,14 +153,14 @@ export function LocationSection() {
                 href="tel:+919000187731"
                 className="flex items-center gap-2 text-sm font-medium text-white/80 transition-colors hover:text-white"
               >
-                <Phone size={16} className="text-[#B49BFF]" />
+                <Phone size={16} className="text-gs-" />
                 +91 90001 87731
               </Link>
               <Link
                 href="mailto:gameshowchallengerooms@gmail.com"
                 className="flex items-center gap-2 text-sm font-medium text-white/80 transition-colors hover:text-white"
               >
-                <Mail size={16} className="text-[#B49BFF]" />
+                <Mail size={16} className="text-gs-" />
                 gameshowchallengerooms@gmail.com
               </Link>
             </div>
@@ -179,7 +169,7 @@ export function LocationSection() {
 
         {/* Right: map */}
         <Reveal direction="left" className="h-full">
-          <div className="relative h-full min-h-[340px] overflow-hidden rounded-3xl border border-white/10 md:min-h-[440px]">
+          <div className="relative h-full min-h-[340px] overflow-hidden rounded-sm border border-white/10 md:min-h-[440px]">
             <iframe
               title="Game Show Challenge Rooms location on Google Maps"
               src={MAP_EMBED_URL}
@@ -195,15 +185,17 @@ export function LocationSection() {
             />
 
             {/* Directions pill anchored to the map (this one is clickable) */}
-            <Link
+            <Cta
               href={DIRECTIONS_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-bold text-black shadow-lg transition-transform hover:scale-105"
+              variant="light"
+              size="sm"
+              className="absolute bottom-4 right-4 uppercase tracking-[0.1em]"
             >
               <Navigation size={13} />
               Directions
-            </Link>
+            </Cta>
           </div>
         </Reveal>
       </div>

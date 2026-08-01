@@ -9,21 +9,21 @@ const reasons = [
     chapter: "The format",
     title: "A real hosted show",
     text: "Not an arcade, not an escape room — an actual live game show with a host, lights and music. The only one of its kind in Hyderabad.",
-    glow: "#147EFF",
+    glow: "var(--gs-blue)",
   },
   {
     icon: Users,
     chapter: "The crew",
     title: "Made for groups",
     text: "Built for groups of 4 to 15 people. Whatever the occasion, your whole crew plays together — nobody sits on the sidelines.",
-    glow: "#FC19ED",
+    glow: "var(--gs-magenta)",
   },
   {
     icon: Sparkles,
     chapter: "The feeling",
     title: "Everyone plays, nobody watches",
     text: "Unlike a movie, a meal or bowling, every single person is in the spotlight and part of the action from start to finish.",
-    glow: "#FF2E4D",
+    glow: "var(--gs-red)",
   },
 ];
 
@@ -45,7 +45,7 @@ export function WhyHyderabadSection() {
         <div className="mx-auto max-w-[820px] text-center">
           <Reveal>
             <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-white/80 backdrop-blur">
-              <MapPin size={14} className="text-[#FF2E4D]" />
+              <MapPin size={14} className="text-gs-red" />
               Proudly in Hyderabad
             </span>
           </Reveal>
@@ -58,7 +58,7 @@ export function WhyHyderabadSection() {
               Make a memory your group{" "}
               <span
                 style={{
-                  background: "linear-gradient(90deg, #147EFF, #FC19ED)",
+                  background: "linear-gradient(90deg, var(--gs-blue), var(--gs-magenta))",
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",
@@ -87,7 +87,7 @@ export function WhyHyderabadSection() {
             return (
               <Reveal key={r.title} delay={i * 90} direction={flip ? "left" : "right"}>
                 <article
-                  className={`group relative overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-br from-[#141416] to-[#0a0a0c] transition-colors duration-500 hover:border-white/25 ${
+                  className={`group relative overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-br from-gs-surface-panel to-gs-surface-deeper transition-colors duration-500 hover:border-white/25 ${
                     flip ? "md:flex-row-reverse" : ""
                   } flex flex-col md:flex-row md:items-stretch`}
                 >

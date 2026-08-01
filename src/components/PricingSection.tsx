@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { ChevronRight, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Cta } from "@/components/ui/cta";
 
-// BMW design accents.
-const BMW_BLUE = "#0066B1";
-const BMW_LIGHT = "#1c69d4";
+// Selection accent for the segmented pickers — brand blue, from the token set.
+const SELECT_ACCENT = "var(--gs-blue)";
 
 const BOOKING_URL = "https://gameshowchallengerooms.com/";
 
@@ -49,8 +48,8 @@ const tiers: ShowTier[] = [
     label: "The Classic",
     eyebrow: "The original",
     tagline: "The pure live game show experience.",
-    accent: "#147EFF",
-    ink: "#3B95FF",
+    accent: "var(--gs-blue)",
+    ink: "var(--gs-blue-bright)",
     features: [
       "Live game show host",
       "Core buzzer & challenge rounds",
@@ -68,8 +67,8 @@ const tiers: ShowTier[] = [
     label: "Prime Time",
     eyebrow: "Most popular",
     tagline: "Where the game show meets the party.",
-    accent: "#7C5CFC",
-    ink: "#9A7BFF",
+    accent: "var(--gs-violet)",
+    ink: "var(--gs-violet-bright)",
     popular: true,
     features: [
       "Live host & full game show",
@@ -84,26 +83,6 @@ const tiers: ShowTier[] = [
       "6+": [899, 999],
     },
   },
-  {
-    label: "Elite Edition",
-    eyebrow: "The premium show",
-    tagline: "An elevated celebration show for special days.",
-    accent: "#FF8A1E",
-    ink: "#FF9F45",
-    features: [
-      "Live host & full game show",
-      "A more curated, premium setup",
-      "Bigger celebration moments",
-      "A standout finale to remember",
-      "Best for birthdays & special occasions",
-      "Approx. 60 minutes of play",
-    ],
-    price: {
-      "4": [1199, 1299],
-      "5": [1099, 1199],
-      "6+": [1049, 1149],
-    },
-  },
 ];
 
 // Fine print — the conditions strip from the brochure, plus the real add-on
@@ -114,9 +93,7 @@ const notes = [
   "Arrive 15 minutes before your slot.",
   "Prices may vary for special dates, corporate events & large groups.",
   "Extra time @ ₹600 for the whole team (15 minutes).",
-  "Kids aged 0–4 years get free admission.",
   "Add-on Celebration Room to cut a cake after your show.",
-  "Kids prices apply with a minimum of 2 paying adults.",
 ];
 
 /** Outlined CTA that fills BMW-blue on hover — the signature BMW button. The
@@ -133,22 +110,19 @@ function BmwButton({
   className?: string;
 }) {
   return (
-    <Link
+    <Cta
       href={href}
-      className={cn(
-        "bmw-btn group/btn inline-flex items-center justify-center gap-2 px-7 py-3.5 text-[14px] font-semibold uppercase tracking-[0.06em] text-white transition-colors duration-200",
-        filled ? "bmw-btn--filled" : "bmw-btn--outline",
-        className
-      )}
+      variant={filled ? "primary" : "secondary"}
+      className={cn("uppercase tracking-[0.06em]", className)}
       style={{ fontFamily: "var(--font-sans)" }}
     >
       {children}
       <ChevronRight
         size={16}
         strokeWidth={2.5}
-        className="transition-transform duration-200 group-hover/btn:translate-x-1"
+        className="transition-transform duration-200 group-hover/cta:translate-x-1"
       />
-    </Link>
+    </Cta>
   );
 }
 
@@ -166,7 +140,7 @@ export function PricingSection() {
       id="tickets"
       // BMW: deep near-black stage, structured and cinematic.
       className="w-full px-5 py-24 text-white md:px-10 md:py-32"
-      style={{ background: "linear-gradient(180deg, #0a0b0c 0%, #161819 100%)", fontFamily: "var(--font-sans)" }}
+      style={{ background: "linear-gradient(180deg, var(--gs-surface-deeper) 0%, var(--gs-surface-sunken) 100%)", fontFamily: "var(--font-sans)" }}
     >
       <div className="mx-auto max-w-[1180px]">
         {/* Header — uppercase eyebrow with the BMW-blue tick, tight bold title. */}
@@ -175,7 +149,7 @@ export function PricingSection() {
             className="mb-5 flex items-center gap-3 text-[13px] font-semibold uppercase tracking-[0.18em]"
             style={{ color: "rgba(255,255,255,0.55)" }}
           >
-            <span className="block h-[2px] w-9" style={{ background: BMW_BLUE }} />
+            <span className="block h-[2px] w-9" style={{ background: SELECT_ACCENT }} />
             Pricing
           </span>
           <h2
@@ -216,7 +190,7 @@ export function PricingSection() {
                       i > 0 && "border-l border-white/15",
                       active ? "text-white" : "text-white/55 hover:text-white"
                     )}
-                    style={active ? { background: BMW_BLUE } : undefined}
+                    style={active ? { background: SELECT_ACCENT } : undefined}
                   >
                     <span
                       className="text-[20px] font-bold leading-none tabular-nums"
@@ -252,7 +226,7 @@ export function PricingSection() {
               <span
                 className="absolute top-0 bottom-0 left-0 w-1/2 transition-transform duration-300 ease-out"
                 style={{
-                  background: BMW_BLUE,
+                  background: SELECT_ACCENT,
                   transform: day === "weekday" ? "translateX(0)" : "translateX(100%)",
                 }}
                 aria-hidden="true"
@@ -289,7 +263,7 @@ export function PricingSection() {
         </div>
 
         {/* ── The three show tiers — prices react to the configurator ───────── */}
-        <div className="mt-12 grid gap-px md:grid-cols-3" style={{ background: "rgba(255,255,255,0.08)" }}>
+        <div className="mt-12 grid gap-px md:grid-cols-2" style={{ background: "rgba(255,255,255,0.08)" }}>
           {tiers.map((tier) => {
             const price = priceOf(tier);
             const other = tier.price[players][day === "weekday" ? 1 : 0];
@@ -297,7 +271,7 @@ export function PricingSection() {
               <div
                 key={tier.label}
                 className="relative flex flex-col px-7 pb-8 pt-9"
-                style={{ background: tier.popular ? "#1b1e20" : "#101213" }}
+                style={{ background: tier.popular ? "var(--gs-surface-raised)" : "var(--gs-surface-deep)" }}
               >
                 {/* Accent bar marks the recommended build, in the tier's colour. */}
                 <span
@@ -373,33 +347,11 @@ export function PricingSection() {
           {day === "weekday" ? "weekdays" : "weekends"}.
         </p>
 
-        {/* Kids Play — angular accessory panel, a real add-on offering. */}
-        <div
-          className="mt-16 flex flex-col gap-6 px-8 py-9 md:flex-row md:items-center md:justify-between"
-          style={{ background: "#101213", borderLeft: `3px solid ${BMW_BLUE}` }}
-        >
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: BMW_LIGHT }}>
-              Just for the little champions
-            </span>
-            <h3
-              className="mt-2 text-[28px] font-bold tracking-[-0.01em] md:text-[34px]"
-              style={{ fontFamily: "var(--font-inter-tight, var(--font-display))" }}
-            >
-              Kids Play · ₹500
-            </h3>
-            <p className="mt-1 text-[14px] text-white/55">For ages 5–8 years · ID cards mandatory</p>
-          </div>
-          <BmwButton href={BOOKING_URL} className="shrink-0">
-            Book Kids Play
-          </BmwButton>
-        </div>
-
         {/* Notes — fine print, BMW spec-sheet style. */}
         <ul className="mt-12 grid gap-x-10 gap-y-3 border-t border-white/10 pt-8 sm:grid-cols-2">
           {notes.map((note) => (
             <li key={note} className="flex items-start gap-2.5 text-[12px] leading-relaxed text-white/40">
-              <span aria-hidden className="mt-1.5 block h-1 w-1 shrink-0" style={{ background: BMW_BLUE }} />
+              <span aria-hidden className="mt-1.5 block h-1 w-1 shrink-0" style={{ background: SELECT_ACCENT }} />
               {note}
             </li>
           ))}

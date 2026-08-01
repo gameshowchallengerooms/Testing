@@ -81,15 +81,148 @@
   --chart-5: #22c55e;
   --radius: 0.625rem;
 
-  /* Gamestorii custom colors */
-  --gs-blue: #4A7DFF;
-  --gs-pink: #E06BAA;
-  --gs-purple: #8B5CF6;
-  --gs-gradient-hero: linear-gradient(90deg, #6B8DD6 0%, #8B6FC0 50%, #E06BAA 100%);
-  --gs-gradient-pricing: linear-gradient(135deg, #7C5CFC 0%, #C77DBA 50%, #E8A0BF 100%);
+  /* ═══════════════════════════════════════════════════════════════════════
+     BRAND TOKENS — THE single source of truth for colour across the site.
+     Change a value here and it changes everywhere. Components must never
+     hardcode a hex value; use var(--gs-*) or the Tailwind aliases below.
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* ── Core brand ramp (the stage-light palette) ────────────────────────── */
+  --gs-blue: #147eff;
+  --gs-blue-bright: #45a6ff;
+  --gs-violet: #7c5cfc;
+  --gs-violet-bright: #9b6bff;
+  --gs-magenta: #fc19ed;
+  --gs-magenta-bright: #ff45f1;
+  --gs-pink: #ff6bf3;
+  --gs-gold: #ffd23f;
+  --gs-gold-deep: #ffb020;
+  --gs-mint: #22d3a5;
+  --gs-orange: #ff7a1a;
+  --gs-red: #ff2e4d;
+  --gs-star: #ffb020;
+  --gs-whatsapp: #25d366;
+  --gs-whatsapp-deep: #20bd5a;
+
+  /* Soft ends of the headline sweep gradient (light blue → light pink). */
+  --gs-sky: #9fc4ff;
+  --gs-sky-bright: #1fa2ff;
+  --gs-magenta-soft: #ff35e5;
+  --gs-pink-soft: #ffa8f0;
+
+  /* ── Brand gradients ──────────────────────────────────────────────────── */
+  --gs-gradient-brand: linear-gradient(
+    135deg,
+    var(--gs-blue) 0%,
+    var(--gs-violet) 50%,
+    var(--gs-magenta) 100%
+  );
+  --gs-gradient-hero: linear-gradient(
+    90deg,
+    var(--gs-blue) 0%,
+    var(--gs-violet) 50%,
+    var(--gs-magenta) 100%
+  );
+  --gs-gradient-pricing: linear-gradient(
+    135deg,
+    var(--gs-violet) 0%,
+    var(--gs-pink) 50%,
+    var(--gs-gold) 100%
+  );
+
+  /* ── Surfaces (dark stage set, lightest → darkest) ────────────────────── */
+  --gs-surface-raised: #222222;
+  --gs-surface: #1a1a1a;
+  --gs-surface-sunken: #16181c;
+  --gs-surface-deep: #0d0f13;
+  --gs-surface-deeper: #0a0a0c;
+  --gs-surface-black: #07080b;
+  /* Near-black card fills used by the testimonial + screen-frame panels. */
+  --gs-surface-card: #0e0e10;
+  --gs-surface-panel: #141416;
+  --gs-surface-screen: #080b14;
+
+  /* ── Lines & scrims ───────────────────────────────────────────────────── */
+  --gs-line: rgba(255, 255, 255, 0.12);
+  --gs-line-strong: rgba(255, 255, 255, 0.2);
+  --gs-line-hover: rgba(255, 255, 255, 0.45);
+  --gs-veil: rgba(255, 255, 255, 0.04);
+  --gs-veil-hover: rgba(255, 255, 255, 0.08);
+
+  /* ── Text ─────────────────────────────────────────────────────────────── */
+  --gs-text: #ffffff;
+  --gs-text-muted: rgba(255, 255, 255, 0.7);
+  --gs-text-subtle: rgba(255, 255, 255, 0.45);
+
+  /* ── Chrome ───────────────────────────────────────────────────────────── */
   --gs-nav-bg: rgba(30, 30, 30, 0.6);
-  --gs-card-bg: #1a1a1a;
+  --gs-nav-bg-solid: rgba(30, 30, 30, 0.8);
+  --gs-nav-pill: rgba(40, 40, 40, 0.8);
+  --gs-card-bg: var(--gs-surface);
   --gs-card-border: rgba(255, 255, 255, 0.08);
+
+  /* ── Show accents (per-tier, referenced by ShowRounds) ────────────────── */
+  --gs-show-classic: var(--gs-blue-bright);
+  --gs-show-classic-base: #2e9bff;
+  --gs-show-prime: #a579ff;
+  --gs-show-prime-base: var(--gs-violet-bright);
+
+  /* Deep image-wash tints that let each show card's photo fade into its panel. */
+  --gs-wash-classic: #071b31;
+  --gs-wash-classic-deep: #07121f;
+  --gs-wash-prime: #1d0c38;
+  --gs-wash-prime-deep: #120b22;
+
+  /* Host avatar plate. */
+  --gs-avatar-from: #2a2140;
+  --gs-avatar-to: #191b20;
+
+  /* ── Button geometry — the ONE shape rule for every CTA on the site ───── */
+  --gs-btn-radius: 9999px;
+  --gs-btn-px: 1.75rem;
+  --gs-btn-py: 0.875rem;
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+   Expose the brand tokens to Tailwind so `bg-gs-magenta`, `text-gs-gold`,
+   `border-gs-blue/40` etc. all work and all resolve back to the vars above.
+   ═════════════════════════════════════════════════════════════════════════ */
+@theme inline {
+  --color-gs-blue: var(--gs-blue);
+  --color-gs-blue-bright: var(--gs-blue-bright);
+  --color-gs-violet: var(--gs-violet);
+  --color-gs-violet-bright: var(--gs-violet-bright);
+  --color-gs-magenta: var(--gs-magenta);
+  --color-gs-magenta-bright: var(--gs-magenta-bright);
+  --color-gs-pink: var(--gs-pink);
+  --color-gs-gold: var(--gs-gold);
+  --color-gs-gold-deep: var(--gs-gold-deep);
+  --color-gs-mint: var(--gs-mint);
+  --color-gs-orange: var(--gs-orange);
+  --color-gs-red: var(--gs-red);
+  --color-gs-star: var(--gs-star);
+  --color-gs-whatsapp: var(--gs-whatsapp);
+  --color-gs-sky: var(--gs-sky);
+  --color-gs-sky-bright: var(--gs-sky-bright);
+  --color-gs-magenta-soft: var(--gs-magenta-soft);
+  --color-gs-pink-soft: var(--gs-pink-soft);
+  --color-gs-surface: var(--gs-surface);
+  --color-gs-surface-raised: var(--gs-surface-raised);
+  --color-gs-surface-sunken: var(--gs-surface-sunken);
+  --color-gs-surface-deep: var(--gs-surface-deep);
+  --color-gs-surface-deeper: var(--gs-surface-deeper);
+  --color-gs-surface-black: var(--gs-surface-black);
+  --color-gs-surface-card: var(--gs-surface-card);
+  --color-gs-surface-panel: var(--gs-surface-panel);
+  --color-gs-surface-screen: var(--gs-surface-screen);
+  --color-gs-show-classic: var(--gs-show-classic);
+  --color-gs-show-classic-base: var(--gs-show-classic-base);
+  --color-gs-show-prime: var(--gs-show-prime);
+  --color-gs-show-prime-base: var(--gs-show-prime-base);
+  --color-gs-wash-classic: var(--gs-wash-classic);
+  --color-gs-wash-classic-deep: var(--gs-wash-classic-deep);
+  --color-gs-wash-prime: var(--gs-wash-prime);
+  --color-gs-wash-prime-deep: var(--gs-wash-prime-deep);
 }
 
 @layer base {
@@ -268,23 +401,6 @@
 .animate-gradient-drift {
   background-size: 200% 200%;
   animation: gradient-drift 12s ease infinite;
-}
-
-/* Marquee bulbs chasing around the rim */
-@keyframes bulb-chase {
-  0%,
-  100% {
-    opacity: 1;
-    filter: drop-shadow(0 0 4px currentColor);
-  }
-  50% {
-    opacity: 0.25;
-    filter: none;
-  }
-}
-
-.animate-bulb {
-  animation: bulb-chase 1.2s ease-in-out infinite;
 }
 
 /* Slow floating bob for decorative elements */
@@ -611,7 +727,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-bulb,
   .animate-float,
   .animate-ring-rotate,
   .animate-gradient-drift,

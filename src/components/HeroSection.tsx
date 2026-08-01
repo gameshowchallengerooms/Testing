@@ -13,41 +13,24 @@ import {
   useReducedMotion,
   type MotionValue,
 } from "motion/react";
-
-function BulbStrip({ className }: { className?: string }) {
-  const bulbs = Array.from({ length: 28 });
-  const colors = ["#FFD23F", "#FF2E4D", "#147EFF", "#22D3A5"];
-  return (
-    <div className={cn("flex items-center justify-between", className)}>
-      {bulbs.map((_, i) => (
-        <span
-          key={i}
-          className="animate-bulb h-2 w-2 rounded-full"
-          style={{
-            color: colors[i % colors.length],
-            background: colors[i % colors.length],
-            animationDelay: `${(i % 7) * 0.13}s`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
+import { useLowPowerMode } from "@/hooks/useLowPowerMode";
 
 // ─── Headline word reveal ────────────────────────────────────────────────────
 
-const WORDS = ["Tonight,", "you're", "our", "celebrity."];
+const WORDS = ["Today,", "you're", "our", "celebrity."];
 
 function RevealWord({
   word,
   progress,
   index,
   total,
+  lowPower,
 }: {
   word: string;
   progress: MotionValue<number>;
   index: number;
   total: number;
+  lowPower: boolean;
 }) {
   const span = 1 / total;
   const start = index * span;
@@ -57,11 +40,18 @@ function RevealWord({
   const filter = useTransform(progress, [start, end], ["blur(10px)", "blur(0px)"]);
   const y = useTransform(progress, [start, end], ["100%", "0%"]);
 
+  // Animated `blur()` on text re-rasters the glyphs every frame at these very
+  // large display sizes — the single most expensive thing in the headline. The
+  // slide + fade already carry the reveal, so weak GPUs get those alone.
   return (
     <span className="relative inline-block overflow-hidden align-bottom" style={{ perspective: 600 }}>
       <motion.span
         className="inline-block"
-        style={{ opacity, filter, y, willChange: "transform, opacity, filter" }}
+        style={
+          lowPower
+            ? { opacity, y, willChange: "transform, opacity" }
+            : { opacity, filter, y, willChange: "transform, opacity, filter" }
+        }
       >
         {word}
       </motion.span>
@@ -74,6 +64,10 @@ function RevealWord({
 const PARA_TEXT =
   "Feel the excitement — live host, team challenges, cheers, and a buzzer in your hand. Bring your friends and compete like the stars you watched on TV.";
 const EMPHASIS = new Set(["host,", "challenges,", "buzzer", "stars"]);
+/* These stops are interpolated in JS by `hexToRgb` below, so they MUST stay
+   literal hex — a `var(--gs-*)` reference can't be parsed with parseInt and
+   would render the whole paragraph grey. They mirror the --gs-sky →
+   --gs-pink-soft ramp in globals.css; keep the two in sync if that changes. */
 const GRADIENT = ["#9FC4FF", "#1FA2FF", "#7C5CFC", "#FF35E5", "#FFA8F0"];
 
 function hexToRgb(hex: string): [number, number, number] {
@@ -97,19 +91,45 @@ function FillWord({
   progress,
   index,
   total,
+  lowPower,
 }: {
   word: string;
   emphasis: boolean;
   progress: MotionValue<number>;
   index: number;
   total: number;
+  lowPower: boolean;
 }) {
   const span = 1 / total;
   const start = index * span;
   const end = Math.min(start + span * 2.2, 1);
   const litColor = colorAt(index / Math.max(total - 1, 1));
+  // `color` is a paint property, so each word repaints on every scroll frame —
+  // ~26 words' worth of text paint per frame. On low-power devices the word
+  // still lights up, but it flips at its threshold via a compositor-friendly
+  // opacity crossfade between two statically-coloured copies instead.
   const color = useTransform(progress, [start, end], ["rgba(255,255,255,0.18)", litColor]);
   const opacity = useTransform(progress, [start, end], [0.5, 1]);
+
+  if (lowPower) {
+    return (
+      <>
+        <span className="relative inline-block">
+          <span style={{ color: "rgba(255,255,255,0.35)", fontWeight: emphasis ? 700 : undefined }}>
+            {word}
+          </span>
+          <motion.span
+            aria-hidden
+            className="absolute inset-0 inline-block"
+            style={{ color: litColor, opacity, fontWeight: emphasis ? 700 : undefined }}
+          >
+            {word}
+          </motion.span>
+        </span>
+        <span> </span>
+      </>
+    );
+  }
 
   return (
     <>
@@ -204,22 +224,22 @@ function GoldPill({ progress }: { progress: MotionValue<number> }) {
         >
           <motion.path
             d={rectPath}
-            stroke="#FFD23F"
+            stroke="var(--gs-gold)"
             strokeWidth={STROKE}
             strokeLinecap="round"
             style={{ pathLength: draw }}
           />
           <motion.g style={{ offsetPath: `path('${rectPath}')`, offsetDistance }}>
-            <Star size={12} className="fill-[#FFD23F] text-[#FFD23F]" x={-6} y={-6} />
+            <Star size={12} className="fill-gs-gold text-gs-gold" x={-6} y={-6} />
           </motion.g>
         </svg>
       )}
 
       <span className="relative z-1 inline-flex items-center gap-2.5">
-        <Star size={15} className="shrink-0 fill-[#FFD23F] text-[#FFD23F]" />
+        <Star size={15} className="shrink-0 fill-gs-gold text-gs-gold" />
         <span className="text-sm font-semibold text-white md:text-base">
           And we&apos;ll make the{" "}
-          <span className="text-[#FFD23F]">real show happen for you.</span>
+          <span className="text-gs-gold">real show happen for you.</span>
         </span>
       </span>
     </motion.div>
@@ -277,6 +297,7 @@ export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
+  const lowPower = useLowPowerMode();
 
   // Track height in px, derived from the viewport so the reveal spans the same
   // proportional scroll distance on every screen. Starts as a vh value for SSR
@@ -338,7 +359,12 @@ export function HeroSection() {
           alt=""
           fill
           priority
-          className="animate-ken-burns object-cover object-center"
+          className={cn(
+            "object-cover object-center",
+            // A permanent 18s scale on a full-viewport image keeps the whole
+            // hero re-compositing forever, even at rest. Static on weak GPUs.
+            !lowPower && "animate-ken-burns",
+          )}
           sizes="100vw"
         />
       </div>
@@ -353,22 +379,27 @@ export function HeroSection() {
         aria-hidden="true"
       />
 
-      {/* Spotlight beams */}
-      <div className="absolute inset-0 z-2 overflow-hidden opacity-70" aria-hidden="true">
-        <span className="beam beam-left" />
-        <span className="beam beam-center" />
-        <span className="beam beam-right" />
-      </div>
+      {/* Spotlight beams + camera washes.
+          Every one of these is `mix-blend-mode: screen` over a blur, which
+          forces the compositor to read back the backdrop pixels it sits on —
+          five full-viewport blended layers means the entire hero re-composites
+          each frame, forever, before the user even scrolls. That is what pins a
+          budget phone at ~20fps on load, so weak devices get the (already
+          quite rich) gradient overlay alone. */}
+      {!lowPower && (
+        <>
+          <div className="absolute inset-0 z-2 overflow-hidden opacity-70" aria-hidden="true">
+            <span className="beam beam-left" />
+            <span className="beam beam-center" />
+            <span className="beam beam-right" />
+          </div>
 
-      {/* Camera washes */}
-      <div className="pointer-events-none absolute inset-0 z-2 overflow-hidden" aria-hidden="true">
-        <span className="paparazzi-wash paparazzi-wash-left" />
-        <span className="paparazzi-wash paparazzi-wash-right" />
-      </div>
-
-      {/* Bulb strips */}
-      <BulbStrip className="absolute left-0 right-0 top-5 z-3 hidden px-10 md:flex" />
-      <BulbStrip className="absolute bottom-5 left-0 right-0 z-3 hidden px-10 md:flex" />
+          <div className="pointer-events-none absolute inset-0 z-2 overflow-hidden" aria-hidden="true">
+            <span className="paparazzi-wash paparazzi-wash-left" />
+            <span className="paparazzi-wash paparazzi-wash-right" />
+          </div>
+        </>
+      )}
 
       {/* Content — spread top→bottom so the setup copy sits just under the
           header, the pill sits near the bottom, and the headline gets the big
@@ -407,7 +438,7 @@ export function HeroSection() {
                 WORDS.map((w, i) => (
                   <span key={w} className="block font-black tracking-tight"
                     style={{ fontSize: HEADLINE_FONT_SIZE, lineHeight: 0.97 }}>
-                    <RevealWord word={w} progress={headlineProgress} index={i} total={WORDS.length} />
+                    <RevealWord word={w} progress={headlineProgress} index={i} total={WORDS.length} lowPower={lowPower} />
                   </span>
                 ))
               )}
@@ -430,6 +461,7 @@ export function HeroSection() {
                       progress={paraProgress}
                       index={i}
                       total={paraWords.length}
+                      lowPower={lowPower}
                     />
                   ))}
                 </span>
@@ -440,11 +472,11 @@ export function HeroSection() {
           {/* ── Bottom row: gold pill ── */}
           <div>
             {reduce ? (
-              <div className="inline-flex max-w-[min(92vw,30rem)] items-center gap-2.5 rounded-full border border-[#FFD23F]/60 bg-[#FFD23F]/10 px-5 py-2.5 backdrop-blur-md">
-                <Star size={15} className="shrink-0 fill-[#FFD23F] text-[#FFD23F]" />
+              <div className="inline-flex max-w-[min(92vw,30rem)] items-center gap-2.5 rounded-full border border-gs-gold/60 bg-gs-gold/10 px-5 py-2.5 backdrop-blur-md">
+                <Star size={15} className="shrink-0 fill-gs-gold text-gs-gold" />
                 <span className="text-sm font-semibold text-white">
                   And we&apos;ll make the{" "}
-                  <span className="text-[#FFD23F]">real show happen for you.</span>
+                  <span className="text-gs-gold">real show happen for you.</span>
                 </span>
               </div>
             ) : (

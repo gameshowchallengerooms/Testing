@@ -63,9 +63,9 @@ const shows: Show[] = [
       "Lively moments & big group fun",
       "Approx. 60 minutes of play",
     ],
-    image: "/images/shows/prime-time-group.webp",
+    image: "/images/shows/prime-time.webp",
     imageAlt:
-      "Two teams of friends laughing, cheering, and playing a buzzer challenge with a live host under purple party lights",
+      "A lively group laughing and playing party-style game show challenges under purple lights",
     accentText: "text-gs-show-prime",
     accentBorder: "border-gs-show-prime-base/50",
     accentSurface: "bg-gs-show-prime-base/10",

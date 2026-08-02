@@ -33,6 +33,13 @@ const TRACK_VIEWPORTS = 6; // how many screens of scroll the whole sequence span
 const POSTER_COPY =
   "Imagine being picked as a contestant on your favorite game show. The host calls your name—your face glows with studio lights. Through the theme music, you hear the opposing team trash-talking from across the stage. That’s Game Show Challenge Rooms. Instead of watching from your couch, you’re on stage, competing in mini-games that test everything from speed to strategy. There’s a live host, lights, and music. When you slam the buzzer and nail the answer, you’ll feel like a game show legend.";
 
+// The source file is already an optimized 67 KB webp; running it through
+// /_next/image at high quality re-encodes it LARGER (~104 KB) and, in dev,
+// generates it on demand — the partial-paint flicker on slow loads. Serve it
+// untouched, and fade in from a tiny inline preview while it downloads.
+const LOGO_BLUR =
+  "data:image/webp;base64,UklGRhIBAABXRUJQVlA4WAoAAAAQAAAADwAACQAAQUxQSHMAAAABcKpt25O8JCpnAHlPtWlE456V5GWnuQ6B7uocAd1tW1U7zb1t/38KETEBMDw/mB4fj8Mk8D0DaEWDruuIouN2B1ELQi9MZbKlar2cTSfDHn/+U54WNPMBTZ/TyTQOzJnkxABYkywBgE00x/vvZzNsxFkAAFZQOCB4AAAAUAIAnQEqEAAKAAOAWiWwAnQGMHam26dcAuxgAP7BVLNCRoW8rm/FO3tcHGgBdIYJCo37P6NkVha0sERLOwpto7SkMxYv3yrZ+unKpZ/s6XwKwGD6he8Oh7C3MhaPvtpU4PJtDjNlKsFf3vyAdMC7P6fdWK9mK+4A";
+
 const posterCommonProps = {
   alt: "",
   sizes: "(max-width: 639px) 98vw, 1152px",
@@ -190,6 +197,9 @@ export function ScrollZoomIntro() {
             alt="Game Show Challenge Rooms"
             width={360}
             height={232}
+            unoptimized
+            placeholder="blur"
+            blurDataURL={LOGO_BLUR}
             className="mb-12 h-auto w-64"
           />
           <figure className="w-full overflow-hidden rounded-[1.75rem] border border-white/20 shadow-[0_32px_100px_rgba(14,8,40,0.45)] sm:rounded-[2.25rem]">
@@ -269,8 +279,9 @@ export function ScrollZoomIntro() {
               width={1497}
               height={966}
               priority
-              quality={100}
-              sizes="(max-width: 640px) 60vw, 360px"
+              unoptimized
+              placeholder="blur"
+              blurDataURL={LOGO_BLUR}
               className="h-auto w-[min(60vw,360px)] drop-shadow-[0_20px_80px_rgba(0,0,0,0.6)]"
             />
           </motion.div>

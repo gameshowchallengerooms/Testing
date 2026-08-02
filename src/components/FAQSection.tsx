@@ -11,6 +11,7 @@ import {
   PHONE_NUMBER,
   PHONE_DISPLAY,
 } from "@/components/WhatsAppChat";
+import { Cta } from "@/components/ui/cta";
 
 const faqItems = [
   {
@@ -23,7 +24,7 @@ const faqItems = [
   },
   {
     q: "What is the price?",
-    a: "Pricing is per person and depends on your group size and the day. Weekdays (Mon-Thu) range from ₹900 per person for a group of 4 down to ₹750 per person for groups of 6 or more. Weekends and public holidays range from ₹1000 per person for 4 down to ₹850 per person for 6 or more. Kids play is ₹500 (ages 5-8). All prices include applicable taxes.",
+    a: "Pricing is per person and depends on your group size and the day. Weekdays (Mon-Thu) range from ₹900 per person for a group of 4 down to ₹750 per person for groups of 6 or more. Weekends and public holidays range from ₹1000 per person for 4 down to ₹850 per person for 6 or more. All prices include applicable taxes.",
   },
   {
     q: "Do I need to book in advance?",
@@ -130,7 +131,7 @@ function FAQContent({
                 <div
                   className={cn(
                     "mb-3 cursor-pointer rounded-2xl px-5 py-4 transition-colors duration-200 ease-in-out md:px-8 md:py-6",
-                    isOpen ? "bg-[#222222]" : "bg-[#1a1a1a] hover:bg-[#222222]"
+                    isOpen ? "bg-gs-surface-raised" : "bg-gs-surface hover:bg-gs-surface-raised"
                   )}
                   onClick={() => handleToggle(index)}
                   role="button"
@@ -193,52 +194,56 @@ export function StillHaveQuestions() {
     <section className="w-full bg-black px-5 py-10 md:px-10">
       <div className="mx-auto w-full" style={{ maxWidth: 1400 }}>
         <Reveal delay={120}>
-          <div
-            className="flex flex-col items-center gap-5 overflow-hidden rounded-3xl p-8 text-center md:flex-row md:justify-between md:text-left"
-            style={{
-              background:
-                "linear-gradient(120deg, #147EFF 0%, #7C5CFC 50%, #FC19ED 100%)",
-            }}
-          >
+          {/* Anthracite panel with a single precise accent edge — BMW-style
+              restraint instead of a saturated gradient. */}
+          <div className="relative flex flex-col items-center gap-6 overflow-hidden rounded-sm border border-white/10 bg-gs-surface-sunken p-8 text-center md:flex-row md:justify-between md:p-10 md:text-left">
+            <span
+              className="pointer-events-none absolute inset-y-0 left-0 w-[3px]"
+              style={{ background: "linear-gradient(180deg, var(--gs-magenta), var(--gs-pink))" }}
+              aria-hidden="true"
+            />
             <div>
               <h3
-                className="text-2xl font-bold text-white md:text-3xl"
+                className="text-2xl font-semibold tracking-tight text-white md:text-3xl"
                 style={{ fontFamily: "var(--font-display)" }}
               >
                 Still have questions?
               </h3>
-              <p className="mt-1 text-sm text-white/80 md:text-base">
+              <p className="mt-1.5 text-sm text-white/55 md:text-base">
                 Grab your crew, pick a slot, and let&apos;s get you in the game show.
               </p>
             </div>
 
             {/* Two ways to reach us — chat on WhatsApp or call straight away. */}
             <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:shrink-0">
-              <a
+              <Cta
                 href={whatsappHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Chat with us on WhatsApp"
-                className="group inline-flex items-center justify-center gap-2.5 rounded-full bg-white px-7 py-4 text-base font-bold text-[#7C5CFC] shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-transform hover:scale-[1.04]"
+                variant="secondary"
+                size="lg"
+                className="text-sm uppercase tracking-[0.12em]"
               >
-                <span className="text-[#25D366]">
-                  <WhatsAppGlyph size={20} />
+                <span className="text-gs-">
+                  <WhatsAppGlyph size={18} />
                 </span>
                 Chat
-              </a>
-              <a
+              </Cta>
+              <Cta
                 href={`tel:${PHONE_NUMBER}`}
                 aria-label={`Call us at ${PHONE_DISPLAY}`}
-                className="group inline-flex flex-col items-center justify-center rounded-full bg-white px-7 py-3 text-[#7C5CFC] shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-transform hover:scale-[1.04]"
+                variant="solid"
+                className="flex-col gap-0 py-3"
               >
-                <span className="inline-flex items-center gap-2 text-base font-bold leading-tight">
-                  <Phone size={18} strokeWidth={2.6} />
+                <span className="inline-flex items-center gap-2 text-sm font-semibold uppercase leading-tight tracking-[0.12em]">
+                  <Phone size={16} strokeWidth={2.4} />
                   Talk to us
                 </span>
-                <span className="text-xs font-semibold text-[#7C5CFC]/70">
+                <span className="text-xs font-medium tracking-wide text-white/70">
                   {PHONE_DISPLAY}
                 </span>
-              </a>
+              </Cta>
             </div>
           </div>
         </Reveal>

@@ -3,7 +3,6 @@ import { Navbar } from "@/components/Navbar";
 import { TeamBuildingSection } from "@/components/TeamBuildingSection";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { Footer } from "@/components/Footer";
-import { ScrollProgress } from "@/components/ScrollProgress";
 import { WhatsAppChat } from "@/components/WhatsAppChat";
 
 export const metadata: Metadata = {
@@ -16,7 +15,6 @@ export const metadata: Metadata = {
 export default function TeamBuildingPage() {
   return (
     <main className="relative min-h-screen bg-black">
-      <ScrollProgress />
       <Navbar />
       {/* Header clearance — the navbar is fixed/overlaid on the home hero, so on
           this standalone page we add top padding to clear it. */}

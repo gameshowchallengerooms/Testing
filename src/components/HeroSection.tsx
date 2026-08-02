@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { Star } from "lucide-react";
+import { ArrowUp, Star } from "lucide-react";
 import {
   motion,
   useScroll,
@@ -13,41 +13,24 @@ import {
   useReducedMotion,
   type MotionValue,
 } from "motion/react";
-
-function BulbStrip({ className }: { className?: string }) {
-  const bulbs = Array.from({ length: 28 });
-  const colors = ["#FFD23F", "#FF2E4D", "#147EFF", "#22D3A5"];
-  return (
-    <div className={cn("flex items-center justify-between", className)}>
-      {bulbs.map((_, i) => (
-        <span
-          key={i}
-          className="animate-bulb h-2 w-2 rounded-full"
-          style={{
-            color: colors[i % colors.length],
-            background: colors[i % colors.length],
-            animationDelay: `${(i % 7) * 0.13}s`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
+import { useLowPowerMode } from "@/hooks/useLowPowerMode";
 
 // ─── Headline word reveal ────────────────────────────────────────────────────
 
-const WORDS = ["Tonight,", "you're", "our", "celebrity."];
+const WORDS = ["Today,", "you're", "our", "celebrity."];
 
 function RevealWord({
   word,
   progress,
   index,
   total,
+  lowPower,
 }: {
   word: string;
   progress: MotionValue<number>;
   index: number;
   total: number;
+  lowPower: boolean;
 }) {
   const span = 1 / total;
   const start = index * span;
@@ -57,11 +40,18 @@ function RevealWord({
   const filter = useTransform(progress, [start, end], ["blur(10px)", "blur(0px)"]);
   const y = useTransform(progress, [start, end], ["100%", "0%"]);
 
+  // Animated `blur()` on text re-rasters the glyphs every frame at these very
+  // large display sizes — the single most expensive thing in the headline. The
+  // slide + fade already carry the reveal, so weak GPUs get those alone.
   return (
     <span className="relative inline-block overflow-hidden align-bottom" style={{ perspective: 600 }}>
       <motion.span
         className="inline-block"
-        style={{ opacity, filter, y, willChange: "transform, opacity, filter" }}
+        style={
+          lowPower
+            ? { opacity, y, willChange: "transform, opacity" }
+            : { opacity, filter, y, willChange: "transform, opacity, filter" }
+        }
       >
         {word}
       </motion.span>
@@ -74,6 +64,10 @@ function RevealWord({
 const PARA_TEXT =
   "Feel the excitement — live host, team challenges, cheers, and a buzzer in your hand. Bring your friends and compete like the stars you watched on TV.";
 const EMPHASIS = new Set(["host,", "challenges,", "buzzer", "stars"]);
+/* These stops are interpolated in JS by `hexToRgb` below, so they MUST stay
+   literal hex — a `var(--gs-*)` reference can't be parsed with parseInt and
+   would render the whole paragraph grey. They mirror the --gs-sky →
+   --gs-pink-soft ramp in globals.css; keep the two in sync if that changes. */
 const GRADIENT = ["#9FC4FF", "#1FA2FF", "#7C5CFC", "#FF35E5", "#FFA8F0"];
 
 function hexToRgb(hex: string): [number, number, number] {
@@ -97,19 +91,45 @@ function FillWord({
   progress,
   index,
   total,
+  lowPower,
 }: {
   word: string;
   emphasis: boolean;
   progress: MotionValue<number>;
   index: number;
   total: number;
+  lowPower: boolean;
 }) {
   const span = 1 / total;
   const start = index * span;
   const end = Math.min(start + span * 2.2, 1);
   const litColor = colorAt(index / Math.max(total - 1, 1));
+  // `color` is a paint property, so each word repaints on every scroll frame —
+  // ~26 words' worth of text paint per frame. On low-power devices the word
+  // still lights up, but it flips at its threshold via a compositor-friendly
+  // opacity crossfade between two statically-coloured copies instead.
   const color = useTransform(progress, [start, end], ["rgba(255,255,255,0.18)", litColor]);
   const opacity = useTransform(progress, [start, end], [0.5, 1]);
+
+  if (lowPower) {
+    return (
+      <>
+        <span className="relative inline-block">
+          <span style={{ color: "rgba(255,255,255,0.35)", fontWeight: emphasis ? 700 : undefined }}>
+            {word}
+          </span>
+          <motion.span
+            aria-hidden
+            className="absolute inset-0 inline-block"
+            style={{ color: litColor, opacity, fontWeight: emphasis ? 700 : undefined }}
+          >
+            {word}
+          </motion.span>
+        </span>
+        <span> </span>
+      </>
+    );
+  }
 
   return (
     <>
@@ -204,22 +224,22 @@ function GoldPill({ progress }: { progress: MotionValue<number> }) {
         >
           <motion.path
             d={rectPath}
-            stroke="#FFD23F"
+            stroke="var(--gs-gold)"
             strokeWidth={STROKE}
             strokeLinecap="round"
             style={{ pathLength: draw }}
           />
           <motion.g style={{ offsetPath: `path('${rectPath}')`, offsetDistance }}>
-            <Star size={12} className="fill-[#FFD23F] text-[#FFD23F]" x={-6} y={-6} />
+            <Star size={12} className="fill-gs-gold text-gs-gold" x={-6} y={-6} />
           </motion.g>
         </svg>
       )}
 
       <span className="relative z-1 inline-flex items-center gap-2.5">
-        <Star size={15} className="shrink-0 fill-[#FFD23F] text-[#FFD23F]" />
+        <Star size={15} className="shrink-0 fill-gs-gold text-gs-gold" />
         <span className="text-sm font-semibold text-white md:text-base">
           And we&apos;ll make the{" "}
-          <span className="text-[#FFD23F]">real show happen for you.</span>
+          <span className="text-gs-gold">real show happen for you.</span>
         </span>
       </span>
     </motion.div>
@@ -244,6 +264,18 @@ const PHASE: Record<"headline" | "para" | "pill", [number, number]> = {
 // scroll, not a fixed pixel count.
 const TRACK_VIEWPORTS = 3;
 
+// Headline size. The height budget is what keeps the hero fully on-screen:
+// the headline is WORDS.length lines tall, so its per-line size must be a
+// fraction of the viewport height that leaves room for everything else in the
+// column (header clearance, setup copy, fill paragraph, pill, and the gaps).
+//
+// Budgeting ~46dvh for the whole headline across 4 lines gives ~11.5dvh per
+// line. The earlier 14dvh/line spent ~56dvh on the headline alone, which
+// overflowed the bottom of short-wide screens (1280x720, 1440x800) and clipped
+// the gold pill. The vw term still caps it on narrow phones, where the words
+// are width-bound rather than height-bound.
+const HEADLINE_FONT_SIZE = "clamp(44px, min(16.5vw, 11.5dvh), 156px)";
+
 /**
  * The hero section.
  *
@@ -265,6 +297,7 @@ export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
+  const lowPower = useLowPowerMode();
 
   // Track height in px, derived from the viewport so the reveal spans the same
   // proportional scroll distance on every screen. Starts as a vh value for SSR
@@ -317,7 +350,7 @@ export function HeroSection() {
     <div
       ref={stickyRef}
       className="sticky top-0 w-full overflow-hidden"
-      style={{ height: "100dvh", minHeight: "600px" }}
+      style={{ height: "100dvh" }}
     >
       {/* next/image fill requires a positioned ancestor — relative wrapper here */}
       <div className="absolute inset-0">
@@ -326,7 +359,12 @@ export function HeroSection() {
           alt=""
           fill
           priority
-          className="animate-ken-burns object-cover object-center"
+          className={cn(
+            "object-cover object-center",
+            // A permanent 18s scale on a full-viewport image keeps the whole
+            // hero re-compositing forever, even at rest. Static on weak GPUs.
+            !lowPower && "animate-ken-burns",
+          )}
           sizes="100vw"
         />
       </div>
@@ -341,37 +379,38 @@ export function HeroSection() {
         aria-hidden="true"
       />
 
-      {/* Spotlight beams */}
-      <div className="absolute inset-0 z-2 overflow-hidden opacity-70" aria-hidden="true">
-        <span className="beam beam-left" />
-        <span className="beam beam-center" />
-        <span className="beam beam-right" />
-      </div>
+      {/* Spotlight beams + camera washes.
+          Every one of these is `mix-blend-mode: screen` over a blur, which
+          forces the compositor to read back the backdrop pixels it sits on —
+          five full-viewport blended layers means the entire hero re-composites
+          each frame, forever, before the user even scrolls. That is what pins a
+          budget phone at ~20fps on load, so weak devices get the (already
+          quite rich) gradient overlay alone. */}
+      {!lowPower && (
+        <>
+          <div className="absolute inset-0 z-2 overflow-hidden opacity-70" aria-hidden="true">
+            <span className="beam beam-left" />
+            <span className="beam beam-center" />
+            <span className="beam beam-right" />
+          </div>
 
-      {/* Camera washes */}
-      <div className="pointer-events-none absolute inset-0 z-2 overflow-hidden" aria-hidden="true">
-        <span className="paparazzi-wash paparazzi-wash-left" />
-        <span className="paparazzi-wash paparazzi-wash-right" />
-      </div>
-
-      {/* Bulb strips */}
-      <BulbStrip className="absolute left-0 right-0 top-5 z-3 hidden px-10 md:flex" />
-      <BulbStrip className="absolute bottom-5 left-0 right-0 z-3 hidden px-10 md:flex" />
+          <div className="pointer-events-none absolute inset-0 z-2 overflow-hidden" aria-hidden="true">
+            <span className="paparazzi-wash paparazzi-wash-left" />
+            <span className="paparazzi-wash paparazzi-wash-right" />
+          </div>
+        </>
+      )}
 
       {/* Content — spread top→bottom so the setup copy sits just under the
           header, the pill sits near the bottom, and the headline gets the big
           middle space. ~20px breathing room top and bottom (plus header clear). */}
       <div
-        className="absolute inset-0 z-5 flex flex-col items-center justify-between px-5 text-center md:px-10"
-        style={{
-          paddingTop: "max(5.5rem, calc(env(safe-area-inset-top) + 5.5rem))",
-          paddingBottom: "20px",
-        }}
+        className="hero-content absolute inset-0 z-5 flex flex-col items-center justify-between px-5 text-center md:px-10"
       >
-        <div className="flex w-full max-w-260 flex-1 flex-col items-center justify-center gap-[clamp(1rem,4dvh,2.5rem)]">
+        <div className="flex min-h-0 w-full max-w-260 flex-1 flex-col items-center justify-center gap-[clamp(0.5rem,2.5dvh,2.5rem)]">
 
           {/* ── Top row: setup copy ── */}
-          <p className="hero-enter hero-enter-1 max-w-180 text-sm font-medium leading-relaxed text-white/80 md:text-lg">
+          <p className="hero-setup hero-enter hero-enter-1 max-w-180 shrink-0 text-sm font-medium leading-relaxed text-white/80 md:text-lg">
             For years, you watched celebrities play exciting game shows on TV.{" "}
             Now,{" "}
             <span className="font-semibold text-white">
@@ -391,15 +430,15 @@ export function HeroSection() {
               {reduce ? (
                 WORDS.map((w) => (
                   <span key={w} className="block font-black tracking-tight"
-                    style={{ fontSize: "clamp(50px, min(16.5vw, 14dvh), 156px)", lineHeight: 0.97 }}>
+                    style={{ fontSize: HEADLINE_FONT_SIZE, lineHeight: 0.97 }}>
                     {w}
                   </span>
                 ))
               ) : (
                 WORDS.map((w, i) => (
                   <span key={w} className="block font-black tracking-tight"
-                    style={{ fontSize: "clamp(50px, min(16.5vw, 14dvh), 156px)", lineHeight: 0.97 }}>
-                    <RevealWord word={w} progress={headlineProgress} index={i} total={WORDS.length} />
+                    style={{ fontSize: HEADLINE_FONT_SIZE, lineHeight: 0.97 }}>
+                    <RevealWord word={w} progress={headlineProgress} index={i} total={WORDS.length} lowPower={lowPower} />
                   </span>
                 ))
               )}
@@ -422,6 +461,7 @@ export function HeroSection() {
                       progress={paraProgress}
                       index={i}
                       total={paraWords.length}
+                      lowPower={lowPower}
                     />
                   ))}
                 </span>
@@ -432,11 +472,11 @@ export function HeroSection() {
           {/* ── Bottom row: gold pill ── */}
           <div>
             {reduce ? (
-              <div className="inline-flex max-w-[min(92vw,30rem)] items-center gap-2.5 rounded-full border border-[#FFD23F]/60 bg-[#FFD23F]/10 px-5 py-2.5 backdrop-blur-md">
-                <Star size={15} className="shrink-0 fill-[#FFD23F] text-[#FFD23F]" />
+              <div className="inline-flex max-w-[min(92vw,30rem)] items-center gap-2.5 rounded-full border border-gs-gold/60 bg-gs-gold/10 px-5 py-2.5 backdrop-blur-md">
+                <Star size={15} className="shrink-0 fill-gs-gold text-gs-gold" />
                 <span className="text-sm font-semibold text-white">
                   And we&apos;ll make the{" "}
-                  <span className="text-[#FFD23F]">real show happen for you.</span>
+                  <span className="text-gs-gold">real show happen for you.</span>
                 </span>
               </div>
             ) : (
@@ -446,7 +486,105 @@ export function HeroSection() {
 
         </div>
       </div>
+
+      {/* Scroll cue — invites the first scroll, then fades out as the reveal
+          takes over. Absolutely positioned over the frame (not in the flex
+          column) so it can never push the content out of the viewport. */}
+      {!reduce && <ScrollCue progress={progress} />}
     </div>
     </section>
+  );
+}
+
+/**
+ * "Scroll to play" pop-up, centred over the hero.
+ *
+ * Silent while the visitor is moving. If the page has been open for 5 seconds
+ * with NO scroll, a big centred card pops in — a swipe-up arrow animation plus
+ * the label — shows for just 3 seconds, then dismisses itself; after a 4-second
+ * breather it pops in again, cycling show → hide until the FIRST real scroll,
+ * at which point it's gone for good. It never stays up permanently — that would
+ * sit over the hero and hurt the experience. `pointer-events-none` keeps it
+ * from intercepting clicks, and it's aria-hidden since it's a visual affordance
+ * for a scroll the page already supports.
+ */
+const CUE_FIRST_DELAY = 5000; // ms with no scroll before the first pop-in
+const CUE_SHOW_FOR = 3000; // ms the card stays up per cycle
+const CUE_REST_FOR = 4000; // ms hidden between cycles
+
+function ScrollCue({ progress }: { progress: MotionValue<number> }) {
+  const [phase, setPhase] = useState<"waiting" | "showing" | "done">("waiting");
+
+  useEffect(() => {
+    let done = false;
+    let timer: ReturnType<typeof setTimeout>;
+    // The show/hide cycle: pop in for 3s, rest for 4s, repeat until they scroll.
+    const show = () => {
+      if (done) return;
+      setPhase("showing");
+      timer = setTimeout(hide, CUE_SHOW_FOR);
+    };
+    const hide = () => {
+      if (done) return;
+      setPhase("waiting");
+      timer = setTimeout(show, CUE_REST_FOR);
+    };
+    // The hero is the top of the page, so "the page has been open 5s with no
+    // scroll" is simply a timer from mount.
+    timer = setTimeout(show, CUE_FIRST_DELAY);
+    // First real scroll → gone for good.
+    const unsub = progress.on("change", (v) => {
+      if (!done && v > 0.05) {
+        done = true;
+        clearTimeout(timer);
+        setPhase("done");
+      }
+    });
+    return () => {
+      unsub();
+      clearTimeout(timer);
+    };
+  }, [progress]);
+
+  const showing = phase === "showing";
+
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 z-6 flex items-center justify-center"
+    >
+      <motion.div
+        className="flex flex-col items-center gap-4 rounded-2xl border border-white/20 bg-black/85 px-10 py-8 text-center shadow-[0_18px_70px_rgba(0,0,0,0.75)] md:px-14 md:py-10"
+        initial={{ opacity: 0, scale: 0.85 }}
+        // One quick swell on each pop-in; the card dismisses itself after 3s so
+        // there's no need for a looping flash while it's up.
+        animate={showing ? { opacity: 1, scale: [0.9, 1.05, 1] } : { opacity: 0, scale: 0.85 }}
+        transition={
+          showing
+            ? { opacity: { duration: 0.35, ease: "easeOut" }, scale: { duration: 0.55, ease: "easeOut" } }
+            : { duration: 0.3, ease: "easeOut" }
+        }
+      >
+        <span className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-white text-black md:h-16 md:w-16">
+          {/* Swipe-up motion: the arrow rises through the badge and loops. */}
+          <motion.span
+            animate={showing ? { y: [12, -2, -14], opacity: [0, 1, 0] } : { y: 0, opacity: 1 }}
+            transition={
+              showing
+                ? { duration: 1.1, repeat: Infinity, repeatDelay: 0.35, ease: "easeOut" }
+                : { duration: 0.2 }
+            }
+          >
+            <ArrowUp size={28} strokeWidth={2.5} />
+          </motion.span>
+        </span>
+        <span className="text-lg font-bold uppercase tracking-[0.22em] text-white md:text-2xl">
+          Scroll to play
+        </span>
+        <span className="text-[12px] font-medium uppercase tracking-[0.18em] text-white/55 md:text-[13px]">
+          Swipe up — the show starts as you scroll
+        </span>
+      </motion.div>
+    </div>
   );
 }

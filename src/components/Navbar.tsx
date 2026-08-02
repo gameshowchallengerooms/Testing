@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Cta } from "@/components/ui/cta";
 
 const navLinks = [
-  { label: "Game Shows", href: "#games" },
+  { label: "Game Shows", href: "#show-rounds" },
   { label: "Team Building", href: "/team-building", newTab: true },
   { label: "Pricing", href: "#tickets" },
   { label: "Location", href: "#location" },
@@ -94,7 +95,7 @@ export function Navbar() {
             borderRadius: 33,
             padding: "4px 4px 4px 12px",
             gap: 10,
-            background: "rgba(30, 30, 30, 0.6)",
+            background: "var(--gs-nav-bg)",
             backdropFilter: "blur(10px)",
             WebkitBackdropFilter: "blur(10px)",
           }}
@@ -125,7 +126,7 @@ export function Navbar() {
                   : {})}
                 className="whitespace-nowrap text-white transition-colors hover:text-white/80"
                 style={{
-                  background: "rgba(40, 40, 40, 0.8)",
+                  background: "var(--gs-nav-pill)",
                   borderRadius: 20,
                   padding: "8px 16px",
                   fontFamily: "Inter, sans-serif",
@@ -139,42 +140,25 @@ export function Navbar() {
           </div>
 
           {/* Book Now CTA — hidden on mobile, shown from md up */}
-          <Link
+          <Cta
             href="#tickets"
-            className="hidden flex-shrink-0 items-center text-white transition-opacity hover:opacity-90 md:flex"
-            style={{
-              background: "black",
-              borderRadius: 33,
-              padding: "8px 8px 8px 16px",
-              gap: 8,
-              fontFamily: "Inter, sans-serif",
-              fontSize: 16,
-              fontWeight: 600,
-            }}
+            variant="nav"
+            badge
+            className="hidden py-1.5 pl-4 text-base md:inline-flex"
           >
             Book Your Show
-            <span
-              className="flex items-center justify-center"
-              style={{
-                background: "#3b82f6",
-                borderRadius: "50%",
-                width: 32,
-                height: 32,
-              }}
-            >
-              <ArrowUpRight className="text-white" size={18} strokeWidth={2.5} />
-            </span>
-          </Link>
+          </Cta>
 
           {/* Hamburger — mobile only */}
-          <button
-            type="button"
+          <Cta
+            variant="contrast"
+            size="icon"
             onClick={() => setMenuOpen(true)}
             aria-label="Open menu"
-            className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-black text-white transition-opacity hover:opacity-90 md:hidden"
+            className="bg-black hover:bg-black/80 md:hidden"
           >
             <Menu size={22} strokeWidth={2.5} />
-          </button>
+          </Cta>
         </div>
       </nav>
 
@@ -192,7 +176,7 @@ export function Navbar() {
           transform: "translateX(-50%)",
           borderRadius: 33,
           padding: "4px 8px",
-          background: "rgba(30, 30, 30, 0.8)",
+          background: "var(--gs-nav-bg-solid)",
           backdropFilter: "blur(10px)",
           WebkitBackdropFilter: "blur(10px)",
         }}
@@ -209,32 +193,9 @@ export function Navbar() {
         </Link>
 
         {/* Compact Book Now CTA */}
-        <Link
-          href="#tickets"
-          className="flex shrink-0 items-center text-white transition-opacity hover:opacity-90"
-          style={{
-            background: "black",
-            borderRadius: 33,
-            padding: "8px 8px 8px 16px",
-            gap: 8,
-            fontFamily: "Inter, sans-serif",
-            fontSize: 16,
-            fontWeight: 600,
-          }}
-        >
+        <Cta href="#tickets" variant="nav" badge className="py-1.5 pl-4 text-base">
           Book Your Show
-          <span
-            className="flex items-center justify-center"
-            style={{
-              background: "#3b82f6",
-              borderRadius: "50%",
-              width: 32,
-              height: 32,
-            }}
-          >
-            <ArrowUpRight className="text-white" size={18} strokeWidth={2.5} />
-          </span>
-        </Link>
+        </Cta>
       </nav>
 
       {/* Mobile menu overlay */}
@@ -254,14 +215,14 @@ export function Navbar() {
               className="h-11 w-auto"
             />
           </Link>
-          <button
-            type="button"
+          <Cta
+            variant="ghost"
+            size="icon"
             onClick={() => setMenuOpen(false)}
             aria-label="Close menu"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
           >
             <X size={22} strokeWidth={2.5} />
-          </button>
+          </Cta>
         </div>
 
         <nav className="flex flex-1 flex-col justify-center gap-3 px-6">
@@ -273,35 +234,22 @@ export function Navbar() {
                 ? { target: "_blank", rel: "noopener noreferrer" }
                 : {})}
               onClick={() => setMenuOpen(false)}
-              className="rounded-2xl bg-white/[0.06] px-6 py-4 text-xl font-semibold text-white transition-colors hover:bg-white/[0.12]"
+              className="rounded-full bg-(--gs-veil) px-6 py-4 text-xl font-semibold text-white transition-colors hover:bg-(--gs-veil-hover)"
               style={{ fontFamily: "Inter, sans-serif" }}
             >
               {link.label}
             </Link>
           ))}
 
-          <Link
+          <Cta
             href="#tickets"
+            badge
+            size="lg"
             onClick={() => setMenuOpen(false)}
-            className="mt-4 flex items-center justify-center gap-3 rounded-full px-6 py-4 text-lg font-bold text-white transition-transform hover:scale-[1.02]"
-            style={{
-              background: "linear-gradient(135deg, #147EFF, #7C5CFC, #FC19ED)",
-              fontFamily: "Inter, sans-serif",
-            }}
+            className="mt-4 text-lg"
           >
             Book Your Show
-            <span
-              className="flex items-center justify-center"
-              style={{
-                background: "rgba(0,0,0,0.35)",
-                borderRadius: "50%",
-                width: 32,
-                height: 32,
-              }}
-            >
-              <ArrowUpRight className="text-white" size={18} strokeWidth={2.5} />
-            </span>
-          </Link>
+          </Cta>
         </nav>
       </div>
     </>

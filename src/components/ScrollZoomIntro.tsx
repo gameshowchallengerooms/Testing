@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Image, { getImageProps } from "next/image";
 import {
   motion,
   useScroll,
   useSpring,
   useTransform,
   useReducedMotion,
-  type MotionValue,
 } from "motion/react";
+import { useLowPowerMode } from "@/hooks/useLowPowerMode";
 
 /**
  * Cinematic scroll-zoom intro — "zoom deep into the logo, fall inside, reveal
@@ -25,85 +25,58 @@ import {
  *                recedes (parallax) as we dive.
  *   0.52 – 0.66  A dark-room veil fades in once the logo fills the screen, so we
  *                "fall inside" the image. The logo fades out under the veil.
- *   0.62 – 1.00  Inside, the "About the Show" content reveals with a staggered,
- *                scroll-scrubbed animation: badge → heading (word-by-word rise &
- *                un-blur) → paragraph one → paragraph two.
+ *   0.62 – 1.00  Inside, the illustrated "About the Show" poster rises into the
+ *                studio light, settles flat, and catches a moving reflection.
  */
 
 const TRACK_VIEWPORTS = 6; // how many screens of scroll the whole sequence spans
+const POSTER_COPY =
+  "Imagine being picked as a contestant on your favorite game show. The host calls your name—your face glows with studio lights. Through the theme music, you hear the opposing team trash-talking from across the stage. That’s Game Show Challenge Rooms. Instead of watching from your couch, you’re on stage, competing in mini-games that test everything from speed to strategy. There’s a live host, lights, and music. When you slam the buzzer and nail the answer, you’ll feel like a game show legend.";
 
-const HEADING_WORDS = ["What", "is", "Game", "Show", "Challenge", "Rooms"];
-// Body paragraphs revealed under the heading, in order. The last line is the
-// punchy closing call-to-play.
-const PARAS = [
-  "Game Show Challenge Rooms is a live, interactive game show experience made for you and your gang.",
-  "Bring your friends, family, coworkers, teammates, or classmates and step into our custom game arenas. Compete in exciting challenges, hit the buzzer, work as a team, and enjoy the thrill of a real game show — with lights, energy, and live hosts guiding every round.",
-  "It is not just a game night. It is your chance to be part of the show.",
-];
-const CLOSING = "Make your team. Book your slot. It’s time to play!";
+// The source file is already an optimized 67 KB webp; running it through
+// /_next/image at high quality re-encodes it LARGER (~104 KB) and, in dev,
+// generates it on demand — the partial-paint flicker on slow loads. Serve it
+// untouched, and fade in from a tiny inline preview while it downloads.
+const LOGO_BLUR =
+  "data:image/webp;base64,UklGRhIBAABXRUJQVlA4WAoAAAAQAAAADwAACQAAQUxQSHMAAAABcKpt25O8JCpnAHlPtWlE456V5GWnuQ6B7uocAd1tW1U7zb1t/38KETEBMDw/mB4fj8Mk8D0DaEWDruuIouN2B1ELQi9MZbKlar2cTSfDHn/+U54WNPMBTZ/TyTQOzJnkxABYkywBgE00x/vvZzNsxFkAAFZQOCB4AAAAUAIAnQEqEAAKAAOAWiWwAnQGMHam26dcAuxgAP7BVLNCRoW8rm/FO3tcHGgBdIYJCo37P6NkVha0sERLOwpto7SkMxYv3yrZ+unKpZ/s6XwKwGD6he8Oh7C3MhaPvtpU4PJtDjNlKsFf3vyAdMC7P6fdWK9mK+4A";
 
-/** A heading word that rises up and un-blurs across its own slice of `t` (0→1). */
-function HeadingWord({
-  word,
-  t,
-  index,
-  total,
-}: {
-  word: string;
-  t: MotionValue<number>;
-  index: number;
-  total: number;
-}) {
-  const span = 1 / total;
-  const start = index * span * 0.7; // overlap so words cascade, not march
-  const end = Math.min(start + span * 1.8, 1);
-  const opacity = useTransform(t, [start, end], [0, 1]);
-  const y = useTransform(t, [start, end], ["0.5em", "0em"]);
-  const filter = useTransform(t, [start, end], ["blur(12px)", "blur(0px)"]);
+const posterCommonProps = {
+  alt: "",
+  sizes: "(max-width: 639px) 98vw, 1152px",
+};
+
+const {
+  props: { srcSet: desktopPosterSrcSet },
+} = getImageProps({
+  ...posterCommonProps,
+  src: "/images/what-is-game-show-poster.webp",
+  width: 1456,
+  height: 1080,
+});
+
+const {
+  props: { srcSet: mobilePosterSrcSet, ...mobilePosterProps },
+} = getImageProps({
+  ...posterCommonProps,
+  src: "/images/what-is-game-show-poster-mobile.webp",
+  width: 941,
+  height: 1672,
+});
+
+function ResponsivePoster({ className }: { className: string }) {
   return (
-    <span className="inline-block overflow-hidden align-bottom">
-      <motion.span
-        className="inline-block"
-        style={{ opacity, y, filter, willChange: "transform, opacity, filter" }}
-      >
-        {word}&nbsp;
-      </motion.span>
-    </span>
-  );
-}
-
-/** A body line that fades, rises and un-blurs across its [start, end] scroll
- *  window — the staggered reveal under the heading. */
-function RevealParagraph({
-  progress,
-  start,
-  end,
-  className,
-  children,
-}: {
-  progress: MotionValue<number>;
-  start: number;
-  end: number;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  const opacity = useTransform(progress, [start, end], [0, 1]);
-  const y = useTransform(progress, [start, end], [40, 0]);
-  const blur = useTransform(progress, [start, end], [8, 0]);
-  const filter = useTransform(blur, (b) => `blur(${b}px)`);
-  return (
-    <motion.p
-      className={className}
-      style={{ opacity, y, filter, willChange: "transform, opacity, filter" }}
-    >
-      {children}
-    </motion.p>
+    <picture>
+      <source media="(min-width: 640px)" srcSet={desktopPosterSrcSet} />
+      <source media="(max-width: 639px)" srcSet={mobilePosterSrcSet} />
+      <img {...mobilePosterProps} alt="" className={className} />
+    </picture>
   );
 }
 
 export function ScrollZoomIntro() {
   const sectionRef = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
+  const lowPower = useLowPowerMode();
 
   // iOS Safari changes `window.innerHeight` as the URL bar collapses/expands
   // while scrolling. If we recompute the track height on every resize, `useScroll`
@@ -149,19 +122,45 @@ export function ScrollZoomIntro() {
     restDelta: 0.0004,
   });
 
-  // ── Logo zoom ── DEEP dive. Scales hard (1 → 42×) so the shield blows past the
-  // screen edges and we plunge through it. A touch of rotation + brightening
-  // gives the dive some life. Stays opaque until the veil covers it.
-  const logoScale = useTransform(progress, [0, 0.58], [1, 42]);
+  // ── Logo zoom ── DEEP dive. Scales hard so the shield blows past the screen
+  // edges and we plunge through it. A touch of rotation gives the dive life.
+  // Stays opaque until the veil covers it.
+  //
+  // The scale ceiling is a HARDWARE limit, not a taste call. The compositor must
+  // rasterize `logoCssWidth * scale * devicePixelRatio` px of texture, and GPUs
+  // cap a single texture at 4096–8192px. Past that the browser falls back to a
+  // blurry re-raster, drops the layer for a frame (a visible blink), or
+  // OOM-kills the tab — the exact failure this section used to show. The old 42×
+  // meant a ~65,000px surface on a 3× phone.
+  //
+  // DPR is the term that is easy to miss: a 3× phone triples the texture for the
+  // same visual scale, so the ceiling has to be computed, not hard-coded.
+  const maxZoom = useMemo(() => {
+    if (typeof window === "undefined") return 10;
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    const logoCssWidth = Math.min(window.innerWidth * 0.6, 360);
+    // Stay under 8192px of texture with headroom; never below 4× or the dive
+    // stops reading as "we punched through the logo".
+    const ceiling = 7600 / (logoCssWidth * dpr);
+    return Math.max(4, Math.min(lowPower ? 8 : 12, ceiling));
+  }, [lowPower]);
+
+  const logoScale = useTransform(progress, [0, 0.58], [1, maxZoom]);
   const logoOpacity = useTransform(progress, [0, 0.52, 0.62], [1, 1, 0]);
   const logoRotate = useTransform(progress, [0, 0.58], [0, -4]);
-  const logoBrightness = useTransform(progress, [0, 0.45, 0.58], [1, 1, 1.4]);
-  const logoFilter = useTransform(logoBrightness, (b) => `brightness(${b})`);
+
+  // The "we're punching through into the light" brightening at the end of the
+  // dive. This used to be an animated `filter: brightness()` on the logo itself,
+  // which forced a full re-raster of that (enormous) layer every frame. A white
+  // overlay whose *opacity* animates reads the same but stays on the compositor.
+  const flashOpacity = useTransform(progress, [0.45, 0.58], [0, 0.45]);
 
   // ── Intro kicker ── visible at rest, then recedes (parallax) and fades as the
   // dive into the logo begins.
   const kickerOpacity = useTransform(progress, [0, 0.12], [1, 0]);
   const kickerScale = useTransform(progress, [0, 0.18], [1, 0.78]);
+  // Animated blur re-rasters the layer every frame; on weak GPUs the parallax
+  // recede alone (scale + opacity) carries the same read for free.
   const kickerBlur = useTransform(progress, [0, 0.16], [0, 6]);
   const kickerFilter = useTransform(kickerBlur, (b) => `blur(${b}px)`);
 
@@ -169,18 +168,14 @@ export function ScrollZoomIntro() {
   // inside" into a dark room.
   const veilOpacity = useTransform(progress, [0.52, 0.66], [0, 1]);
 
-  // ── About scene ── the container drifts up gently across the whole reveal so
-  // the block has continuous parallax under the staggered word/para animations.
+  // ── Poster scene ── the completed infographic rises out of the logo dive,
+  // settles flat, and holds while its stage-light reflections drift across it.
   const sceneOpacity = useTransform(progress, [0.6, 0.68], [0, 1]);
-  const sceneY = useTransform(progress, [0.6, 1], ["8%", "-4%"]);
-
-  // Each element animates across its own slice of progress (scrubbed).
-  const eyebrowOpacity = useTransform(progress, [0.6, 0.66], [0, 1]);
-  const eyebrowX = useTransform(progress, [0.6, 0.68], [-24, 0]);
-
-  // Heading words cascade over 0.62 → 0.76. We remap progress into that window
-  // and feed the local 0→1 to each word.
-  const headingT = useTransform(progress, [0.62, 0.76], [0, 1]);
+  const sceneY = useTransform(progress, [0.6, 1], ["8%", "-2%"]);
+  const posterOpacity = useTransform(progress, [0.64, 0.74], [0, 1]);
+  const posterY = useTransform(progress, [0.64, 0.84], [110, 0]);
+  const posterScale = useTransform(progress, [0.64, 0.86], [0.8, 1]);
+  const posterRotate = useTransform(progress, [0.64, 0.86], [3.5, 0]);
 
   // Scroll hint fades out as soon as you start scrolling.
   const hintOpacity = useTransform(progress, [0, 0.06], [1, 0]);
@@ -188,41 +183,29 @@ export function ScrollZoomIntro() {
   if (reduce) {
     return (
       <section ref={sectionRef} className="relative w-full">
-        <div className="mx-auto flex max-w-3xl flex-col items-center px-6 pb-12 pt-24 text-center">
-          <span className="mb-3 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-[#FFD23F] sm:text-xs">
-            <span className="h-px w-6 bg-[#FFD23F]/50" />
+        <div className="mx-auto flex max-w-6xl flex-col items-center px-4 pb-16 pt-24 text-center sm:px-6">
+          <span className="mb-3 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-gs-gold sm:text-xs">
+            <span className="h-px w-6 bg-gs-gold/50" />
             First time in India
-            <span className="h-px w-6 bg-[#FFD23F]/50" />
+            <span className="h-px w-6 bg-gs-gold/50" />
           </span>
           <span className="mb-6 text-sm font-medium text-white/70 sm:text-base">
             Introducing
           </span>
           <Image
-            src="/images/logo-transparent.png"
+            src="/images/logo-transparent.webp"
             alt="Game Show Challenge Rooms"
             width={360}
             height={232}
+            unoptimized
+            placeholder="blur"
+            blurDataURL={LOGO_BLUR}
             className="mb-12 h-auto w-64"
           />
-          <div className="w-full max-w-2xl text-left">
-            <span className="mb-4 inline-block text-sm font-normal text-white/80">
-              — About the Show
-            </span>
-            <h2
-              className="mb-6 text-3xl font-bold uppercase tracking-tight text-white sm:text-4xl"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              What is Game Show Challenge Rooms
-            </h2>
-            {PARAS.map((para, i) => (
-              <p key={i} className="mb-4 text-base leading-snug text-white/90 sm:text-lg">
-                {para}
-              </p>
-            ))}
-            <p className="mt-2 text-lg font-bold leading-snug text-[#FFD23F] sm:text-xl">
-              {CLOSING}
-            </p>
-          </div>
+          <figure className="w-full overflow-hidden rounded-[1.75rem] border border-white/20 shadow-[0_32px_100px_rgba(14,8,40,0.45)] sm:rounded-[2.25rem]">
+            <ResponsivePoster className="h-auto w-full" />
+            <figcaption className="sr-only">{POSTER_COPY}</figcaption>
+          </figure>
         </div>
       </section>
     );
@@ -258,13 +241,13 @@ export function ScrollZoomIntro() {
             top: "calc(50% - min(34vw,210px))",
             opacity: kickerOpacity,
             scale: kickerScale,
-            filter: kickerFilter,
+            ...(lowPower ? {} : { filter: kickerFilter }),
           }}
         >
-          <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-[#FFD23F] sm:text-xs">
-            <span className="h-px w-6 bg-[#FFD23F]/50" />
+          <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-gs-gold sm:text-xs">
+            <span className="h-px w-6 bg-gs-gold/50" />
             First time in India
-            <span className="h-px w-6 bg-[#FFD23F]/50" />
+            <span className="h-px w-6 bg-gs-gold/50" />
           </span>
           <span className="mt-2 text-sm font-medium text-white/70 sm:text-base">
             Introducing
@@ -272,28 +255,45 @@ export function ScrollZoomIntro() {
         </motion.div>
 
         {/* ── THE LOGO ── the camera flies deep into this ── */}
+        {/* The scaled element is the LOGO itself, not a full-viewport wrapper.
+            Scaling an `inset-0` wrapper makes the rasterized surface
+            `viewportWidth × scale × dpr` — at 390px/3× DPR that was a 65,000px
+            texture, far past the 4096–8192px GPU cap, which is exactly the
+            blink/blur/tab-kill failure this section showed. Scaling the image
+            keeps it at `360 × scale × dpr` instead. */}
         <motion.div
           className="absolute inset-0 z-10 flex items-center justify-center"
-          style={{
-            scale: logoScale,
-            opacity: logoOpacity,
-            rotate: logoRotate,
-            filter: logoFilter,
-            transformOrigin: "50% 50%",
-            willChange: "transform, opacity, filter",
-          }}
+          style={{ opacity: logoOpacity }}
         >
-          <Image
-            src="/images/logo-transparent.png"
-            alt="Game Show Challenge Rooms"
-            width={1497}
-            height={966}
-            priority
-            quality={100}
-            sizes="(max-width: 640px) 60vw, 360px"
-            className="h-auto w-[min(60vw,360px)] drop-shadow-[0_20px_80px_rgba(0,0,0,0.6)]"
-          />
+          <motion.div
+            style={{
+              scale: logoScale,
+              rotate: logoRotate,
+              transformOrigin: "50% 50%",
+              willChange: "transform",
+            }}
+          >
+            <Image
+              src="/images/logo-transparent.webp"
+              alt="Game Show Challenge Rooms"
+              width={1497}
+              height={966}
+              priority
+              unoptimized
+              placeholder="blur"
+              blurDataURL={LOGO_BLUR}
+              className="h-auto w-[min(60vw,360px)] drop-shadow-[0_20px_80px_rgba(0,0,0,0.6)]"
+            />
+          </motion.div>
         </motion.div>
+
+        {/* ── DIVE FLASH ── the light we punch through as the shield engulfs the
+            screen. An opacity-only overlay, so it never re-rasters the logo. */}
+        <motion.div
+          className="pointer-events-none absolute inset-0 z-15 bg-white"
+          style={{ opacity: flashOpacity }}
+          aria-hidden
+        />
 
         {/* ── DARK-ROOM VEIL ── we fall inside the logo into a dark room ── */}
         <motion.div
@@ -306,66 +306,75 @@ export function ScrollZoomIntro() {
           aria-hidden
         />
 
-        {/* ── ABOUT SCENE ── staggered, scroll-scrubbed reveal of what the show
-            is about, inside the image. ── */}
+        {/* ── ABOUT POSTER ── the complete infographic rises into the dark room. */}
         <motion.div
-          className="absolute inset-0 z-30 flex items-center justify-center px-6"
+          className="absolute inset-0 z-30 flex items-center justify-center px-3 sm:px-6"
           style={{ opacity: sceneOpacity, y: sceneY, willChange: "transform, opacity" }}
         >
-          <div className="w-full max-w-3xl">
-            {/* Eyebrow */}
+          {/* Slow stage-light sweeps keep the dark room alive behind the card.
+              On low-power devices they render static: the blur stays (it costs
+              one raster) but the never-ending transform loop does not. */}
+          <motion.div
+            className="pointer-events-none absolute -left-[8%] -top-[20%] h-[100%] w-[42%] origin-top bg-[linear-gradient(180deg,rgba(20,126,255,0.34),transparent_74%)] blur-2xl"
+            style={lowPower ? { rotate: -6, opacity: 0.4 } : undefined}
+            animate={lowPower ? undefined : { rotate: [-10, -3, -10], opacity: [0.28, 0.52, 0.28] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+            aria-hidden
+          />
+          <motion.div
+            className="pointer-events-none absolute -right-[8%] -top-[20%] h-[100%] w-[42%] origin-top bg-[linear-gradient(180deg,rgba(252,25,237,0.3),transparent_74%)] blur-2xl"
+            style={lowPower ? { rotate: 6, opacity: 0.37 } : undefined}
+            animate={lowPower ? undefined : { rotate: [10, 3, 10], opacity: [0.26, 0.48, 0.26] }}
+            transition={{ duration: 7.8, repeat: Infinity, ease: "easeInOut" }}
+            aria-hidden
+          />
+
+          <motion.figure
+            className="relative w-full max-w-6xl rounded-[1.5rem] border border-white/20 bg-gs-surface-screen p-1.5 shadow-[0_0_0_1px_rgba(124,92,252,0.2),0_36px_120px_rgba(0,0,0,0.7),0_0_90px_rgba(20,126,255,0.2),0_0_120px_rgba(252,25,237,0.14)] sm:rounded-[2.25rem] sm:p-2"
+            style={{
+              opacity: posterOpacity,
+              y: posterY,
+              scale: posterScale,
+              rotate: posterRotate,
+              willChange: "transform, opacity",
+            }}
+          >
             <motion.div
-              className="mb-6 flex items-center gap-4"
-              style={{ opacity: eyebrowOpacity, x: eyebrowX }}
+              className="relative overflow-hidden rounded-[1.15rem] sm:rounded-[1.75rem]"
+              animate={lowPower ? undefined : { y: [0, -5, 0], rotate: [0, 0.2, 0] }}
+              transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
             >
-              <span className="block h-px w-15 bg-white/50" />
-              <span className="text-sm font-normal text-white/80 sm:text-base">
-                About the Show
-              </span>
+              <ResponsivePoster className="mx-auto h-auto max-h-[86svh] w-auto max-w-full object-contain sm:w-full" />
+
+              {/* A narrow moving reflection sells the poster as a bright studio
+                  screen inside the dark room without changing its artwork.
+                  Animates `x`, not `left` — `left` is a layout property, so it
+                  forced a reflow of the poster subtree on every single frame. */}
+              {!lowPower && (
+                <motion.span
+                  className="pointer-events-none absolute -inset-y-[20%] left-0 w-[20%] -skew-x-12 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)] blur-md"
+                  animate={{ x: ["-150%", "600%"] }}
+                  transition={{ duration: 4.8, repeat: Infinity, repeatDelay: 2.4, ease: "easeInOut" }}
+                  aria-hidden
+                />
+              )}
             </motion.div>
 
-            {/* Heading — words cascade up & un-blur */}
-            <h2
-              className="mb-8 text-[28px] font-black uppercase leading-[1.04] tracking-tight text-white sm:text-5xl md:text-6xl"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              {HEADING_WORDS.map((w, i) => (
-                <HeadingWord
-                  key={`${w}-${i}`}
-                  word={w}
-                  t={headingT}
-                  index={i}
-                  total={HEADING_WORDS.length}
-                />
-              ))}
-            </h2>
+            <motion.span
+              className="pointer-events-none absolute -left-3 -top-3 h-7 w-7 rounded-full bg-gs-blue shadow-[0_0_32px_rgba(20,126,255,0.9)] sm:h-9 sm:w-9"
+              animate={lowPower ? undefined : { scale: [0.8, 1.15, 0.8], opacity: [0.55, 1, 0.55] }}
+              transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+              aria-hidden
+            />
+            <motion.span
+              className="pointer-events-none absolute -bottom-3 -right-3 h-7 w-7 rounded-full bg-gs-magenta shadow-[0_0_32px_rgba(252,25,237,0.9)] sm:h-9 sm:w-9"
+              animate={lowPower ? undefined : { scale: [1.15, 0.8, 1.15], opacity: [1, 0.55, 1] }}
+              transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+              aria-hidden
+            />
 
-            {/* Body paragraphs — fade/rise/un-blur, staggered in sequence */}
-            {PARAS.map((para, i) => {
-              const start = 0.76 + i * 0.05;
-              return (
-                <RevealParagraph
-                  key={i}
-                  progress={progress}
-                  start={start}
-                  end={start + 0.08}
-                  className="mb-4 text-sm font-medium leading-snug text-white/90 sm:text-lg md:text-xl"
-                >
-                  {para}
-                </RevealParagraph>
-              );
-            })}
-
-            {/* Closing call-to-play line */}
-            <RevealParagraph
-              progress={progress}
-              start={0.92}
-              end={1}
-              className="mt-2 text-base font-bold leading-snug text-[#FFD23F] sm:text-xl md:text-2xl"
-            >
-              {CLOSING}
-            </RevealParagraph>
-          </div>
+            <figcaption className="sr-only">{POSTER_COPY}</figcaption>
+          </motion.figure>
         </motion.div>
 
         {/* Scroll hint, only while at the very top */}

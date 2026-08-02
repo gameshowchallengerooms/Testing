@@ -216,14 +216,14 @@ export default function PrivacyPolicyPage() {
                 href="mailto:gameshowchallengerooms@gmail.com"
                 className="flex items-center gap-2 text-sm font-medium text-white/85 transition-colors hover:text-white"
               >
-                <Mail size={16} className="text-[#B49BFF]" />
+                <Mail size={16} className="text-gs-violet-bright" />
                 gameshowchallengerooms@gmail.com
               </Link>
               <Link
                 href="tel:+919000187731"
                 className="flex items-center gap-2 text-sm font-medium text-white/85 transition-colors hover:text-white"
               >
-                <Phone size={16} className="text-[#B49BFF]" />
+                <Phone size={16} className="text-gs-violet-bright" />
                 +91 90001 87731
               </Link>
             </div>

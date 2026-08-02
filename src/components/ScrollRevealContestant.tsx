@@ -12,12 +12,12 @@ import {
 import { cn } from "@/lib/utils";
 
 /* The headline, ONE WORD per line, stacked:
-     Tonight,
+     Today,
      you're
      our
      celebrity.
    Each word reveals in turn, line by line, as the pinned hero is scrolled. */
-const LINES = [["Tonight,"], ["you're"], ["our"], ["celebrity."]];
+const LINES = [["Today,"], ["you're"], ["our"], ["celebrity."]];
 const WORDS = LINES.flat();
 
 /**
@@ -84,7 +84,7 @@ function RevealWord({
 }
 
 /**
- * The big white "Tonight, you're / our celebrity." headline that reveals
+ * The big white "Today, you're / our celebrity." headline that reveals
  * word-by-word as the user scrolls through the pinned hero.
  *
  * `scrollRef` is the tall outer wrapper the hero is pinned (sticky) inside of.
@@ -107,7 +107,7 @@ export function ScrollRevealContestant({
   // hard the reveal feels STUCK at the top — the first word won't move until
   // you've scrolled well past it. A stiffer, lighter-damped spring tracks the
   // scroll almost 1:1 (just enough smoothing to debounce jitter), so
-  // "Tonight, / you're" begin revealing from the very first scroll.
+  // "Today, / you're" begin revealing from the very first scroll.
   const smooth = useSpring(scrollYProgress, {
     stiffness: 320,
     damping: 40,
@@ -145,7 +145,7 @@ export function ScrollRevealContestant({
         )}
         style={fontStyle}
       >
-        Tonight,
+        Today,
         <br />
         you&apos;re
         <br />

@@ -20,6 +20,10 @@ const TEXT =
    Each word lands on its own slice so the finished paragraph reads as one
    continuous blue → purple → pink sweep (Apple "iPhone 14 Pro" style), while
    the per-word timing gives the Linear-style left-to-right fill. */
+/* Interpolated in JS by `hexToRgb` below, so these MUST stay literal hex — a
+   `var(--gs-*)` reference can't be parsed with parseInt and would render the
+   whole paragraph grey. Mirrors the --gs-sky → --gs-pink-soft ramp in
+   globals.css; keep the two in sync if that changes. */
 const GRADIENT_STOPS = ["#9FC4FF", "#1FA2FF", "#7C5CFC", "#FF35E5", "#FFA8F0"];
 const DIM = "rgba(255,255,255,0.18)";
 

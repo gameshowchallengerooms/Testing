@@ -15,37 +15,37 @@ const audiences = [
     icon: Briefcase,
     title: "Team Building",
     text: "Break the ice and bond your team like never before.",
-    accent: "#147EFF",
+    accent: "var(--gs-blue)",
   },
   {
     icon: Cake,
     title: "Birthday Parties",
     text: "Make their big day genuinely unforgettable.",
-    accent: "#FC19ED",
+    accent: "var(--gs-magenta)",
   },
   {
     icon: GraduationCap,
     title: "School & College Trips",
     text: "A safe, hosted, high-energy outing students love.",
-    accent: "#FFD23F",
+    accent: "var(--gs-gold)",
   },
   {
     icon: Trophy,
     title: "Sports & Club Groups",
     text: "Settle the score off the field, team vs. team.",
-    accent: "#22D3A5",
+    accent: "var(--gs-mint)",
   },
   {
     icon: Heart,
     title: "Friends & Family",
     text: "The perfect plan when everyone wants to have fun.",
-    accent: "#7C5CFC",
+    accent: "var(--gs-violet)",
   },
   {
     icon: PartyPopper,
     title: "Bachelor(ette) Parties",
     text: "Cheeky, themed rounds built for the big celebration.",
-    accent: "#FF7A1A",
+    accent: "var(--gs-orange)",
   },
 ];
 
@@ -70,7 +70,7 @@ export function ForWhomSection() {
             Whether it&apos;s a couple of friends or{" "}
             <span
               style={{
-                background: "linear-gradient(90deg, #147EFF, #FC19ED)",
+                background: "linear-gradient(90deg, var(--gs-blue), var(--gs-magenta))",
                 WebkitBackgroundClip: "text",
                 backgroundClip: "text",
                 WebkitTextFillColor: "transparent",
@@ -87,7 +87,7 @@ export function ForWhomSection() {
             const Icon = a.icon;
             return (
               <Reveal key={a.title} delay={(i % 3) * 90} className="h-full">
-                <div className="group relative flex h-full flex-col gap-4 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[#161618] to-[#0d0d0f] p-7 transition-all duration-300 hover:-translate-y-1.5 hover:border-white/25">
+                <div className="group relative flex h-full flex-col gap-4 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-gs-surface to-gs-surface-deep p-7 transition-all duration-300 hover:-translate-y-1.5 hover:border-white/25">
                   <span
                     className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                     style={{

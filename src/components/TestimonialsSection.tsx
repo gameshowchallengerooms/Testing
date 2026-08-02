@@ -18,7 +18,7 @@ function StatItem({
 }) {
   const { ref, display } = useCountUp({ end, decimals });
   return (
-    <div className="flex flex-col items-center gap-1 bg-[#0d0d0f] px-4 py-6">
+    <div className="flex flex-col items-center gap-1 bg-gs-surface-deep px-4 py-6">
       <span
         ref={ref}
         className="text-3xl font-extrabold text-white md:text-4xl"
@@ -56,7 +56,7 @@ const featured: Testimonial = {
   rating: 5,
   quote:
     "Went to Game Show Challenge Rooms to celebrate my birthday and had the most amazing time of my life! Our host was hilarious and kept the energy sky-high the whole way through. Our two teams, the buzzers, the lights — you genuinely feel like you're on a real TV game show. Hands down the best group outing in the city.",
-  accent: "#147EFF",
+  accent: "var(--gs-blue)",
 };
 
 const stats = [
@@ -73,7 +73,7 @@ function Stars({ rating, className }: { rating: number; className?: string }) {
         <Star
           key={i}
           size={16}
-          className={i < rating ? "fill-[#FFB020] text-[#FFB020]" : "text-white/20"}
+          className={i < rating ? "fill-gs-star text-gs-star" : "text-white/20"}
         />
       ))}
     </div>
@@ -113,7 +113,7 @@ export function TestimonialsSection() {
           Loved by thousands of{" "}
           <span
             style={{
-              background: "linear-gradient(90deg, #147EFF, #FC19ED)",
+              background: "linear-gradient(90deg, var(--gs-blue), var(--gs-magenta))",
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
               WebkitTextFillColor: "transparent",
@@ -144,16 +144,16 @@ export function TestimonialsSection() {
           <div
             className="absolute -inset-[1.5px] rounded-[2rem] opacity-80"
             style={{
-              background: `linear-gradient(120deg, ${activeAccent}, #FC19ED, transparent)`,
+              background: `linear-gradient(120deg, ${activeAccent}, var(--gs-magenta), transparent)`,
             }}
             aria-hidden="true"
           />
-          <figure className="relative flex flex-col gap-6 rounded-[2rem] bg-[#0e0e10] p-8 md:flex-row md:items-center md:gap-10 md:p-12">
+          <figure className="relative flex flex-col gap-6 rounded-[2rem] bg-gs-surface-card p-8 md:flex-row md:items-center md:gap-10 md:p-12">
             <div className="flex shrink-0 flex-col items-center gap-4 md:w-[200px]">
               <span
                 className="block h-28 w-28 overflow-hidden rounded-full p-[3px] md:h-36 md:w-36"
                 style={{
-                  background: `linear-gradient(135deg, ${activeAccent}, #FC19ED)`,
+                  background: `linear-gradient(135deg, ${activeAccent}, var(--gs-magenta))`,
                 }}
               >
                 <Image

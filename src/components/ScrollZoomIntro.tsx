@@ -10,6 +10,7 @@ import {
   useReducedMotion,
 } from "motion/react";
 import { useLowPowerMode } from "@/hooks/useLowPowerMode";
+import { cn } from "@/lib/utils";
 
 /**
  * Cinematic scroll-zoom intro — "zoom deep into the logo, fall inside, reveal
@@ -337,7 +338,15 @@ export function ScrollZoomIntro() {
               unoptimized
               placeholder="blur"
               blurDataURL={LOGO_BLUR}
-              className="h-auto w-[min(60vw,360px)] drop-shadow-[0_20px_80px_rgba(0,0,0,0.6)]"
+              // The drop-shadow is a filter, and a filter on an element whose
+              // scale is scrubbed forces WebKit to recompute the filtered
+              // output as the texture grows — another per-frame repaint during
+              // the dive. Phones skip it; against the dark backdrop the loss is
+              // invisible.
+              className={cn(
+                "h-auto w-[min(60vw,360px)]",
+                !lowPower && "drop-shadow-[0_20px_80px_rgba(0,0,0,0.6)]",
+              )}
             />
           </motion.div>
         </motion.div>
@@ -374,34 +383,44 @@ export function ScrollZoomIntro() {
           style={{ opacity: sceneOpacity, y: sceneY }}
         >
           {/* Slow stage-light sweeps keep the dark room alive behind the card.
-              On low-power devices they render static: the blur stays (it costs
-              one raster) but the never-ending transform loop does not. */}
-          <motion.div
-            className="pointer-events-none absolute -left-[8%] -top-[20%] h-[100%] w-[42%] origin-top bg-[linear-gradient(180deg,rgba(20,126,255,0.34),transparent_74%)] blur-2xl"
-            style={lowPower ? { rotate: -6, opacity: 0.4 } : undefined}
-            animate={lowPower ? undefined : { rotate: [-10, -3, -10], opacity: [0.28, 0.52, 0.28] }}
-            transition={
-              lowPower ? undefined : { duration: 7, repeat: Infinity, ease: "easeInOut" }
-            }
-            aria-hidden
-          />
-          <motion.div
-            className="pointer-events-none absolute -right-[8%] -top-[20%] h-[100%] w-[42%] origin-top bg-[linear-gradient(180deg,rgba(252,25,237,0.3),transparent_74%)] blur-2xl"
-            style={lowPower ? { rotate: 6, opacity: 0.37 } : undefined}
-            animate={lowPower ? undefined : { rotate: [10, 3, 10], opacity: [0.26, 0.48, 0.26] }}
-            transition={
-              lowPower ? undefined : { duration: 7.8, repeat: Infinity, ease: "easeInOut" }
-            }
-            aria-hidden
-          />
+              On low-power devices they are not rendered at all. Even static,
+              each one is a ~half-viewport blurred texture the compositor must
+              hold and re-blend under the scrolling scene; on phones Safari
+              evicts them under memory pressure and redraws them mid-scroll —
+              a visible blink behind the poster for a garnish that is barely
+              perceptible on a small screen anyway. */}
+          {!lowPower && (
+            <motion.div
+              className="pointer-events-none absolute -left-[8%] -top-[20%] h-full w-[42%] origin-top bg-[linear-gradient(180deg,rgba(20,126,255,0.34),transparent_74%)] blur-2xl"
+              animate={{ rotate: [-10, -3, -10], opacity: [0.28, 0.52, 0.28] }}
+              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+              aria-hidden
+            />
+          )}
+          {!lowPower && (
+            <motion.div
+              className="pointer-events-none absolute -right-[8%] -top-[20%] h-full w-[42%] origin-top bg-[linear-gradient(180deg,rgba(252,25,237,0.3),transparent_74%)] blur-2xl"
+              animate={{ rotate: [10, 3, 10], opacity: [0.26, 0.48, 0.26] }}
+              transition={{ duration: 7.8, repeat: Infinity, ease: "easeInOut" }}
+              aria-hidden
+            />
+          )}
 
+          {/* On low-power devices the figure animates with translate + opacity
+              ONLY. Scale is the one transform WebKit cannot composite for free:
+              every scale change re-rasterizes the layer to keep it sharp, so a
+              per-frame scale scrub on a viewport-sized image — plus the glow
+              shadows that get rebuilt with it — is a per-frame repaint. That IS
+              the scroll flicker on phones. Translate and opacity never
+              re-raster. The four-layer neon shadow is likewise desktop-only;
+              phones get one modest shadow (base class below, full stack behind
+              `sm:`). */}
           <motion.figure
-            className="relative w-full max-w-6xl rounded-[1.25rem] border border-white/20 bg-gs-surface-screen p-1 shadow-[0_0_0_1px_rgba(124,92,252,0.2),0_36px_120px_rgba(0,0,0,0.7),0_0_90px_rgba(20,126,255,0.2),0_0_120px_rgba(252,25,237,0.14)] sm:w-[min(calc(100vw-3rem),calc(94svh*1.348))] sm:max-w-[1456px] sm:rounded-[2.25rem] sm:p-2"
+            className="relative w-full max-w-6xl rounded-[1.25rem] border border-white/20 bg-gs-surface-screen p-1 shadow-[0_18px_60px_rgba(0,0,0,0.65)] sm:w-[min(calc(100vw-3rem),calc(94svh*1.348))] sm:max-w-[1456px] sm:rounded-[2.25rem] sm:p-2 sm:shadow-[0_0_0_1px_rgba(124,92,252,0.2),0_36px_120px_rgba(0,0,0,0.7),0_0_90px_rgba(20,126,255,0.2),0_0_120px_rgba(252,25,237,0.14)]"
             style={{
               opacity: posterOpacity,
               y: posterY,
-              scale: posterScale,
-              rotate: posterRotate,
+              ...(lowPower ? {} : { scale: posterScale, rotate: posterRotate }),
               // Flattens this subtree into one raster surface instead of letting
               // the poster, the sweep and the two corner dots each become their
               // own layer — fewer surfaces to evict, so no re-raster blink.

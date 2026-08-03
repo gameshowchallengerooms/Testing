@@ -511,6 +511,294 @@
   animation: scroll-cue-wheel 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
+/* Revealing "celebrity" unlocks this independent loop. It keeps sending both
+   photographers onstage until reverse scroll hides that final word again. */
+.paparazzi-scene {
+  --paparazzi-cycle: 7.2s;
+  isolation: isolate;
+}
+
+.paparazzi {
+  position: absolute;
+  bottom: -5dvh;
+  width: clamp(18rem, 27vw, 29rem);
+  aspect-ratio: 2 / 3;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.paparazzi-left {
+  left: -2.5vw;
+  transform-origin: left bottom;
+  transform: translate3d(-112%, 5%, 0) rotate(-8deg) scale(0.92);
+}
+
+.paparazzi-right {
+  right: -2.5vw;
+  transform-origin: right bottom;
+  transform: translate3d(112%, 5%, 0) rotate(8deg) scale(0.92);
+}
+
+.paparazzi-scene-active .paparazzi-left {
+  animation: paparazzi-loop-left var(--paparazzi-cycle)
+    cubic-bezier(0.22, 1, 0.36, 1) infinite both;
+}
+
+.paparazzi-scene-active .paparazzi-right {
+  animation: paparazzi-loop-right var(--paparazzi-cycle)
+    cubic-bezier(0.22, 1, 0.36, 1) 180ms infinite both;
+}
+
+@keyframes paparazzi-loop-left {
+  0% {
+    opacity: 0;
+    transform: translate3d(-112%, 5%, 0) rotate(-8deg) scale(0.92);
+  }
+  13% {
+    opacity: 1;
+    transform: translate3d(-5%, 0, 0) rotate(1.5deg) scale(1);
+  }
+  20%, 26% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0) scale(1);
+  }
+  28.5% {
+    opacity: 1;
+    transform: translate3d(1.5%, 1%, 0) rotate(0.5deg) scale(0.97);
+  }
+  33%, 52% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0) scale(1);
+  }
+  65%, 100% {
+    opacity: 0;
+    transform: translate3d(-118%, 6%, 0) rotate(-9deg) scale(0.92);
+  }
+}
+
+@keyframes paparazzi-loop-right {
+  0% {
+    opacity: 0;
+    transform: translate3d(112%, 5%, 0) rotate(8deg) scale(0.92);
+  }
+  13% {
+    opacity: 1;
+    transform: translate3d(5%, 0, 0) rotate(-1.5deg) scale(1);
+  }
+  20%, 26% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0) scale(1);
+  }
+  28.5% {
+    opacity: 1;
+    transform: translate3d(-1.5%, 1%, 0) rotate(-0.5deg) scale(0.97);
+  }
+  33%, 52% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0) scale(1);
+  }
+  65%, 100% {
+    opacity: 0;
+    transform: translate3d(118%, 6%, 0) rotate(9deg) scale(0.92);
+  }
+}
+
+/* These lens coordinates match the generated cutouts. */
+.camera-flash {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  width: clamp(5.5rem, 9vw, 9rem);
+  aspect-ratio: 1;
+  place-items: center;
+  opacity: 0;
+  translate: -50% -50%;
+  transform-origin: center;
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+}
+
+.camera-flash-left {
+  left: 51.5%;
+  top: 33.5%;
+}
+
+.camera-flash-right {
+  left: 46.5%;
+  top: 38.5%;
+}
+
+.paparazzi-scene-active .camera-flash-left {
+  animation: camera-flash-loop var(--paparazzi-cycle) ease-out infinite both;
+}
+
+.paparazzi-scene-active .camera-flash-right {
+  animation: camera-flash-loop var(--paparazzi-cycle) ease-out 180ms infinite both;
+}
+
+@keyframes camera-flash-loop {
+  0%, 26%, 32%, 100% {
+    opacity: 0;
+    transform: scale(0.16) rotate(-12deg);
+  }
+  27.5% {
+    opacity: 1;
+    transform: scale(1.18) rotate(2deg);
+  }
+  29% {
+    opacity: 0.82;
+    transform: scale(0.88) rotate(8deg);
+  }
+  31% {
+    opacity: 0;
+    transform: scale(1.45) rotate(14deg);
+  }
+}
+
+.camera-flash-halo,
+.camera-flash-star,
+.camera-flash-ring {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  translate: -50% -50%;
+}
+
+.camera-flash-halo {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 1) 0 8%,
+    rgba(191, 226, 255, 0.9) 13%,
+    rgba(124, 92, 252, 0.38) 37%,
+    transparent 70%
+  );
+  filter: blur(2px);
+}
+
+.camera-flash-star {
+  width: 88%;
+  aspect-ratio: 1;
+  background: repeating-conic-gradient(
+    from 10deg,
+    transparent 0deg 9deg,
+    rgba(255, 255, 255, 0.95) 10deg 13deg,
+    transparent 14deg 43deg,
+    rgba(159, 196, 255, 0.9) 44deg 48deg,
+    transparent 49deg 89deg
+  );
+  clip-path: polygon(
+    50% 0%, 56% 41%, 85% 15%, 63% 44%, 100% 50%, 63% 56%,
+    85% 85%, 56% 60%, 50% 100%, 44% 60%, 15% 85%, 39% 56%,
+    0% 50%, 39% 44%, 15% 15%, 44% 41%
+  );
+}
+
+.camera-flash-ring {
+  width: 42%;
+  aspect-ratio: 1;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 999px;
+  box-shadow:
+    0 0 12px rgba(255, 255, 255, 0.95),
+    0 0 34px rgba(31, 162, 255, 0.8),
+    0 0 60px rgba(255, 53, 229, 0.55);
+}
+
+.paparazzi-scene-still .paparazzi {
+  opacity: 0.58;
+  animation: none;
+  transform: none;
+}
+
+.paparazzi-scene-still .camera-flash {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .paparazzi {
+    top: 31dvh;
+    right: -1vw;
+    bottom: auto;
+    left: auto;
+    width: clamp(7.5rem, 30vw, 9.5rem);
+    transform-origin: right center;
+    transform: translate3d(112%, 0, 0) rotate(8deg) scale(0.92);
+  }
+
+  .paparazzi-left {
+    right: -1vw;
+  }
+
+  .paparazzi-right {
+    right: -1vw;
+  }
+
+  /* One photographer at a time keeps the narrow headline column clean. */
+  .paparazzi-scene-active .paparazzi-left {
+    animation: paparazzi-mobile-loop var(--paparazzi-cycle)
+      cubic-bezier(0.22, 1, 0.36, 1) infinite both;
+  }
+
+  .paparazzi-scene-active .paparazzi-right {
+    animation: paparazzi-mobile-loop var(--paparazzi-cycle)
+      cubic-bezier(0.22, 1, 0.36, 1) 3.6s infinite both;
+  }
+
+  @keyframes paparazzi-mobile-loop {
+    0% {
+      opacity: 0;
+      transform: translate3d(112%, 0, 0) rotate(8deg) scale(0.92);
+    }
+    10% {
+      opacity: 1;
+      transform: translate3d(5%, 0, 0) rotate(-1.5deg) scale(1);
+    }
+    17%, 26% {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) rotate(0) scale(1);
+    }
+    28.5% {
+      opacity: 1;
+      transform: translate3d(-1.5%, 1%, 0) rotate(-0.5deg) scale(0.97);
+    }
+    33%, 42% {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) rotate(0) scale(1);
+    }
+    50%, 100% {
+      opacity: 0;
+      transform: translate3d(118%, 0, 0) rotate(9deg) scale(0.92);
+    }
+  }
+
+  .camera-flash {
+    width: clamp(3.75rem, 16vw, 5.5rem);
+  }
+
+  .paparazzi-scene-active .camera-flash-right {
+    animation-delay: 3.6s;
+  }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .paparazzi {
+    animation: none;
+  }
+
+  .paparazzi-scene-active .paparazzi {
+    opacity: 0.58;
+    animation: none;
+    transform: none;
+  }
+
+  .camera-flash {
+    display: none;
+  }
+}
+
 /* Hero content padding: clears the fixed header while keeping the final pill
    above the safe-area inset. The scroll prompt is centred as an overlay, so it
    does not need a permanently reserved strip at the bottom. */
@@ -533,6 +821,12 @@
    a readable size, so drop the setup copy and tighten the header clearance —
    the headline, fill paragraph and gold pill are what must stay visible. */
 @media (max-height: 520px) {
+  .paparazzi {
+    top: auto;
+    bottom: -22dvh;
+    width: clamp(14rem, 24vw, 19rem);
+  }
+
   .hero-content {
     padding-top: max(3.5rem, calc(env(safe-area-inset-top) + 3.5rem));
   }
@@ -639,36 +933,6 @@
   animation: ken-burns 18s ease-in-out infinite alternate;
 }
 
-/* Camera flashes should read as a whole stage being photographed, not as small
-   floating lights. Each wash has an independent cycle and origin. */
-@keyframes paparazzi-wash {
-  0%, 7%, 10%, 25%, 28%, 44%, 47%, 63%, 66%, 83%, 86%, 100% { opacity: 0; }
-  7.35%, 25.35%, 44.35%, 63.35%, 83.35% { opacity: 0.88; }
-  7.8%, 25.8%, 44.8%, 63.8%, 83.8% { opacity: 0.12; }
-  8.2%, 26.2%, 45.2%, 64.2%, 84.2% { opacity: 0.52; }
-}
-
-.paparazzi-wash {
-  position: absolute;
-  inset: -12%;
-  opacity: 0;
-  mix-blend-mode: screen;
-  filter: blur(10px);
-  animation: paparazzi-wash 9.7s linear infinite;
-}
-
-.paparazzi-wash-left {
-  background: radial-gradient(ellipse 76% 72% at -4% 54%, rgba(255,255,255,0.92), rgba(191,226,255,0.28) 30%, transparent 67%);
-  animation-delay: -1.4s;
-  animation-duration: 9.7s;
-}
-
-.paparazzi-wash-right {
-  background: radial-gradient(ellipse 82% 76% at 104% 42%, rgba(255,255,255,0.94), rgba(181,220,255,0.3) 31%, transparent 68%);
-  animation-delay: -8.2s;
-  animation-duration: 16.3s;
-}
-
 /* Broadcast-frame details signal a live studio feed without competing with the
    main booking message. */
 .game-show-stage::after {
@@ -745,9 +1009,6 @@
     clip-path: none;
   }
 
-  .paparazzi-wash {
-    display: none;
-  }
 }
 
 /* ───────────────────────────────────────────────────────────────────────────

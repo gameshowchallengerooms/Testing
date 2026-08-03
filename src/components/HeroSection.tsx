@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { ArrowUp, Mouse, Star } from "lucide-react";
+import { ChevronUp, Mouse, Pointer, Star } from "lucide-react";
 import {
   motion,
   useScroll,
@@ -253,6 +253,93 @@ function GoldPill({ progress }: { progress: MotionValue<number> }) {
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
+// Paparazzi entrance
+const PAPARAZZI = [
+  { side: "left", src: "/images/hero-paparazzi/paparazzi-left.png" },
+  { side: "right", src: "/images/hero-paparazzi/paparazzi-right.png" },
+] as const;
+
+/**
+ * A short celebrity-photo moment: the photographers lean in from opposite
+ * wings, fire their shutters a beat apart, then clear the stage. The cutouts
+ * stay behind the copy so the hero remains readable, including on phones.
+ */
+function PaparazziCharacter({
+  side,
+  src,
+}: {
+  side: (typeof PAPARAZZI)[number]["side"];
+  src: (typeof PAPARAZZI)[number]["src"];
+}) {
+  return (
+    <div className={cn("paparazzi", `paparazzi-${side}`)}>
+      <Image
+        src={src}
+        alt=""
+        fill
+        loading="eager"
+        sizes="(max-width: 767px) 48vw, 27vw"
+        className="select-none object-contain"
+        draggable={false}
+      />
+
+      {/* Pinned to the generated camera lens, so the light travels with the
+          photographer instead of floating at a viewport coordinate. */}
+      <span className={cn("camera-flash", `camera-flash-${side}`)}>
+        <span className="camera-flash-halo" />
+        <span className="camera-flash-star" />
+        <span className="camera-flash-ring" />
+      </span>
+    </div>
+  );
+}
+
+function PaparazziMoment({
+  progress,
+  reduceMotion,
+}: {
+  progress: MotionValue<number>;
+  reduceMotion: boolean;
+}) {
+  const [active, setActive] = useState(() => reduceMotion || progress.get() >= 0.96);
+
+  useEffect(() => {
+    if (reduceMotion) return;
+
+    // Hysteresis keeps the routine stable around the threshold: reaching the
+    // completed final word starts it, while reverse-scrolling past the point
+    // where "celebrity" disappears stops it.
+    return progress.on("change", (value) => {
+      setActive((wasActive) => {
+        if (value >= 0.96) return true;
+        if (value <= 0.75) return false;
+        return wasActive;
+      });
+    });
+  }, [progress, reduceMotion]);
+
+  const visible = reduceMotion || active;
+
+  return (
+    <div
+      aria-hidden="true"
+      className={cn(
+        "paparazzi-scene pointer-events-none absolute inset-0 z-4 overflow-hidden",
+        visible && "paparazzi-scene-active",
+        reduceMotion && visible && "paparazzi-scene-still",
+      )}
+    >
+      {PAPARAZZI.map(({ side, src }) => (
+        <PaparazziCharacter
+          key={side}
+          side={side}
+          src={src}
+        />
+      ))}
+    </div>
+  );
+}
+
 // The three reveal phases, as slices of the 0→1 scroll progress. They finish
 // by ~0.88, leaving a settle-buffer at the bottom of the track so the reveal
 // always completes (pill included) before the section unpins — even when the
@@ -384,27 +471,16 @@ export function HeroSection() {
         aria-hidden="true"
       />
 
-      {/* Spotlight beams + camera washes.
-          Every one of these is `mix-blend-mode: screen` over a blur, which
-          forces the compositor to read back the backdrop pixels it sits on —
-          five full-viewport blended layers means the entire hero re-composites
-          each frame, forever, before the user even scrolls. That is what pins a
-          budget phone at ~20fps on load, so weak devices get the (already
-          quite rich) gradient overlay alone. */}
+      {/* Moving stage spotlights. Weak devices get the gradient overlay alone. */}
       {!lowPower && (
-        <>
-          <div className="absolute inset-0 z-2 overflow-hidden opacity-70" aria-hidden="true">
-            <span className="beam beam-left" />
-            <span className="beam beam-center" />
-            <span className="beam beam-right" />
-          </div>
-
-          <div className="pointer-events-none absolute inset-0 z-2 overflow-hidden" aria-hidden="true">
-            <span className="paparazzi-wash paparazzi-wash-left" />
-            <span className="paparazzi-wash paparazzi-wash-right" />
-          </div>
-        </>
+        <div className="absolute inset-0 z-2 overflow-hidden opacity-70" aria-hidden="true">
+          <span className="beam beam-left" />
+          <span className="beam beam-center" />
+          <span className="beam beam-right" />
+        </div>
       )}
+
+      <PaparazziMoment progress={headlineProgress} reduceMotion={reduce === true} />
 
       {/* Content — spread top→bottom so the setup copy sits just under the
           header, the pill sits near the bottom, and the headline gets the big
@@ -583,7 +659,7 @@ function ScrollCue({ reduceMotion }: { reduceMotion: boolean }) {
       {/* Mobile: a compact swipe pill in the centre of the stage. */}
       <div className="absolute inset-0 flex items-center justify-center px-4 md:hidden">
         <motion.div
-          className="relative flex w-full max-w-[20.5rem] items-center gap-3 overflow-hidden rounded-full border border-white/15 bg-gs-surface-black/85 p-2 pr-4 shadow-[0_16px_50px_rgba(0,0,0,0.65),0_0_28px_rgba(124,92,252,0.18)] backdrop-blur-xl"
+          className="relative flex w-full max-w-[22.5rem] items-center gap-3.5 overflow-hidden rounded-full border border-white/15 bg-gs-surface-black/85 p-2.5 pr-5 shadow-[0_16px_50px_rgba(0,0,0,0.65),0_0_32px_rgba(124,92,252,0.22)] backdrop-blur-xl"
           initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 20, scale: 0.94 }}
           animate={
             reduceMotion
@@ -598,28 +674,15 @@ function ScrollCue({ reduceMotion }: { reduceMotion: boolean }) {
             aria-hidden
             className="absolute inset-x-10 top-0 h-px bg-[linear-gradient(90deg,transparent,var(--gs-blue-bright),var(--gs-magenta-bright),transparent)]"
           />
-          <span className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(135deg,var(--gs-blue),var(--gs-violet),var(--gs-magenta))] text-white shadow-[0_0_22px_rgba(124,92,252,0.42)]">
-            <motion.span
-              animate={
-                showing && !reduceMotion
-                  ? { y: [9, -1, -10], opacity: [0, 1, 0] }
-                  : { y: 0, opacity: 1 }
-              }
-              transition={
-                showing
-                  ? { duration: 1.15, repeat: Infinity, repeatDelay: 0.25, ease: "easeOut" }
-                  : { duration: 0.2 }
-              }
-            >
-              <ArrowUp size={21} strokeWidth={2.6} />
-            </motion.span>
+          <span className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(135deg,var(--gs-blue),var(--gs-violet),var(--gs-magenta))] text-white shadow-[0_0_28px_rgba(124,92,252,0.5)]">
+            <SwipeUpGesture active={showing && !reduceMotion} />
           </span>
 
           <span className="min-w-0 flex-1 text-left">
-            <span className="block text-[11px] font-bold uppercase tracking-[0.2em] text-white">
+            <span className="block text-xs font-bold uppercase tracking-[0.18em] text-white">
               Swipe up to play
             </span>
-            <span className="mt-0.5 block truncate text-[11px] font-medium text-white/50">
+            <span className="mt-1 block truncate text-[11px] font-medium text-white/50">
               Your spotlight is waiting
             </span>
           </span>
@@ -681,5 +744,65 @@ function ScrollCue({ reduceMotion }: { reduceMotion: boolean }) {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+/**
+ * The industry-standard swipe-up gesture cue: a pointing finger presses down
+ * (a touch ripple marks the contact), drags upward, then lifts off — while the
+ * chevrons above light up bottom-to-top along its path. One ~2s cycle, looping
+ * while active; a static pointer when inactive (reduced motion or hidden).
+ */
+function SwipeUpGesture({ active }: { active: boolean }) {
+  // Shared cycle so every layer stays in phase: press → drag → lift → rest.
+  const cycle = { duration: 1.7, repeat: Infinity, repeatDelay: 0.4 } as const;
+  return (
+    <span aria-hidden className="relative flex h-full w-full items-center justify-center">
+      {/* chevrons — light up bottom-to-top as the finger travels */}
+      <span className="absolute inset-x-0 top-1 flex flex-col items-center">
+        <motion.span
+          animate={active ? { opacity: [0.2, 0.2, 1, 0.2] } : { opacity: 0.9 }}
+          transition={{ ...cycle, times: [0, 0.6, 0.78, 1], ease: "easeInOut" }}
+        >
+          <ChevronUp size={14} strokeWidth={3} />
+        </motion.span>
+        <motion.span
+          className="-mt-2.5"
+          animate={active ? { opacity: [0.2, 0.2, 1, 0.2] } : { opacity: 0.5 }}
+          transition={{ ...cycle, times: [0, 0.48, 0.66, 1], ease: "easeInOut" }}
+        >
+          <ChevronUp size={14} strokeWidth={3} />
+        </motion.span>
+      </span>
+
+      {/* touch ripple — expands from the press point as the finger lands */}
+      <motion.span
+        className="absolute h-7 w-7 rounded-full border-2 border-white/90"
+        style={{ left: "50%", top: "50%", marginLeft: -14, marginTop: -6 }}
+        animate={
+          active
+            ? { opacity: [0, 0.85, 0, 0], scale: [0.35, 0.8, 1.4, 1.4] }
+            : { opacity: 0, scale: 0.35 }
+        }
+        transition={{ ...cycle, times: [0, 0.18, 0.42, 1], ease: "easeOut" }}
+      />
+
+      {/* the finger — press (slight squash), drag up, lift off */}
+      <motion.span
+        className="relative z-1 mt-2"
+        animate={
+          active
+            ? { y: [10, 9, -11, -13], opacity: [0, 1, 1, 0], scale: [1, 0.92, 1, 1] }
+            : { y: 0, opacity: 1, scale: 1 }
+        }
+        transition={
+          active
+            ? { ...cycle, times: [0, 0.2, 0.72, 1], ease: [0.33, 0, 0.2, 1] }
+            : { duration: 0.2 }
+        }
+      >
+        <Pointer size={28} strokeWidth={2.2} />
+      </motion.span>
+    </span>
   );
 }

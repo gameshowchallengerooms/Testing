@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Mail, Phone } from "lucide-react";
 import { FAQSection } from "@/components/FAQSection";
+import styles from "./Footer.module.css";
 
 function FacebookIcon() {
   return (
@@ -30,6 +31,66 @@ function YouTubeIcon() {
 export function Footer() {
   return (
     <footer className="flex w-full flex-col items-center gap-6 bg-black px-5 pb-7 pt-20">
+      <section
+        className={styles.production}
+        aria-labelledby="footer-production-title"
+      >
+        <div className={styles.productionHeader}>
+          <div>
+            <p className={styles.kicker}>Behind every big moment</p>
+            <h2 id="footer-production-title" className={styles.productionTitle}>
+              The whole crew. <span>Your show.</span>
+            </h2>
+          </div>
+
+          <div className={styles.liveBadge} aria-label="Live production in progress">
+            <span className={styles.liveDot} aria-hidden="true" />
+            <span>Live production</span>
+            <span className={styles.round}>Round 03</span>
+          </div>
+        </div>
+
+        <div className={styles.stage}>
+          <span className={styles.spotlightLeft} aria-hidden="true" />
+          <span className={styles.spotlightRight} aria-hidden="true" />
+          <span className={styles.focusFrame} aria-hidden="true" />
+          <span className={styles.buzzerPulseOne} aria-hidden="true" />
+          <span className={styles.buzzerPulseTwo} aria-hidden="true" />
+
+          <div className={styles.crewTrack}>
+            <Image
+              src="/images/footer/show-crew.png"
+              alt="Cartoon game show crew with a director, camera operator, host, contestants, lighting technician and event organizer"
+              width={2172}
+              height={724}
+              sizes="(max-width: 767px) 900px, (max-width: 1319px) 100vw, 1280px"
+              className={styles.crewImage}
+            />
+          </div>
+        </div>
+
+        <div className={styles.roleTicker} aria-label="Game show production crew">
+          <div className={styles.roleTickerTrack}>
+            <div className={styles.roleSet}>
+              <span>Director</span>
+              <span>Camera</span>
+              <span>Real host</span>
+              <span>Game on</span>
+              <span>Lighting</span>
+              <span>Organizer</span>
+            </div>
+            <div className={styles.roleSet} aria-hidden="true">
+              <span>Director</span>
+              <span>Camera</span>
+              <span>Real host</span>
+              <span>Game on</span>
+              <span>Lighting</span>
+              <span>Organizer</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Top row: brand/SEO block on the LEFT, FAQ on the RIGHT. Stacks on
           mobile (brand block first, then FAQ). */}
       <div className="grid w-full max-w-[1280px] grid-cols-1 gap-12 border-t border-white/10 pb-10 pt-12 lg:grid-cols-2 lg:gap-16">

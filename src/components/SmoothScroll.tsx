@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactLenis } from "lenis/react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 
 /**
  * App-wide smooth scrolling via Lenis.
@@ -24,20 +24,28 @@ import { useEffect, useState, type ReactNode } from "react";
  * scrolling is already smooth, and Motion's `useScroll` reads the real document
  * scroll, so the scroll-scrubbed animations keep working without Lenis.
  */
+// Whether this is a touch device. Read as a constant snapshot rather than via
+// effect-driven state: the old `useState` + `useEffect` version re-rendered the
+// entire app tree once after hydration just to swap the scroll provider, which
+// tore down and rebuilt every scroll-linked animation below it — a visible
+// hitch on first load. The pointer type does not change mid-session, so this
+// never needs to notify.
+const subscribeToNothing = () => () => {};
+
+function isTouchDevice(): boolean {
+  return (
+    window.matchMedia?.("(pointer: coarse)").matches ||
+    "ontouchstart" in window ||
+    navigator.maxTouchPoints > 0
+  );
+}
+
 export function SmoothScroll({ children }: { children: ReactNode }) {
-  // Start `true` so SSR/first paint matches the desktop case; flip to native
-  // scroll on touch devices after mount (avoids a hydration mismatch).
-  const [useLenis, setUseLenis] = useState(true);
+  // SSR snapshot is `false` (assume desktop), so the server markup matches the
+  // Lenis branch and touch devices resolve to native scroll on first client render.
+  const touch = useSyncExternalStore(subscribeToNothing, isTouchDevice, () => false);
 
-  useEffect(() => {
-    const coarse =
-      window.matchMedia?.("(pointer: coarse)").matches ||
-      "ontouchstart" in window ||
-      navigator.maxTouchPoints > 0;
-    if (coarse) setUseLenis(false);
-  }, []);
-
-  if (!useLenis) return <>{children}</>;
+  if (touch) return <>{children}</>;
 
   return (
     <ReactLenis

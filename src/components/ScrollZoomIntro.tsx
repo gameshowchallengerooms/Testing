@@ -29,7 +29,11 @@ import { useLowPowerMode } from "@/hooks/useLowPowerMode";
  *                studio light, settles flat, and catches a moving reflection.
  */
 
-const TRACK_VIEWPORTS = 6; // how many screens of scroll the whole sequence spans
+// How many screens of scroll the whole sequence spans. The extra length over the
+// original 6 is spent almost entirely on the poster hold: at 8 viewports the
+// 0.78→0.94 still-window is ~1.3 screens of scrolling where the poster sits
+// motionless and readable, instead of being whisked away on the first flick.
+const TRACK_VIEWPORTS = 8;
 const POSTER_COPY =
   "Imagine being picked as a contestant on your favorite game show. The host calls your name—your face glows with studio lights. Through the theme music, you hear the opposing team trash-talking from across the stage. That’s Game Show Challenge Rooms. Instead of watching from your couch, you’re on stage, competing in mini-games that test everything from speed to strategy. There’s a live host, lights, and music. When you slam the buzzer and nail the answer, you’ll feel like a game show legend.";
 
@@ -42,7 +46,7 @@ const LOGO_BLUR =
 
 const posterCommonProps = {
   alt: "",
-  sizes: "(max-width: 639px) 98vw, 1152px",
+  sizes: "(max-width: 639px) 100vw, (max-width: 1519px) calc(100vw - 3rem), 1456px",
 };
 
 const {
@@ -116,10 +120,13 @@ export function ScrollZoomIntro() {
 
   // Light spring smoothing on top of Lenis so a single trackpad flick glides
   // across the zoom instead of jumping phases.
+  // `restDelta` has to stay small: during the slow hold a scroll only nudges
+  // progress a hair, and a coarse rest threshold would swallow that nudge
+  // entirely — the poster would look frozen exactly where it must look alive.
   const progress = useSpring(scrollYProgress, {
-    stiffness: 380,
-    damping: 46,
-    restDelta: 0.0004,
+    stiffness: 300,
+    damping: 44,
+    restDelta: 0.00005,
   });
 
   // ── Logo zoom ── DEEP dive. Scales hard so the shield blows past the screen
@@ -169,13 +176,48 @@ export function ScrollZoomIntro() {
   const veilOpacity = useTransform(progress, [0.52, 0.66], [0, 1]);
 
   // ── Poster scene ── the completed infographic rises out of the logo dive,
-  // settles flat, and holds while its stage-light reflections drift across it.
+  // settles flat, and then CREEPS slowly upward while you read it.
+  //
+  // Two failure modes bracket this, and the fix is the middle path:
+  //   • Too fast (the original): the poster landed at 0.86 with `sceneY` still
+  //     drifting to 1.0, so the first flick after it appeared already swept it
+  //     away — "my scroll deleted the image".
+  //   • Frozen solid: pinning every transform flat across the hold made scrolling
+  //     produce NO response at all, which reads as a stuck page, not a pause.
+  //
+  // So the hold is slow, not stopped. From 0.78 → 0.94 the poster still tracks
+  // your scroll — it just creeps, covering a few dozen px over more than a screen
+  // of scrolling. Motion stays perceptible (the page is alive and responding)
+  // while the poster stays put long enough to actually read.
+  const POSTER_SETTLED = 0.78; // fully landed; slow drift starts here
+  const POSTER_HOLD_END = 0.94; // drift ends, the exit accelerates
+
   const sceneOpacity = useTransform(progress, [0.6, 0.68], [0, 1]);
-  const sceneY = useTransform(progress, [0.6, 1], ["8%", "-2%"]);
-  const posterOpacity = useTransform(progress, [0.64, 0.74], [0, 1]);
-  const posterY = useTransform(progress, [0.64, 0.84], [110, 0]);
-  const posterScale = useTransform(progress, [0.64, 0.86], [0.8, 1]);
-  const posterRotate = useTransform(progress, [0.64, 0.86], [3.5, 0]);
+  // Creeps 0% → -1.5% across the hold, then lifts away properly on exit.
+  const sceneY = useTransform(
+    progress,
+    [0.6, POSTER_SETTLED, POSTER_HOLD_END, 1],
+    ["8%", "0%", "-1.5%", "-5%"],
+  );
+  const posterOpacity = useTransform(progress, [0.64, 0.72], [0, 1]);
+  // ~22px of travel across the entire hold — visible response on every scroll,
+  // but slow enough that the poster is effectively parked while you read.
+  const posterY = useTransform(
+    progress,
+    [0.64, POSTER_SETTLED, POSTER_HOLD_END, 1],
+    [110, 0, -22, -60],
+  );
+  // A whisper of scale so the drift reads as depth, not just sliding.
+  const posterScale = useTransform(
+    progress,
+    [0.64, POSTER_SETTLED, POSTER_HOLD_END, 1],
+    [0.8, 1, 1.008, 0.975],
+  );
+  const posterRotate = useTransform(
+    progress,
+    [0.64, POSTER_SETTLED, POSTER_HOLD_END, 1],
+    [3.5, 0, -0.15, -0.5],
+  );
 
   // Scroll hint fades out as soon as you start scrolling.
   const hintOpacity = useTransform(progress, [0, 0.06], [1, 0]);
@@ -308,7 +350,7 @@ export function ScrollZoomIntro() {
 
         {/* ── ABOUT POSTER ── the complete infographic rises into the dark room. */}
         <motion.div
-          className="absolute inset-0 z-30 flex items-center justify-center px-3 sm:px-6"
+          className="absolute inset-0 z-30 flex items-center justify-center px-1 sm:px-6"
           style={{ opacity: sceneOpacity, y: sceneY, willChange: "transform, opacity" }}
         >
           {/* Slow stage-light sweeps keep the dark room alive behind the card.
@@ -330,7 +372,7 @@ export function ScrollZoomIntro() {
           />
 
           <motion.figure
-            className="relative w-full max-w-6xl rounded-[1.5rem] border border-white/20 bg-gs-surface-screen p-1.5 shadow-[0_0_0_1px_rgba(124,92,252,0.2),0_36px_120px_rgba(0,0,0,0.7),0_0_90px_rgba(20,126,255,0.2),0_0_120px_rgba(252,25,237,0.14)] sm:rounded-[2.25rem] sm:p-2"
+            className="relative w-full max-w-6xl rounded-[1.25rem] border border-white/20 bg-gs-surface-screen p-1 shadow-[0_0_0_1px_rgba(124,92,252,0.2),0_36px_120px_rgba(0,0,0,0.7),0_0_90px_rgba(20,126,255,0.2),0_0_120px_rgba(252,25,237,0.14)] sm:w-[min(calc(100vw-3rem),calc(94svh*1.348))] sm:max-w-[1456px] sm:rounded-[2.25rem] sm:p-2"
             style={{
               opacity: posterOpacity,
               y: posterY,
@@ -340,11 +382,15 @@ export function ScrollZoomIntro() {
             }}
           >
             <motion.div
-              className="relative overflow-hidden rounded-[1.15rem] sm:rounded-[1.75rem]"
+              className="relative w-full overflow-hidden rounded-[1.15rem] sm:rounded-[1.75rem]"
               animate={lowPower ? undefined : { y: [0, -5, 0], rotate: [0, 0.2, 0] }}
               transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
             >
-              <ResponsivePoster className="mx-auto h-auto max-h-[86svh] w-auto max-w-full object-contain sm:w-full" />
+              {/* The frame follows each poster's real aspect ratio. On desktop its
+                  width is derived from the 1456×1080 artwork and the available
+                  viewport height, so the image fills the frame without black side
+                  bars or cropping. Mobile remains width-driven for the tall art. */}
+              <ResponsivePoster className="block h-auto w-full object-contain" />
 
               {/* A narrow moving reflection sells the poster as a bright studio
                   screen inside the dark room without changing its artwork.

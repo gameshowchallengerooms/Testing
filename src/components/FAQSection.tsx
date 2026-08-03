@@ -199,7 +199,7 @@ export function StillHaveQuestions() {
           <div className="relative flex flex-col items-center gap-6 overflow-hidden rounded-sm border border-white/10 bg-gs-surface-sunken p-8 text-center md:flex-row md:justify-between md:p-10 md:text-left">
             <span
               className="pointer-events-none absolute inset-y-0 left-0 w-[3px]"
-              style={{ background: "linear-gradient(180deg, var(--gs-magenta), var(--gs-pink))" }}
+              style={{ background: "linear-gradient(180deg, var(--gs-blue-bright), var(--gs-violet))" }}
               aria-hidden="true"
             />
             <div>
@@ -225,7 +225,7 @@ export function StillHaveQuestions() {
                 size="lg"
                 className="text-sm uppercase tracking-[0.12em]"
               >
-                <span className="text-gs-">
+                <span className="text-gs-whatsapp">
                   <WhatsAppGlyph size={18} />
                 </span>
                 Chat

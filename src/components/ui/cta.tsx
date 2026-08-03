@@ -31,7 +31,7 @@ const ctaVariants = cva(
           "border border-(--gs-line-strong) bg-transparent text-white hover:border-(--gs-line-hover) hover:bg-(--gs-veil-hover)",
         /** Single flat-brand action where a gradient would be too loud. */
         solid:
-          "bg-(--gs-magenta) text-white hover:bg-(--gs-magenta-bright)",
+          "bg-(--gs-blue) text-white shadow-[0_10px_28px_-14px_rgba(20,126,255,0.7)] hover:bg-(--gs-blue-bright)",
         /** On top of a coloured/gradient panel, where gradient-on-gradient fails. */
         contrast:
           "bg-black/30 text-white backdrop-blur-sm hover:bg-black/50",

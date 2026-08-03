@@ -511,22 +511,12 @@
   animation: scroll-cue-wheel 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-/* Hide the cue on short viewports, where the headline, copy and pill already
-   use every vertical pixel and the cue would collide with the gold pill. */
-@media (max-height: 700px) {
-  .scroll-cue {
-    display: none;
-  }
-}
-
-/* Hero content padding: clears the fixed header, but scales down on short
-   viewports so a 4-line headline + copy + pill still fit on one screen. */
+/* Hero content padding: clears the fixed header while keeping the final pill
+   above the safe-area inset. The scroll prompt is centred as an overlay, so it
+   does not need a permanently reserved strip at the bottom. */
 .hero-content {
   padding-top: max(5.5rem, calc(env(safe-area-inset-top) + 5.5rem));
-  /* Bottom padding reserves the strip the scroll cue is pinned to, so the gold
-     pill (the column's last child) can never sit underneath it. The cue is
-     ~50px tall and sits 1rem off the bottom, plus a little breathing room. */
-  padding-bottom: calc(env(safe-area-inset-bottom) + 6rem);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 1.25rem);
 }
 
 /* Short viewports (phone landscape, very short laptops): the column can't hold

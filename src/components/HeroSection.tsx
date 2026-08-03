@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { ArrowUp, Star } from "lucide-react";
+import { ArrowUp, Mouse, Star } from "lucide-react";
 import {
   motion,
   useScroll,
@@ -110,6 +110,11 @@ function FillWord({
   // opacity crossfade between two statically-coloured copies instead.
   const color = useTransform(progress, [start, end], ["rgba(255,255,255,0.18)", litColor]);
   const opacity = useTransform(progress, [start, end], [0.5, 1]);
+  // The low-power branch crossfades a second, already-coloured copy of each
+  // word. It must start at zero: reusing `opacity` here made that bright copy
+  // 50% visible before the paragraph's scroll phase began, so phones could
+  // appear to load with the text already revealed.
+  const litOpacity = useTransform(progress, [start, end], [0, 1]);
 
   if (lowPower) {
     return (
@@ -121,7 +126,7 @@ function FillWord({
           <motion.span
             aria-hidden
             className="absolute inset-0 inline-block"
-            style={{ color: litColor, opacity, fontWeight: emphasis ? 700 : undefined }}
+            style={{ color: litColor, opacity: litOpacity, fontWeight: emphasis ? 700 : undefined }}
           >
             {word}
           </motion.span>
@@ -490,35 +495,32 @@ export function HeroSection() {
       {/* Scroll cue — invites the first scroll, then fades out as the reveal
           takes over. Absolutely positioned over the frame (not in the flex
           column) so it can never push the content out of the viewport. */}
-      {!reduce && <ScrollCue progress={progress} />}
+      <ScrollCue reduceMotion={reduce === true} />
     </div>
     </section>
   );
 }
 
 /**
- * "Scroll to play" pop-up, centred over the hero.
+ * Responsive "Scroll to play" prompt.
  *
- * Silent while the visitor is moving. If the page has been open for 5 seconds
- * with NO scroll, a big centred card pops in — a swipe-up arrow animation plus
- * the label — shows for just 3 seconds, then dismisses itself; after a 4-second
- * breather it pops in again, cycling show → hide until the FIRST real scroll,
- * at which point it's gone for good. It never stays up permanently — that would
- * sit over the hero and hurt the experience. `pointer-events-none` keeps it
- * from intercepting clicks, and it's aria-hidden since it's a visual affordance
- * for a scroll the page already supports.
+ * Mobile gets a compact swipe pill, while desktop gets a glass mouse control.
+ * Both appear in the centre of the stage, where the visitor's attention is
+ * already focused, without returning to the oversized modal-style box.
+ * Both variants share the same timed show/hide cycle and disappear permanently
+ * after the visitor starts scrolling.
  */
-const CUE_FIRST_DELAY = 5000; // ms with no scroll before the first pop-in
-const CUE_SHOW_FOR = 3000; // ms the card stays up per cycle
-const CUE_REST_FOR = 4000; // ms hidden between cycles
+const CUE_INTERVAL = 5000; // one appearance starts every five seconds
+const CUE_SHOW_FOR = 2200; // visible long enough to read without lingering
+const CUE_REST_FOR = CUE_INTERVAL - CUE_SHOW_FOR;
 
-function ScrollCue({ progress }: { progress: MotionValue<number> }) {
+function ScrollCue({ reduceMotion }: { reduceMotion: boolean }) {
   const [phase, setPhase] = useState<"waiting" | "showing" | "done">("waiting");
 
   useEffect(() => {
     let done = false;
     let timer: ReturnType<typeof setTimeout>;
-    // The show/hide cycle: pop in for 3s, rest for 4s, repeat until they scroll.
+    // Start a new appearance every five seconds until the first real scroll.
     const show = () => {
       if (done) return;
       setPhase("showing");
@@ -531,60 +533,153 @@ function ScrollCue({ progress }: { progress: MotionValue<number> }) {
     };
     // The hero is the top of the page, so "the page has been open 5s with no
     // scroll" is simply a timer from mount.
-    timer = setTimeout(show, CUE_FIRST_DELAY);
-    // First real scroll → gone for good.
-    const unsub = progress.on("change", (v) => {
-      if (!done && v > 0.05) {
-        done = true;
-        clearTimeout(timer);
-        setPhase("done");
-      }
-    });
-    return () => {
-      unsub();
+    timer = setTimeout(show, CUE_INTERVAL);
+    // Listen for genuine user input instead of scroll-progress changes. Motion's
+    // progress can shift slightly while viewport measurements settle, which was
+    // incorrectly dismissing the cue before it ever became visible.
+    const dismiss = () => {
+      if (done) return;
+      done = true;
       clearTimeout(timer);
+      setPhase("done");
     };
-  }, [progress]);
+    const scrollKeys = new Set([
+      "ArrowDown",
+      "ArrowUp",
+      "PageDown",
+      "PageUp",
+      "Home",
+      "End",
+      " ",
+    ]);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (scrollKeys.has(event.key)) dismiss();
+    };
+    const onScroll = () => {
+      if (window.scrollY > 2) dismiss();
+    };
+
+    window.addEventListener("wheel", dismiss, { passive: true });
+    window.addEventListener("touchmove", dismiss, { passive: true });
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("wheel", dismiss);
+      window.removeEventListener("touchmove", dismiss);
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
 
   const showing = phase === "showing";
 
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 z-6 flex items-center justify-center"
+      className="scroll-cue pointer-events-none absolute inset-0 z-6"
     >
-      <motion.div
-        className="flex flex-col items-center gap-4 rounded-2xl border border-white/20 bg-black/85 px-10 py-8 text-center shadow-[0_18px_70px_rgba(0,0,0,0.75)] md:px-14 md:py-10"
-        initial={{ opacity: 0, scale: 0.85 }}
-        // One quick swell on each pop-in; the card dismisses itself after 3s so
-        // there's no need for a looping flash while it's up.
-        animate={showing ? { opacity: 1, scale: [0.9, 1.05, 1] } : { opacity: 0, scale: 0.85 }}
-        transition={
-          showing
-            ? { opacity: { duration: 0.35, ease: "easeOut" }, scale: { duration: 0.55, ease: "easeOut" } }
-            : { duration: 0.3, ease: "easeOut" }
-        }
-      >
-        <span className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-white text-black md:h-16 md:w-16">
-          {/* Swipe-up motion: the arrow rises through the badge and loops. */}
-          <motion.span
-            animate={showing ? { y: [12, -2, -14], opacity: [0, 1, 0] } : { y: 0, opacity: 1 }}
-            transition={
-              showing
-                ? { duration: 1.1, repeat: Infinity, repeatDelay: 0.35, ease: "easeOut" }
-                : { duration: 0.2 }
-            }
-          >
-            <ArrowUp size={28} strokeWidth={2.5} />
-          </motion.span>
-        </span>
-        <span className="text-lg font-bold uppercase tracking-[0.22em] text-white md:text-2xl">
-          Scroll to play
-        </span>
-        <span className="text-[12px] font-medium uppercase tracking-[0.18em] text-white/55 md:text-[13px]">
-          Swipe up — the show starts as you scroll
-        </span>
-      </motion.div>
+      {/* Mobile: a compact swipe pill in the centre of the stage. */}
+      <div className="absolute inset-0 flex items-center justify-center px-4 md:hidden">
+        <motion.div
+          className="relative flex w-full max-w-[20.5rem] items-center gap-3 overflow-hidden rounded-full border border-white/15 bg-gs-surface-black/85 p-2 pr-4 shadow-[0_16px_50px_rgba(0,0,0,0.65),0_0_28px_rgba(124,92,252,0.18)] backdrop-blur-xl"
+          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 20, scale: 0.94 }}
+          animate={
+            reduceMotion
+              ? { opacity: showing ? 1 : 0 }
+              : showing
+              ? { opacity: 1, y: 0, scale: 1 }
+              : { opacity: 0, y: 16, scale: 0.96 }
+          }
+          transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <span
+            aria-hidden
+            className="absolute inset-x-10 top-0 h-px bg-[linear-gradient(90deg,transparent,var(--gs-blue-bright),var(--gs-magenta-bright),transparent)]"
+          />
+          <span className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(135deg,var(--gs-blue),var(--gs-violet),var(--gs-magenta))] text-white shadow-[0_0_22px_rgba(124,92,252,0.42)]">
+            <motion.span
+              animate={
+                showing && !reduceMotion
+                  ? { y: [9, -1, -10], opacity: [0, 1, 0] }
+                  : { y: 0, opacity: 1 }
+              }
+              transition={
+                showing
+                  ? { duration: 1.15, repeat: Infinity, repeatDelay: 0.25, ease: "easeOut" }
+                  : { duration: 0.2 }
+              }
+            >
+              <ArrowUp size={21} strokeWidth={2.6} />
+            </motion.span>
+          </span>
+
+          <span className="min-w-0 flex-1 text-left">
+            <span className="block text-[11px] font-bold uppercase tracking-[0.2em] text-white">
+              Swipe up to play
+            </span>
+            <span className="mt-0.5 block truncate text-[11px] font-medium text-white/50">
+              Your spotlight is waiting
+            </span>
+          </span>
+
+          <span className="flex shrink-0 items-center gap-1" aria-hidden>
+            {[0, 1, 2].map((index) => (
+              <motion.span
+                key={index}
+                className="h-1 w-1 rounded-full bg-gs-gold"
+                animate={showing && !reduceMotion ? { opacity: [0.25, 1, 0.25] } : { opacity: 0.7 }}
+                transition={{ duration: 1.2, repeat: Infinity, delay: index * 0.16 }}
+              />
+            ))}
+          </span>
+        </motion.div>
+      </div>
+
+      {/* Desktop/tablet: a centred glass mouse control. */}
+      <div className="absolute inset-0 hidden items-center justify-center px-6 md:flex">
+        <motion.div
+          className="relative flex min-w-[19rem] items-center gap-3.5 overflow-hidden rounded-2xl border border-white/15 bg-gs-surface-black/85 p-3 pr-6 shadow-[0_22px_70px_rgba(0,0,0,0.72),0_0_42px_rgba(20,126,255,0.2),0_0_56px_rgba(252,25,237,0.12)] backdrop-blur-xl"
+          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 18, scale: 0.92 }}
+          animate={
+            reduceMotion
+              ? { opacity: showing ? 1 : 0 }
+              : showing
+              ? { opacity: 1, y: 0, scale: 1 }
+              : { opacity: 0, y: 14, scale: 0.95 }
+          }
+          transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <span
+            aria-hidden
+            className="absolute inset-y-0 left-0 w-px bg-[linear-gradient(180deg,transparent,var(--gs-blue-bright),var(--gs-magenta-bright),transparent)]"
+          />
+
+          <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.06] text-white">
+            <Mouse size={23} strokeWidth={1.8} />
+            <motion.span
+              className="absolute left-1/2 top-3 h-1.5 w-1 -translate-x-1/2 rounded-full bg-gs-gold shadow-[0_0_8px_var(--gs-gold)]"
+              animate={showing && !reduceMotion ? { y: [0, 7, 0], opacity: [0, 1, 0] } : { y: 0, opacity: 0.6 }}
+              transition={{ duration: 1.45, repeat: Infinity, ease: "easeInOut" }}
+            />
+          </span>
+
+          <span className="text-left">
+            <span className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-white">
+                Scroll to play
+              </span>
+              <span className="rounded-full bg-gs-gold/10 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-[0.14em] text-gs-gold">
+                Live
+              </span>
+            </span>
+            <span className="mt-1 block text-[11px] font-medium text-white/45">
+              The show begins with your scroll
+            </span>
+          </span>
+        </motion.div>
+      </div>
     </div>
   );
 }

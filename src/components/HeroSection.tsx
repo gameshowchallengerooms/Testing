@@ -369,7 +369,7 @@ function ShowCrewStory({
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 z-4 overflow-hidden"
+      className="pointer-events-none absolute inset-0 z-4 hidden overflow-hidden md:block"
     >
       {/* Act 1 — the crew rigs the stage while the headline reveals. */}
       {!reduceMotion && (
@@ -398,7 +398,6 @@ function ShowCrewStory({
         className={cn(
           "paparazzi-scene absolute inset-0",
           (reduceMotion || act === 3) && "paparazzi-scene-active",
-          act > 0 && "mobile-story-active",
           reduceMotion && "paparazzi-scene-still",
         )}
       >
@@ -409,22 +408,6 @@ function ShowCrewStory({
             src={src}
           />
         ))}
-
-        {/* Mobile keeps one photographer and replaces the second with the
-            anchor, giving the narrow layout one clear story on each wing. */}
-        <div className="mobile-anchor">
-          <Image
-            src={CREW.host.src}
-            alt=""
-            fill
-            sizes="23vw"
-            className="select-none object-contain"
-            draggable={false}
-          />
-          <span className="mobile-anchor-bubble">
-            Your first question is&hellip;
-          </span>
-        </div>
       </div>
     </div>
   );

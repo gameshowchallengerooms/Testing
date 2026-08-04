@@ -4,6 +4,7 @@ import Image from "next/image";
 import { ArrowUpRight, Check, Mic, Sparkles } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { Cta } from "@/components/ui/cta";
+import { useBooking } from "@/components/BookingDialog";
 
 interface Show {
   label: string;
@@ -101,6 +102,7 @@ function HostBadge() {
 
 function ShowPanel({ show, index }: { show: Show; index: number }) {
   const reduceMotion = useReducedMotion();
+  const { openBooking } = useBooking();
   const reversed = index % 2 === 1;
 
   return (
@@ -202,7 +204,7 @@ function ShowPanel({ show, index }: { show: Show; index: number }) {
             {/* Tinted with this show's accent, but the shape/motion come from
                 the shared CTA so it matches every other button on the site. */}
             <Cta
-              href="#tickets"
+              onClick={() => openBooking(show.label)}
               variant="secondary"
               className={`min-h-12 uppercase tracking-[0.08em] hover:bg-white hover:text-black ${show.accentBorder} ${show.accentSurface}`}
             >

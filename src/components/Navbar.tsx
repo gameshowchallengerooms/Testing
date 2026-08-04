@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Cta } from "@/components/ui/cta";
+import { useBooking } from "@/components/BookingDialog";
 
 const navLinks = [
   { label: "Game Shows", href: "#show-rounds" },
@@ -17,6 +18,7 @@ const navLinks = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { openBooking } = useBooking();
   // True while the pinned "One unforgettable night" show story is on screen on a
   // MOBILE viewport — we hide the floating compact "Book Your Show" pill there so
   // it doesn't overlap the flipping book covers, then return once it's scrolled
@@ -141,7 +143,7 @@ export function Navbar() {
 
           {/* Book Now CTA — hidden on mobile, shown from md up */}
           <Cta
-            href="#tickets"
+            onClick={() => openBooking()}
             variant="nav"
             badge
             className="hidden py-1.5 pl-4 text-base md:inline-flex"
@@ -193,7 +195,7 @@ export function Navbar() {
         </Link>
 
         {/* Compact Book Now CTA */}
-        <Cta href="#tickets" variant="nav" badge className="py-1.5 pl-4 text-base">
+        <Cta onClick={() => openBooking()} variant="nav" badge className="py-1.5 pl-4 text-base">
           Book Your Show
         </Cta>
       </nav>
@@ -242,10 +244,12 @@ export function Navbar() {
           ))}
 
           <Cta
-            href="#tickets"
             badge
             size="lg"
-            onClick={() => setMenuOpen(false)}
+            onClick={() => {
+              setMenuOpen(false);
+              openBooking();
+            }}
             className="mt-4 text-lg"
           >
             Book Your Show

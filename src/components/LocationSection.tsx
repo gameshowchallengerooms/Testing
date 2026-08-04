@@ -4,6 +4,7 @@ import Link from "next/link";
 import { MapPin, Navigation, Clock, Users, Mail, Phone } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { Cta } from "@/components/ui/cta";
+import { useBooking } from "@/components/BookingDialog";
 
 const ADDRESS =
   "4th Floor, Survey No. 1, Khajaguda - Nanakramguda Rd, Khajaguda, Hyderabad, Telangana 500104";
@@ -36,6 +37,7 @@ const landmarks = [
 ];
 
 export function LocationSection() {
+  const { openBooking } = useBooking();
   return (
     <section
       id="location"
@@ -137,7 +139,7 @@ export function LocationSection() {
                 Get Directions
               </Cta>
               <Cta
-                href="#tickets"
+                onClick={() => openBooking()}
                 variant="secondary"
                 className="uppercase tracking-[0.12em]"
               >

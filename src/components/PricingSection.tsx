@@ -4,11 +4,10 @@ import { useState } from "react";
 import { ChevronRight, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Cta } from "@/components/ui/cta";
+import { useBooking } from "@/components/BookingDialog";
 
 // Selection accent for the segmented pickers — brand blue, from the token set.
 const SELECT_ACCENT = "var(--gs-blue)";
-
-const BOOKING_URL = "https://gameshowchallengerooms.com/";
 
 type DayType = "weekday" | "weekend";
 
@@ -99,19 +98,19 @@ const notes = [
 /** Outlined CTA that fills BMW-blue on hover — the signature BMW button. The
  *  filled variant is solid blue from the start (used for the recommended tier). */
 function BmwButton({
-  href,
+  onClick,
   children,
   filled = false,
   className,
 }: {
-  href: string;
+  onClick: () => void;
   children: React.ReactNode;
   filled?: boolean;
   className?: string;
 }) {
   return (
     <Cta
-      href={href}
+      onClick={onClick}
       variant={filled ? "primary" : "secondary"}
       className={cn("uppercase tracking-[0.06em]", className)}
       style={{ fontFamily: "var(--font-sans)" }}
@@ -130,6 +129,14 @@ export function PricingSection() {
   // The two configurator axes: how many of you, and which day.
   const [players, setPlayers] = useState<PlayerKey>("6+");
   const [day, setDay] = useState<DayType>("weekday");
+  const { openBooking } = useBooking();
+
+  // What the visitor configured, phrased for the booking conversation —
+  // it lands verbatim in the pre-filled WhatsApp message.
+  const bookingDetail = (tier: ShowTier) =>
+    `${tier.label} for ${players === "6+" ? "6 or more" : players} players on a ${
+      day === "weekday" ? "weekday" : "weekend"
+    }`;
 
   const dayIndex = day === "weekday" ? 0 : 1;
   const priceOf = (t: ShowTier) => t.price[players][dayIndex];
@@ -332,7 +339,11 @@ export function PricingSection() {
                   ))}
                 </ul>
 
-                <BmwButton href={BOOKING_URL} filled={tier.popular} className="mt-8 w-full">
+                <BmwButton
+                  onClick={() => openBooking(bookingDetail(tier))}
+                  filled={tier.popular}
+                  className="mt-8 w-full"
+                >
                   Book {tier.label}
                 </BmwButton>
               </div>

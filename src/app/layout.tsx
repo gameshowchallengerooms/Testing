@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { SmoothScroll } from "@/components/SmoothScroll";
+import { BookingProvider } from "@/components/BookingDialog";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -428,7 +429,9 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <SmoothScroll>{children}</SmoothScroll>
+        <SmoothScroll>
+          <BookingProvider>{children}</BookingProvider>
+        </SmoothScroll>
       </body>
     </html>
   );

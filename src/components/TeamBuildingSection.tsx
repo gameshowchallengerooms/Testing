@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { Cta } from "@/components/ui/cta";
+import { useBooking } from "@/components/BookingDialog";
 
 const eventTypes = [
   { icon: PartyPopper, label: "Festive & Diwali Parties" },
@@ -47,6 +48,7 @@ const addOns = [
 ];
 
 export function TeamBuildingSection() {
+  const { openBooking } = useBooking();
   return (
     <section
       id="team-building"
@@ -203,7 +205,11 @@ export function TeamBuildingSection() {
                 your team.
               </p>
             </div>
-            <Cta href="#tickets" variant="contrast" size="lg">
+            <Cta
+              onClick={() => openBooking("a team-building show")}
+              variant="contrast"
+              size="lg"
+            >
               Book Your Show
               <ArrowUpRight size={18} />
             </Cta>

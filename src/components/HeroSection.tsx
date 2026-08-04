@@ -259,6 +259,60 @@ const PAPARAZZI = [
   { side: "right", src: "/images/hero-paparazzi/paparazzi-right.png" },
 ] as const;
 
+// ─── Show-crew story ─────────────────────────────────────────────────────────
+
+// The wings tell the making of a live show in three acts that track the copy
+// phases: while the headline reveals, the crew rigs the stage (camera op with
+// a REC lamp, lighting tech sweeping a real beam); while the paragraph fills,
+// the show goes live (director cues you in, the host asks the first question);
+// and once the gold pill seals it, the paparazzi arrive — you're the celebrity.
+const CREW = {
+  camera: { side: "left", src: "/images/show-crew/camera-color.webp" },
+  lighting: { side: "right", src: "/images/show-crew/lighting-color.webp" },
+  director: { side: "left", src: "/images/show-crew/director-color.webp" },
+  host: { side: "right", src: "/images/show-crew/host-color.webp" },
+} as const;
+
+type Act = 0 | 1 | 2 | 3;
+
+// Act boundaries over the overall smoothed progress, with hysteresis on each
+// threshold so the spring settling around a boundary can't flicker the cast.
+const ACT_UP = [0.03, 0.37, 0.66];
+const ACT_DOWN = [0.015, 0.33, 0.61];
+
+function actForProgress(value: number, prev: Act): Act {
+  let act = prev;
+  while (act < 3 && value >= ACT_UP[act]) act++;
+  while (act > 0 && value < ACT_DOWN[act - 1]) act--;
+  return act as Act;
+}
+
+function CrewCharacter({
+  side,
+  src,
+  className,
+  children,
+}: {
+  side: "left" | "right";
+  src: string;
+  className: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className={cn("crew", `crew-${side}`, className)}>
+      <Image
+        src={src}
+        alt=""
+        fill
+        sizes="(max-width: 767px) 23vw, 26vw"
+        className="select-none object-contain"
+        draggable={false}
+      />
+      {children}
+    </div>
+  );
+}
+
 /**
  * A short celebrity-photo moment: the photographers lean in from opposite
  * wings, fire their shutters a beat apart, then clear the stage. The cutouts
@@ -294,48 +348,84 @@ function PaparazziCharacter({
   );
 }
 
-function PaparazziMoment({
+function ShowCrewStory({
   progress,
   reduceMotion,
 }: {
   progress: MotionValue<number>;
   reduceMotion: boolean;
 }) {
-  const [active, setActive] = useState(() => reduceMotion || progress.get() >= 0.96);
+  const [act, setAct] = useState<Act>(() =>
+    reduceMotion ? 3 : actForProgress(progress.get(), 0),
+  );
 
   useEffect(() => {
     if (reduceMotion) return;
-
-    // Hysteresis keeps the routine stable around the threshold: reaching the
-    // completed final word starts it, while reverse-scrolling past the point
-    // where "celebrity" disappears stops it.
     return progress.on("change", (value) => {
-      setActive((wasActive) => {
-        if (value >= 0.96) return true;
-        if (value <= 0.75) return false;
-        return wasActive;
-      });
+      setAct((prev) => actForProgress(value, prev));
     });
   }, [progress, reduceMotion]);
-
-  const visible = reduceMotion || active;
 
   return (
     <div
       aria-hidden="true"
-      className={cn(
-        "paparazzi-scene pointer-events-none absolute inset-0 z-4 overflow-hidden",
-        visible && "paparazzi-scene-active",
-        reduceMotion && visible && "paparazzi-scene-still",
-      )}
+      className="pointer-events-none absolute inset-0 z-4 overflow-hidden"
     >
-      {PAPARAZZI.map(({ side, src }) => (
-        <PaparazziCharacter
-          key={side}
-          side={side}
-          src={src}
-        />
-      ))}
+      {/* Act 1 — the crew rigs the stage while the headline reveals. */}
+      {!reduceMotion && (
+        <div className={cn("crew-scene absolute inset-0", act === 1 && "crew-scene-active")}>
+          <CrewCharacter side={CREW.camera.side} src={CREW.camera.src} className="crew-camera">
+            <span className="crew-rec" />
+          </CrewCharacter>
+          <CrewCharacter side={CREW.lighting.side} src={CREW.lighting.src} className="crew-lighting">
+            <span className="crew-beam" />
+          </CrewCharacter>
+        </div>
+      )}
+
+      {/* Act 2 — the show goes live: the director cues, the host asks. */}
+      {!reduceMotion && (
+        <div className={cn("crew-scene absolute inset-0", act === 2 && "crew-scene-active")}>
+          <CrewCharacter side={CREW.director.side} src={CREW.director.src} className="crew-director" />
+          <CrewCharacter side={CREW.host.side} src={CREW.host.src} className="crew-host">
+            <span className="crew-bubble">Your first question is&hellip;</span>
+          </CrewCharacter>
+        </div>
+      )}
+
+      {/* Act 3 — the paparazzi finale: you're the celebrity. */}
+      <div
+        className={cn(
+          "paparazzi-scene absolute inset-0",
+          (reduceMotion || act === 3) && "paparazzi-scene-active",
+          act > 0 && "mobile-story-active",
+          reduceMotion && "paparazzi-scene-still",
+        )}
+      >
+        {PAPARAZZI.map(({ side, src }) => (
+          <PaparazziCharacter
+            key={side}
+            side={side}
+            src={src}
+          />
+        ))}
+
+        {/* Mobile keeps one photographer and replaces the second with the
+            anchor, giving the narrow layout one clear story on each wing. */}
+        <div className="mobile-anchor">
+          <Image
+            src={CREW.host.src}
+            alt=""
+            fill
+            sizes="23vw"
+            className="select-none object-contain"
+            draggable={false}
+          />
+          <span className="mobile-anchor-bubble">
+            Your first question is&hellip;
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -480,7 +570,7 @@ export function HeroSection() {
         </div>
       )}
 
-      <PaparazziMoment progress={headlineProgress} reduceMotion={reduce === true} />
+      <ShowCrewStory progress={progress} reduceMotion={reduce === true} />
 
       {/* Content — spread top→bottom so the setup copy sits just under the
           header, the pill sits near the bottom, and the headline gets the big

@@ -10,6 +10,7 @@ import {
   useReducedMotion,
 } from "motion/react";
 import { useLowPowerMode } from "@/hooks/useLowPowerMode";
+import { cn } from "@/lib/utils";
 
 /**
  * Cinematic scroll-zoom intro — "zoom deep into the logo, fall inside, reveal
@@ -29,11 +30,17 @@ import { useLowPowerMode } from "@/hooks/useLowPowerMode";
  *                studio light, settles flat, and catches a moving reflection.
  */
 
-// How many screens of scroll the whole sequence spans. The extra length over the
-// original 6 is spent almost entirely on the poster hold: at 8 viewports the
-// 0.78→0.94 still-window is ~1.3 screens of scrolling where the poster sits
-// motionless and readable, instead of being whisked away on the first flick.
-const TRACK_VIEWPORTS = 8;
+// How many screens of scroll the whole sequence spans.
+//
+// This was 8, which is what made the section read as STUCK: the poster's
+// readable window (0.78→0.94 of progress) worked out to ~1.3 full screens of
+// scrolling during which the poster moved ~22px. Scroll input registered but
+// nothing visibly happened, which is indistinguishable from a frozen page.
+//
+// 5 viewports keeps the dive cinematic while making every flick produce
+// obvious movement. The poster still gets a genuine hold (see POSTER_SETTLED),
+// it is just measured in a fraction of a screen rather than more than one.
+const TRACK_VIEWPORTS = 5;
 const POSTER_COPY =
   "Imagine being picked as a contestant on your favorite game show. The host calls your name—your face glows with studio lights. Through the theme music, you hear the opposing team trash-talking from across the stage. That’s Game Show Challenge Rooms. Instead of watching from your couch, you’re on stage, competing in mini-games that test everything from speed to strategy. There’s a live host, lights, and music. When you slam the buzzer and nail the answer, you’ll feel like a game show legend.";
 
@@ -120,13 +127,17 @@ export function ScrollZoomIntro() {
 
   // Light spring smoothing on top of Lenis so a single trackpad flick glides
   // across the zoom instead of jumping phases.
-  // `restDelta` has to stay small: during the slow hold a scroll only nudges
-  // progress a hair, and a coarse rest threshold would swallow that nudge
-  // entirely — the poster would look frozen exactly where it must look alive.
+  //
+  // `restDelta` was 0.00005 to keep the old ultra-slow hold responsive, but a
+  // threshold that tight means the spring practically never reaches rest: it
+  // keeps ticking, re-running every `useTransform` and re-rasterizing the
+  // promoted layers long after scrolling stopped. That is the flicker you see
+  // while sitting still. Now that the hold has real travel (see posterY), a
+  // normal threshold is plenty precise and the spring actually settles.
   const progress = useSpring(scrollYProgress, {
     stiffness: 300,
     damping: 44,
-    restDelta: 0.00005,
+    restDelta: 0.001,
   });
 
   // ── Logo zoom ── DEEP dive. Scales hard so the shield blows past the screen
@@ -185,12 +196,14 @@ export function ScrollZoomIntro() {
   //   • Frozen solid: pinning every transform flat across the hold made scrolling
   //     produce NO response at all, which reads as a stuck page, not a pause.
   //
-  // So the hold is slow, not stopped. From 0.78 → 0.94 the poster still tracks
-  // your scroll — it just creeps, covering a few dozen px over more than a screen
-  // of scrolling. Motion stays perceptible (the page is alive and responding)
-  // while the poster stays put long enough to actually read.
-  const POSTER_SETTLED = 0.78; // fully landed; slow drift starts here
-  const POSTER_HOLD_END = 0.94; // drift ends, the exit accelerates
+  // So the hold is slow, not stopped. Across POSTER_SETTLED → POSTER_HOLD_END
+  // the poster still tracks your scroll — it just creeps. On the 5-viewport
+  // track that window is roughly one screen of scrolling, and the travel below
+  // is sized so a normal flick moves the poster a clearly visible amount.
+  // Motion stays perceptible (the page is alive and responding) while the
+  // poster stays put long enough to actually read.
+  const POSTER_SETTLED = 0.74; // fully landed; slow drift starts here
+  const POSTER_HOLD_END = 0.95; // drift ends, the exit accelerates
 
   const sceneOpacity = useTransform(progress, [0.6, 0.68], [0, 1]);
   // Creeps 0% → -1.5% across the hold, then lifts away properly on exit.
@@ -200,12 +213,13 @@ export function ScrollZoomIntro() {
     ["8%", "0%", "-1.5%", "-5%"],
   );
   const posterOpacity = useTransform(progress, [0.64, 0.72], [0, 1]);
-  // ~22px of travel across the entire hold — visible response on every scroll,
-  // but slow enough that the poster is effectively parked while you read.
+  // ~48px of travel across the hold. The old 22px over a longer track was below
+  // the threshold where a flick reads as "the page responded", which is what
+  // made this feel stuck; this is still a creep, but an unmistakable one.
   const posterY = useTransform(
     progress,
     [0.64, POSTER_SETTLED, POSTER_HOLD_END, 1],
-    [110, 0, -22, -60],
+    [110, 0, -48, -110],
   );
   // A whisper of scale so the drift reads as depth, not just sliding.
   const posterScale = useTransform(
@@ -324,7 +338,15 @@ export function ScrollZoomIntro() {
               unoptimized
               placeholder="blur"
               blurDataURL={LOGO_BLUR}
-              className="h-auto w-[min(60vw,360px)] drop-shadow-[0_20px_80px_rgba(0,0,0,0.6)]"
+              // The drop-shadow is a filter, and a filter on an element whose
+              // scale is scrubbed forces WebKit to recompute the filtered
+              // output as the texture grows — another per-frame repaint during
+              // the dive. Phones skip it; against the dark backdrop the loss is
+              // invisible.
+              className={cn(
+                "h-auto w-[min(60vw,360px)]",
+                !lowPower && "drop-shadow-[0_20px_80px_rgba(0,0,0,0.6)]",
+              )}
             />
           </motion.div>
         </motion.div>
@@ -349,42 +371,76 @@ export function ScrollZoomIntro() {
         />
 
         {/* ── ABOUT POSTER ── the complete infographic rises into the dark room. */}
+        {/* `willChange` is deliberately NOT set here (nor on the figure below).
+            Permanently promoting the scene, the figure and the logo at once
+            leaves three always-live compositor layers stacked with two blurred
+            gradient loops and a blurred sweep. On phones that exceeds the layer
+            budget, so the compositor evicts and re-rasterizes them in a loop —
+            the visible flicker. Motion promotes these layers on its own while a
+            transform is actually changing, which is all that is needed. */}
         <motion.div
           className="absolute inset-0 z-30 flex items-center justify-center px-1 sm:px-6"
-          style={{ opacity: sceneOpacity, y: sceneY, willChange: "transform, opacity" }}
+          style={{ opacity: sceneOpacity, y: sceneY }}
         >
           {/* Slow stage-light sweeps keep the dark room alive behind the card.
-              On low-power devices they render static: the blur stays (it costs
-              one raster) but the never-ending transform loop does not. */}
-          <motion.div
-            className="pointer-events-none absolute -left-[8%] -top-[20%] h-[100%] w-[42%] origin-top bg-[linear-gradient(180deg,rgba(20,126,255,0.34),transparent_74%)] blur-2xl"
-            style={lowPower ? { rotate: -6, opacity: 0.4 } : undefined}
-            animate={lowPower ? undefined : { rotate: [-10, -3, -10], opacity: [0.28, 0.52, 0.28] }}
-            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-            aria-hidden
-          />
-          <motion.div
-            className="pointer-events-none absolute -right-[8%] -top-[20%] h-[100%] w-[42%] origin-top bg-[linear-gradient(180deg,rgba(252,25,237,0.3),transparent_74%)] blur-2xl"
-            style={lowPower ? { rotate: 6, opacity: 0.37 } : undefined}
-            animate={lowPower ? undefined : { rotate: [10, 3, 10], opacity: [0.26, 0.48, 0.26] }}
-            transition={{ duration: 7.8, repeat: Infinity, ease: "easeInOut" }}
-            aria-hidden
-          />
+              On low-power devices they are not rendered at all. Even static,
+              each one is a ~half-viewport blurred texture the compositor must
+              hold and re-blend under the scrolling scene; on phones Safari
+              evicts them under memory pressure and redraws them mid-scroll —
+              a visible blink behind the poster for a garnish that is barely
+              perceptible on a small screen anyway. */}
+          {!lowPower && (
+            <motion.div
+              className="pointer-events-none absolute -left-[8%] -top-[20%] h-full w-[42%] origin-top bg-[linear-gradient(180deg,rgba(20,126,255,0.34),transparent_74%)] blur-2xl"
+              animate={{ rotate: [-10, -3, -10], opacity: [0.28, 0.52, 0.28] }}
+              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+              aria-hidden
+            />
+          )}
+          {!lowPower && (
+            <motion.div
+              className="pointer-events-none absolute -right-[8%] -top-[20%] h-full w-[42%] origin-top bg-[linear-gradient(180deg,rgba(252,25,237,0.3),transparent_74%)] blur-2xl"
+              animate={{ rotate: [10, 3, 10], opacity: [0.26, 0.48, 0.26] }}
+              transition={{ duration: 7.8, repeat: Infinity, ease: "easeInOut" }}
+              aria-hidden
+            />
+          )}
 
+          {/* On low-power devices the figure animates with translate + opacity
+              ONLY. Scale is the one transform WebKit cannot composite for free:
+              every scale change re-rasterizes the layer to keep it sharp, so a
+              per-frame scale scrub on a viewport-sized image — plus the glow
+              shadows that get rebuilt with it — is a per-frame repaint. That IS
+              the scroll flicker on phones. Translate and opacity never
+              re-raster. The four-layer neon shadow is likewise desktop-only;
+              phones get one modest shadow (base class below, full stack behind
+              `sm:`). */}
           <motion.figure
-            className="relative w-full max-w-6xl rounded-[1.25rem] border border-white/20 bg-gs-surface-screen p-1 shadow-[0_0_0_1px_rgba(124,92,252,0.2),0_36px_120px_rgba(0,0,0,0.7),0_0_90px_rgba(20,126,255,0.2),0_0_120px_rgba(252,25,237,0.14)] sm:w-[min(calc(100vw-3rem),calc(94svh*1.348))] sm:max-w-[1456px] sm:rounded-[2.25rem] sm:p-2"
+            className="relative w-full max-w-6xl rounded-[1.25rem] border border-white/20 bg-gs-surface-screen p-1 shadow-[0_18px_60px_rgba(0,0,0,0.65)] sm:w-[min(calc(100vw-3rem),calc(94svh*1.348))] sm:max-w-[1456px] sm:rounded-[2.25rem] sm:p-2 sm:shadow-[0_0_0_1px_rgba(124,92,252,0.2),0_36px_120px_rgba(0,0,0,0.7),0_0_90px_rgba(20,126,255,0.2),0_0_120px_rgba(252,25,237,0.14)]"
             style={{
               opacity: posterOpacity,
               y: posterY,
-              scale: posterScale,
-              rotate: posterRotate,
-              willChange: "transform, opacity",
+              ...(lowPower ? {} : { scale: posterScale, rotate: posterRotate }),
+              // Flattens this subtree into one raster surface instead of letting
+              // the poster, the sweep and the two corner dots each become their
+              // own layer — fewer surfaces to evict, so no re-raster blink.
+              backfaceVisibility: "hidden",
             }}
           >
+            {/* The idle float loop fights the scroll-driven transform on the
+                parent figure: both write a transform to overlapping surfaces
+                every frame, and on phones the two update paths interleave into
+                a jitter that reads as flicker. It is a garnish, so it is dropped
+                entirely on low-power devices — `transition` has to be dropped
+                with `animate`, or the infinite repeat still gets scheduled. */}
             <motion.div
               className="relative w-full overflow-hidden rounded-[1.15rem] sm:rounded-[1.75rem]"
               animate={lowPower ? undefined : { y: [0, -5, 0], rotate: [0, 0.2, 0] }}
-              transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
+              transition={
+                lowPower
+                  ? undefined
+                  : { duration: 5.5, repeat: Infinity, ease: "easeInOut" }
+              }
             >
               {/* The frame follows each poster's real aspect ratio. On desktop its
                   width is derived from the 1456×1080 artwork and the available
@@ -409,13 +465,17 @@ export function ScrollZoomIntro() {
             <motion.span
               className="pointer-events-none absolute -left-3 -top-3 h-7 w-7 rounded-full bg-gs-blue shadow-[0_0_32px_rgba(20,126,255,0.9)] sm:h-9 sm:w-9"
               animate={lowPower ? undefined : { scale: [0.8, 1.15, 0.8], opacity: [0.55, 1, 0.55] }}
-              transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+              transition={
+                lowPower ? undefined : { duration: 2.6, repeat: Infinity, ease: "easeInOut" }
+              }
               aria-hidden
             />
             <motion.span
               className="pointer-events-none absolute -bottom-3 -right-3 h-7 w-7 rounded-full bg-gs-magenta shadow-[0_0_32px_rgba(252,25,237,0.9)] sm:h-9 sm:w-9"
               animate={lowPower ? undefined : { scale: [1.15, 0.8, 1.15], opacity: [1, 0.55, 1] }}
-              transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+              transition={
+                lowPower ? undefined : { duration: 2.6, repeat: Infinity, ease: "easeInOut" }
+              }
               aria-hidden
             />
 

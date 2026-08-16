@@ -7,6 +7,7 @@ import { StillHaveQuestions } from "@/components/FAQSection";
 import { LocationSection } from "@/components/LocationSection";
 import { Footer } from "@/components/Footer";
 import { WhatsAppChat } from "@/components/WhatsAppChat";
+import { ScrollNudge } from "@/components/ScrollNudge";
 
 export default function Home() {
   return (
@@ -20,6 +21,7 @@ export default function Home() {
       <LocationSection />
       <Footer />
       <WhatsAppChat />
+      <ScrollNudge />
     </main>
   );
 }

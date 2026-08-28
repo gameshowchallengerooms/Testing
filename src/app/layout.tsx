@@ -234,6 +234,7 @@ export const metadata: Metadata = {
     "geo.placename": "Hyderabad",
     "geo.position": "17.385044;78.486671",
     ICBM: "17.385044, 78.486671",
+    "facebook-domain-verification": "5thshl52xz05f4xsnpg7dqblmkddl4",
   },
 };
 

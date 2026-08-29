@@ -8,10 +8,10 @@ import { cn } from "@/lib/utils";
 import { Cta } from "@/components/ui/cta";
 
 const navLinks = [
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "Game Shows", href: "#show-rounds" },
+  { label: "How It Works", href: "/#how-it-works" },
+  { label: "Game Shows", href: "/#show-rounds" },
   { label: "Team Building", href: "/team-building", newTab: true },
-  { label: "Location", href: "#location" },
+  { label: "Location", href: "/#location" },
 ] as const;
 
 export function Navbar() {
@@ -141,7 +141,7 @@ export function Navbar() {
 
           {/* Book Now CTA — hidden on mobile, shown from md up */}
           <Cta
-            href="#tickets"
+            href="/#tickets"
             variant="nav"
             badge
             className="hidden py-1.5 pl-4 text-base md:inline-flex"
@@ -193,7 +193,7 @@ export function Navbar() {
         </Link>
 
         {/* Compact Book Now CTA */}
-        <Cta href="#tickets" variant="nav" badge className="py-1.5 pl-4 text-base">
+        <Cta href="/#tickets" variant="nav" badge className="py-1.5 pl-4 text-base">
           Book Your Show
         </Cta>
       </nav>
@@ -242,7 +242,7 @@ export function Navbar() {
           ))}
 
           <Cta
-            href="#tickets"
+            href="/#tickets"
             badge
             size="lg"
             onClick={() => setMenuOpen(false)}

@@ -203,7 +203,7 @@ export function TeamBuildingSection() {
                 your team.
               </p>
             </div>
-            <Cta href="#tickets" variant="contrast" size="lg">
+            <Cta href="/#tickets" variant="contrast" size="lg">
               Book Your Show
               <ArrowUpRight size={18} />
             </Cta>

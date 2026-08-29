@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { useLenis } from "lenis/react";
 
 import { cn } from "@/lib/utils";
 
@@ -105,6 +106,19 @@ export type CtaProps = CtaLinkProps | CtaButtonProps;
  * Renders a `next/link` when given `href`, otherwise a `<button>`.
  * Pass `badge` to append the circular arrow used by booking CTAs.
  */
+/**
+ * Resolves an href like "#tickets" or "/#tickets" to the in-page element it
+ * targets, or null when it points at another page (or nothing on this one).
+ */
+function inPageHashTarget(href: unknown): HTMLElement | null {
+  if (typeof href !== "string") return null;
+  const hashIdx = href.indexOf("#");
+  if (hashIdx < 0) return null;
+  const path = href.slice(0, hashIdx);
+  if (path && path !== window.location.pathname) return null;
+  return document.getElementById(href.slice(hashIdx + 1));
+}
+
 export function Cta({
   className,
   variant,
@@ -114,6 +128,27 @@ export function Cta({
   ...props
 }: CtaProps) {
   const classes = cn(ctaVariants({ variant, size, badge, className }));
+  // Lenis instance when smooth scrolling is active (desktop); undefined on touch.
+  const lenis = useLenis();
+
+  // In-page hash links ("#tickets") are scrolled manually. The browser and
+  // next/link both treat "navigate to the hash we're already on" as a no-op, so
+  // the second click on "Book Your Show" after scrolling back up did nothing.
+  // Handling it ourselves always scrolls — and lets Lenis drive the motion so
+  // it doesn't fight the native jump.
+  const handleHashClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    (props as CtaLinkProps).onClick?.(e);
+    if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    const target = inPageHashTarget((props as CtaLinkProps).href);
+    if (!target) return;
+    e.preventDefault();
+    window.history.replaceState(window.history.state, "", `#${target.id}`);
+    if (lenis) {
+      lenis.scrollTo(target);
+    } else {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
   const content = (
     <>
       {children}
@@ -123,7 +158,7 @@ export function Cta({
 
   if ("href" in props && props.href !== undefined) {
     return (
-      <Link className={classes} {...(props as CtaLinkProps)}>
+      <Link className={classes} {...(props as CtaLinkProps)} onClick={handleHashClick}>
         {content}
       </Link>
     );

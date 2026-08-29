@@ -3,6 +3,15 @@ import Link from "next/link";
 import { Mail, Phone } from "lucide-react";
 import { FAQSection } from "@/components/FAQSection";
 
+const footerLinks = [
+  { label: "How it works", href: "#how-it-works" },
+  { label: "Mini games", href: "#mini-games" },
+  { label: "Show formats", href: "#show-rounds" },
+  { label: "Who it’s for", href: "#visitors" },
+  { label: "Team building", href: "/team-building" },
+  { label: "Find the venue", href: "#location" },
+] as const;
+
 function FacebookIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -73,10 +82,27 @@ export function Footer() {
             you can&apos;t get anywhere else in the city.
           </p>
 
+          <div className="mt-7 w-full border-t border-white/10 pt-6">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/40">
+              Explore the experience
+            </p>
+            <nav className="mt-4 grid grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-3">
+              {footerLinks.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="text-sm font-medium text-white/68 transition-colors hover:text-white"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+
           {/* Social — Instagram, Facebook, YouTube — under the brand block. */}
           <div className="mt-6 flex items-center gap-4">
             <Link
-              href="https://www.instagram.com/"
+              href="https://www.instagram.com/gameshowchallengerooms/"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
@@ -85,7 +111,7 @@ export function Footer() {
               <InstagramIcon />
             </Link>
             <Link
-              href="https://www.facebook.com"
+              href="https://www.facebook.com/people/Game-Show-Challenge-Rooms/61593501426544/"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Facebook"
@@ -94,7 +120,7 @@ export function Footer() {
               <FacebookIcon />
             </Link>
             <Link
-              href="https://www.youtube.com/"
+              href="https://www.youtube.com/@GameShowChallengeRooms/shorts"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="YouTube"
@@ -145,6 +171,10 @@ export function Footer() {
         </p>
         <span className="text-xs font-normal text-white/50">
           © Game Show Challenge Rooms · Hyderabad · All Rights Reserved
+        </span>
+        {/* Legal entity — required on-site for Meta business verification. */}
+        <span className="text-xs font-normal text-white/50">
+          Game Show Challenge Rooms is owned and operated by Vindi LLP
         </span>
       </div>
     </footer>

@@ -97,7 +97,7 @@ export function WhyHyderabadSection() {
                       flip ? "md:rounded-r-[28px]" : "md:rounded-l-[28px]"
                     }`}
                     style={{
-                      background: `linear-gradient(135deg, ${r.glow}26, transparent 70%)`,
+                      background: `linear-gradient(135deg, color-mix(in srgb, ${r.glow} 15%, transparent), transparent 70%)`,
                     }}
                   >
                     {/* Big ghost numeral */}

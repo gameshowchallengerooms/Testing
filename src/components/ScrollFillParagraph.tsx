@@ -14,7 +14,7 @@ import {
    "buzzer", "stars") so they can pop brightest, but the fill runs across every
    word. */
 const TEXT =
-  "Feel the excitement — live host, team challenges, cheers, and a buzzer in your hand. Bring your friends and compete like the stars you watched on TV.";
+  "Every round is a different kind of gameplay — strategy, trivia, speed tests and more. A live host, a buzzer in your hand, and your team competing for the win.";
 
 /* Brand gradient stops the lit words sweep through, matching the hero accent.
    Each word lands on its own slice so the finished paragraph reads as one

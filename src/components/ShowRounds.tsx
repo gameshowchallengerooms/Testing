@@ -9,7 +9,6 @@ interface Show {
   label: string;
   tag: string;
   value: string;
-  fromPrice: number;
   bestFor: string;
   pitch: string;
   features: string[];
@@ -28,13 +27,12 @@ const shows: Show[] = [
     label: "The Classic",
     tag: "The original.",
     value: "The pure live game show experience.",
-    fromPrice: 750,
-    bestFor: "Everything that makes a game show a game show.",
+    bestFor: "Best for first-timers, families and friendly competition.",
     pitch:
-      "A real host, the studio lights, the buzzers and your crew going head to head — the core live game show, start to finish, with all the rivalry and bragging rights baked in.",
+      "Your group splits into two teams and plays a focused 45-minute show with buzzers, rotating challenges, live scoring and a host guiding every round.",
     features: [
       "Live game show host",
-      "Core buzzer & challenge rounds",
+      "Three hosted game-show rounds",
       "Team-based competition",
       "Scores, fun twists & winner moments",
       "Approx. 45 minutes of play",
@@ -52,10 +50,9 @@ const shows: Show[] = [
     label: "Prime Time",
     tag: "Most popular.",
     value: "Where the game show meets the party.",
-    fromPrice: 899,
-    bestFor: "The sweet spot most groups choose.",
+    bestFor: "Best for birthdays, celebrations and high-energy groups.",
     pitch:
-      "The live game show with a whole layer of house-party energy on top — more group games, livelier moments and a bigger, more social format. The crowd favourite for a reason.",
+      "Everything in the live game show, expanded into a 60-minute celebration with extra group games, bigger crowd moments and more time under the lights.",
     features: [
       "Live host & full game show",
       "House-party style group games",
@@ -186,19 +183,7 @@ function ShowPanel({ show, index }: { show: Show; index: number }) {
             ))}
           </ul>
 
-          <div className="mt-8 flex flex-col gap-5 border-t border-white/10 pt-7 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/42">
-                Weekday price from
-              </p>
-              <p className="mt-1 text-3xl font-black tracking-[-0.04em] text-white">
-                ₹{show.fromPrice.toLocaleString("en-IN")}
-                <span className="ml-1.5 text-sm font-medium tracking-normal text-white/45">
-                  / player
-                </span>
-              </p>
-            </div>
-
+          <div className="mt-8 flex flex-col gap-5 border-t border-white/10 pt-7 sm:flex-row sm:items-end sm:justify-end">
             {/* Tinted with this show's accent, but the shape/motion come from
                 the shared CTA so it matches every other button on the site. */}
             <Cta
@@ -231,13 +216,15 @@ export function ShowRounds() {
           <div>
             <p className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.25em] text-white/45">
               <span className="h-px w-9 bg-gradient-to-r from-gs-show-classic-base via-gs-show-prime-base to-gs-gold-deep" />
-              Choose your experience
+              Pick your show format
             </p>
             <h2 className="mt-5 max-w-4xl text-5xl font-black tracking-[-0.055em] text-white sm:text-6xl lg:text-7xl">
-              Shows Available
+              Two ways to play
             </h2>
             <p className="mt-5 max-w-2xl text-base leading-7 text-white/62 sm:text-lg sm:leading-8">
-              Three different ways to take the stage. Pick your energy, bring your people, and let your live host turn it into a show worth remembering.
+              Both options are private and hosted live. Choose The Classic for the
+              essential 45-minute game-show experience, or Prime Time for a longer,
+              more social 60-minute celebration.
             </p>
           </div>
           <HostBadge />

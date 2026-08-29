@@ -14,37 +14,37 @@ const audiences = [
   {
     icon: Briefcase,
     title: "Team Building",
-    text: "Break the ice and bond your team like never before.",
+    text: "Friendly competition gets coworkers talking, laughing and solving challenges together.",
     accent: "var(--gs-blue)",
   },
   {
     icon: Cake,
     title: "Birthday Parties",
-    text: "Make their big day genuinely unforgettable.",
+    text: "Give the guest of honour a spotlight moment and a celebration everyone joins.",
     accent: "var(--gs-magenta)",
   },
   {
     icon: GraduationCap,
     title: "School & College Trips",
-    text: "A safe, hosted, high-energy outing students love.",
+    text: "A structured, hosted outing that rewards teamwork, confidence and quick thinking.",
     accent: "var(--gs-gold)",
   },
   {
     icon: Trophy,
     title: "Sports & Club Groups",
-    text: "Settle the score off the field, team vs. team.",
+    text: "Turn existing team spirit into a new kind of head-to-head competition.",
     accent: "var(--gs-mint)",
   },
   {
     icon: Heart,
     title: "Friends & Family",
-    text: "The perfect plan when everyone wants to have fun.",
+    text: "An indoor plan where every age group can participate instead of sitting back.",
     accent: "var(--gs-violet)",
   },
   {
     icon: PartyPopper,
     title: "Bachelor(ette) Parties",
-    text: "Cheeky, themed rounds built for the big celebration.",
+    text: "Start the celebration with team rivalry, big reactions and plenty of photo moments.",
     accent: "var(--gs-orange)",
   },
 ];
@@ -67,7 +67,7 @@ export function ForWhomSection() {
             className="max-w-[820px] text-3xl font-medium leading-tight tracking-tight text-white md:text-[52px] md:leading-[1.08]"
             style={{ fontFamily: "var(--font-display)", letterSpacing: "-2px" }}
           >
-            Whether it&apos;s a couple of friends or{" "}
+            Whether it&apos;s four friends or{" "}
             <span
               style={{
                 background: "linear-gradient(90deg, var(--gs-blue), var(--gs-magenta))",
@@ -91,13 +91,15 @@ export function ForWhomSection() {
                   <span
                     className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                     style={{
-                      background: `radial-gradient(120% 60% at 50% 0%, ${a.accent}1f, transparent 60%)`,
+                      background: `radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, ${a.accent} 12%, transparent), transparent 60%)`,
                     }}
                     aria-hidden="true"
                   />
                   <span
                     className="relative flex h-12 w-12 items-center justify-center rounded-2xl text-white"
-                    style={{ background: `${a.accent}26` }}
+                    style={{
+                      background: `color-mix(in srgb, ${a.accent} 15%, transparent)`,
+                    }}
                   >
                     <Icon size={22} style={{ color: a.accent }} />
                   </span>

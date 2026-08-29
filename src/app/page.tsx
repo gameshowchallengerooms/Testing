@@ -1,25 +1,13 @@
 import { Navbar } from "@/components/Navbar";
-import { ScrollZoomIntro } from "@/components/ScrollZoomIntro";
-import { HeroSection } from "@/components/HeroSection";
-import { ShowRounds } from "@/components/ShowRounds";
-import { PricingSection } from "@/components/PricingSection";
-import { StillHaveQuestions } from "@/components/FAQSection";
-import { LocationSection } from "@/components/LocationSection";
+import { GreatBigStyleHome } from "@/components/GreatBigStyleHome";
 import { Footer } from "@/components/Footer";
-import { WhatsAppChat } from "@/components/WhatsAppChat";
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen bg-black">
+    <main className="min-h-screen bg-[#f5f6fa] text-[#021d41]">
       <Navbar />
-      <HeroSection />
-      <ScrollZoomIntro />
-      <ShowRounds />
-      <PricingSection />
-      <StillHaveQuestions />
-      <LocationSection />
+      <GreatBigStyleHome />
       <Footer />
-      <WhatsAppChat />
     </main>
   );
 }

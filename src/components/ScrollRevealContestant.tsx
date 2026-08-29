@@ -12,12 +12,12 @@ import {
 import { cn } from "@/lib/utils";
 
 /* The headline, ONE WORD per line, stacked:
-     Today,
+     Now,
      you're
-     our
-     celebrity.
+     the
+     contestant!
    Each word reveals in turn, line by line, as the pinned hero is scrolled. */
-const LINES = [["Today,"], ["you're"], ["our"], ["celebrity."]];
+const LINES = [["Now,"], ["you're"], ["the"], ["contestant!"]];
 const WORDS = LINES.flat();
 
 /**
@@ -84,7 +84,7 @@ function RevealWord({
 }
 
 /**
- * The big white "Today, you're / our celebrity." headline that reveals
+ * The big white "Now, you're / the contestant!" headline that reveals
  * word-by-word as the user scrolls through the pinned hero.
  *
  * `scrollRef` is the tall outer wrapper the hero is pinned (sticky) inside of.
@@ -145,13 +145,13 @@ export function ScrollRevealContestant({
         )}
         style={fontStyle}
       >
-        Today,
+        Now,
         <br />
         you&apos;re
         <br />
-        our
+        the
         <br />
-        celebrity.
+        contestant!
       </span>
     );
   }

@@ -16,15 +16,19 @@ import { Cta } from "@/components/ui/cta";
 const faqItems = [
   {
     q: "What is Game Show Challenge Rooms?",
-    a: "Game Show Challenge Rooms is one of the only live game show experiences in Hyderabad for everyone: friends, family, and coworkers! Groups split into teams, pick their own team names and colours, play three different game shows, and earn Challenge Points. Winners join the Champions Wall of Fame. The experience needs a minimum of 4 people and accommodates up to 15 guests per show.",
+    a: "It is a private, live-hosted game show experience in Hyderabad for groups of 4–15 people. Your group becomes the contestants, splits into two teams and competes under studio lights using real buzzers.",
   },
   {
     q: "How does this work?",
-    a: "Upon arrival, groups divide into two teams, choose names, and receive game show name tags before entering the arena to compete. Three game show rounds award Challenge Points, with the highest-scoring team becoming champion and earning recognition on the lobby wall.",
+    a: "On arrival, you divide into two teams, choose team names and colours, and get a quick briefing. A live host then leads three different game-show rounds. Every round earns Challenge Points, and the highest-scoring team becomes champion.",
+  },
+  {
+    q: "How long does a show take?",
+    a: "The Classic includes approximately 45 minutes of gameplay, while Prime Time runs for approximately 60 minutes. Please arrive 15 minutes before your booked slot for check-in and team setup.",
   },
   {
     q: "What is the price?",
-    a: "Pricing is per person and depends on your group size and the day. Weekdays (Mon-Thu) range from ₹900 per person for a group of 4 down to ₹750 per person for groups of 6 or more. Weekends and public holidays range from ₹1000 per person for 4 down to ₹850 per person for 6 or more. All prices include applicable taxes.",
+    a: "Pricing is per person and depends on your group size and the day you pick. Message us on WhatsApp or call us with your group size and preferred date and we'll share the exact price for your show.",
   },
   {
     q: "Do I need to book in advance?",
@@ -33,6 +37,10 @@ const faqItems = [
   {
     q: "Is there an age limit?",
     a: "We recommend ages 10 and up get the most out of the experience, but we're flexible — especially if there are younger players with older family members. Players 15 and under require adult accompaniment.",
+  },
+  {
+    q: "Do we need to prepare or bring anything?",
+    a: "No preparation or special game-show knowledge is needed. Come in comfortable clothes with your group; your host explains the rules and keeps the experience moving from start to finish.",
   },
 ];
 
@@ -188,10 +196,10 @@ function FAQContent({
 }
 
 /** "Still have questions?" CTA — extracted from the FAQ so it can sit on its own
- *  (rendered right below the Pricing section). */
+ *  (carries the #tickets anchor every "Book Your Show" button links to). */
 export function StillHaveQuestions() {
   return (
-    <section className="w-full bg-black px-5 py-10 md:px-10">
+    <section id="tickets" className="w-full bg-black px-5 py-10 md:px-10">
       <div className="mx-auto w-full" style={{ maxWidth: 1400 }}>
         <Reveal delay={120}>
           {/* Anthracite panel with a single precise accent edge — BMW-style
@@ -207,10 +215,11 @@ export function StillHaveQuestions() {
                 className="text-2xl font-semibold tracking-tight text-white md:text-3xl"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Still have questions?
+                Ready to plan your show?
               </h3>
               <p className="mt-1.5 text-sm text-white/55 md:text-base">
-                Grab your crew, pick a slot, and let&apos;s get you in the game show.
+                Send your group size and preferred date. We&apos;ll confirm the best
+                format, available time and exact price.
               </p>
             </div>
 

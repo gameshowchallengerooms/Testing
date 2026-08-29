@@ -17,7 +17,7 @@ import { useLowPowerMode } from "@/hooks/useLowPowerMode";
 
 // ─── Headline word reveal ────────────────────────────────────────────────────
 
-const WORDS = ["Today,", "you're", "our", "celebrity."];
+const WORDS = ["Now,", "you're", "the", "contestant!"];
 
 function RevealWord({
   word,
@@ -62,8 +62,8 @@ function RevealWord({
 // ─── Fill paragraph ──────────────────────────────────────────────────────────
 
 const PARA_TEXT =
-  "Feel the excitement — live host, team challenges, cheers, and a buzzer in your hand. Bring your friends and compete like the stars you watched on TV.";
-const EMPHASIS = new Set(["host,", "challenges,", "buzzer", "stars"]);
+  "A private, live-hosted game show for 4–15 players. Split into two teams, play three different rounds, earn points, and compete for the championship.";
+const EMPHASIS = new Set(["private,", "4–15", "three", "championship."]);
 /* These stops are interpolated in JS by `hexToRgb` below, so they MUST stay
    literal hex — a `var(--gs-*)` reference can't be parsed with parseInt and
    would render the whole paragraph grey. They mirror the --gs-sky →
@@ -243,8 +243,7 @@ function GoldPill({ progress }: { progress: MotionValue<number> }) {
       <span className="relative z-1 inline-flex items-center gap-2.5">
         <Star size={15} className="shrink-0 fill-gs-gold text-gs-gold" />
         <span className="text-sm font-semibold text-white md:text-base">
-          And we&apos;ll make the{" "}
-          <span className="text-gs-gold">real show happen for you.</span>
+          <span className="text-gs-gold">4–15 players</span> · 45–60 minutes · hosted live
         </span>
       </span>
     </motion.div>
@@ -265,7 +264,7 @@ const PAPARAZZI = [
 // phases: while the headline reveals, the crew rigs the stage (camera op with
 // a REC lamp, lighting tech sweeping a real beam); while the paragraph fills,
 // the show goes live (director cues you in, the host asks the first question);
-// and once the gold pill seals it, the paparazzi arrive — you're the celebrity.
+// and once the gold pill seals it, the cameras flash — you're the contestant.
 const CREW = {
   camera: { side: "left", src: "/images/show-crew/camera-color.webp" },
   lighting: { side: "right", src: "/images/show-crew/lighting-color.webp" },
@@ -314,7 +313,7 @@ function CrewCharacter({
 }
 
 /**
- * A short celebrity-photo moment: the photographers lean in from opposite
+ * A short camera-flash moment: the photographers lean in from opposite
  * wings, fire their shutters a beat apart, then clear the stage. The cutouts
  * stay behind the copy so the hero remains readable, including on phones.
  */
@@ -393,7 +392,7 @@ function ShowCrewStory({
         </div>
       )}
 
-      {/* Act 3 — the paparazzi finale: you're the celebrity. */}
+      {/* Act 3 — the cameras flash: you're the contestant. */}
       <div
         className={cn(
           "paparazzi-scene absolute inset-0",
@@ -582,13 +581,12 @@ export function HeroSection() {
 
           {/* ── Top row: setup copy ── */}
           <p className="hero-setup hero-enter hero-enter-1 max-w-180 shrink-0 text-sm font-medium leading-relaxed text-white/80 md:text-lg">
-            For years, you watched celebrities play exciting game shows on TV.{" "}
-            Now,{" "}
+            You&apos;ve watched game shows on TV for years. Now{" "}
             <span className="font-semibold text-white">
               Game Show Challenge Rooms
             </span>{" "}
-            brings that experience to you — with live hosts, buzzers, big
-            challenges, and your whole crew in the game.
+            is a private experience where your group becomes the contestants—not
+            the audience.
           </p>
 
           {/* ── Middle row: big headline + fill paragraph, centered ── */}
@@ -646,8 +644,7 @@ export function HeroSection() {
               <div className="inline-flex max-w-[min(92vw,30rem)] items-center gap-2.5 rounded-full border border-gs-gold/60 bg-gs-gold/10 px-5 py-2.5 backdrop-blur-md">
                 <Star size={15} className="shrink-0 fill-gs-gold text-gs-gold" />
                 <span className="text-sm font-semibold text-white">
-                  And we&apos;ll make the{" "}
-                  <span className="text-gs-gold">real show happen for you.</span>
+                  <span className="text-gs-gold">4–15 players</span> · 45–60 minutes · hosted live
                 </span>
               </div>
             ) : (

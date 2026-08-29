@@ -60,10 +60,10 @@ const featured: Testimonial = {
 };
 
 const stats = [
-  { end: 4.9, decimals: 1, suffix: "", label: "Average rating" },
-  { end: 10, decimals: 0, suffix: "K+", label: "Players hosted" },
-  { end: 1200, decimals: 0, suffix: "+", label: "Champions crowned" },
-  { end: 3, decimals: 0, suffix: "", label: "Live game shows" },
+  { end: 15, decimals: 0, suffix: "", label: "Maximum players" },
+  { end: 60, decimals: 0, suffix: " min", label: "Prime Time show" },
+  { end: 3, decimals: 0, suffix: "", label: "Hosted rounds" },
+  { end: 2, decimals: 0, suffix: "", label: "Competing teams" },
 ];
 
 function Stars({ rating, className }: { rating: number; className?: string }) {
@@ -101,7 +101,7 @@ export function TestimonialsSection() {
           <div className="mx-auto mb-4 flex items-center justify-center gap-4">
             <span className="block h-[2px] w-[40px] bg-white/40" />
             <span className="font-sans text-sm font-semibold uppercase tracking-[0.25em] text-white/70">
-              Wall of Praise
+              Guest spotlight
             </span>
             <span className="block h-[2px] w-[40px] bg-white/40" />
           </div>
@@ -110,7 +110,7 @@ export function TestimonialsSection() {
           className="mx-auto max-w-[820px] text-center text-3xl font-medium leading-tight tracking-tight text-white md:text-[56px] md:leading-[1.05]"
           style={{ fontFamily: "var(--font-display)", letterSpacing: "-2px" }}
         >
-          Loved by thousands of{" "}
+          The kind of group outing people{" "}
           <span
             style={{
               background: "linear-gradient(90deg, var(--gs-blue), var(--gs-magenta))",
@@ -119,7 +119,7 @@ export function TestimonialsSection() {
               WebkitTextFillColor: "transparent",
             }}
           >
-            champions
+            keep talking about
           </span>
         </h2>
 

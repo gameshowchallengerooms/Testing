@@ -254,6 +254,7 @@ const localBusiness = {
   "@type": "EntertainmentBusiness",
   "@id": `${SITE_URL}/#business`,
   name: "Game Show Challenge Rooms",
+  legalName: "Vindi LLP",
   alternateName: "Game Show Challenge Rooms Hyderabad",
   description:
     "Hyderabad's first live game show experience — a real host, studio lights and buzzers, for groups of 4–15 players. Great for team building, birthdays, bachelorette parties, corporate outings and family fun.",
@@ -309,7 +310,6 @@ const localBusiness = {
     "weekend activities in Hyderabad",
     "indoor entertainment",
   ],
-  priceRange: "₹500–₹1200 per person",
   currenciesAccepted: "INR",
   paymentAccepted: "Cash, UPI, Credit Card, Debit Card",
   contactPoint: {
@@ -335,8 +335,9 @@ const localBusiness = {
     closes: "22:00",
   },
   sameAs: [
-    "https://www.instagram.com/",
-    "https://www.facebook.com/",
+    "https://www.instagram.com/gameshowchallengerooms/",
+    "https://www.facebook.com/people/Game-Show-Challenge-Rooms/61593501426544/",
+    "https://www.youtube.com/@GameShowChallengeRooms/shorts",
     "https://maps.app.goo.gl/MZfvdmxwBTa3NPj29",
   ],
   aggregateRating: {
@@ -348,15 +349,6 @@ const localBusiness = {
     "@type": "Offer",
     name: f.name,
     description: f.description,
-    priceCurrency: "INR",
-    price: "750",
-    priceSpecification: {
-      "@type": "PriceSpecification",
-      minPrice: "500",
-      maxPrice: "1200",
-      priceCurrency: "INR",
-      description: "Per person; varies by group size and day of week.",
-    },
     availability: "https://schema.org/InStock",
     areaServed: "Hyderabad",
   })),
@@ -384,15 +376,19 @@ const faqPage = {
   mainEntity: [
     {
       q: "What is Game Show Challenge Rooms?",
-      a: "Game Show Challenge Rooms is one of the only live game show experiences in Hyderabad for everyone: friends, family, and coworkers. Groups split into teams, pick their own team names and colours, play three different game shows, and earn Challenge Points. Winners join the Champions Wall of Fame. The experience needs a minimum of 4 people and accommodates up to 15 guests per show.",
+      a: "It is a private, live-hosted game show experience in Hyderabad for groups of 4–15 people. Your group becomes the contestants, splits into two teams and competes under studio lights using real buzzers.",
     },
     {
       q: "How does this work?",
-      a: "Upon arrival, groups divide into two teams, choose names, and receive game show name tags before entering the arena to compete. Three game show rounds award Challenge Points, with the highest-scoring team becoming champion and earning recognition on the lobby wall.",
+      a: "On arrival, you divide into two teams, choose team names and colours, and get a quick briefing. A live host then leads three different game-show rounds. Every round earns Challenge Points, and the highest-scoring team becomes champion.",
+    },
+    {
+      q: "How long does a show take?",
+      a: "The Classic includes approximately 45 minutes of gameplay, while Prime Time runs for approximately 60 minutes. Please arrive 15 minutes before your booked slot for check-in and team setup.",
     },
     {
       q: "What is the price?",
-      a: "Pricing is per person and depends on your group size and the day. Weekdays (Mon-Thu) range from ₹900 per person for a group of 4 down to ₹750 per person for groups of 6 or more. Weekends and public holidays range from ₹1000 per person for 4 down to ₹850 per person for 6 or more. All prices include applicable taxes.",
+      a: "Pricing is per person and depends on your group size and the day you pick. Message us on WhatsApp or call us with your group size and preferred date and we'll share the exact price for your show.",
     },
     {
       q: "Do I need to book in advance?",
@@ -401,6 +397,10 @@ const faqPage = {
     {
       q: "Is there an age limit?",
       a: "We recommend ages 10 and up get the most out of the experience, but we're flexible — especially if there are younger players with older family members. Players 15 and under require adult accompaniment.",
+    },
+    {
+      q: "Do we need to prepare or bring anything?",
+      a: "No preparation or special game-show knowledge is needed. Come in comfortable clothes with your group; your host explains the rules and keeps the experience moving from start to finish.",
     },
   ].map((item) => ({
     "@type": "Question",

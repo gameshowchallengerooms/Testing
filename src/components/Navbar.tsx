@@ -8,9 +8,9 @@ import { cn } from "@/lib/utils";
 import { Cta } from "@/components/ui/cta";
 
 const navLinks = [
+  { label: "How It Works", href: "#how-it-works" },
   { label: "Game Shows", href: "#show-rounds" },
   { label: "Team Building", href: "/team-building", newTab: true },
-  { label: "Pricing", href: "#tickets" },
   { label: "Location", href: "#location" },
 ] as const;
 

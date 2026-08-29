@@ -22,7 +22,7 @@ export const PHONE_NUMBER = "+919000187731";
 export const PHONE_DISPLAY = "+91 90001 87731";
 
 const PREFILLED_MESSAGE =
-  "Hi! I'd like to know more about Game Show Challenge Rooms and book a show.";
+  "Hi! I'd like to book a Game Show Challenge Rooms experience. My group size is __ and my preferred date is __.";
 
 /** Pre-filled WhatsApp chat link, reusable wherever we offer "Chat with us". */
 export const whatsappHref = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(

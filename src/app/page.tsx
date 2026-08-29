@@ -1,8 +1,8 @@
 import { Navbar } from "@/components/Navbar";
 import { ScrollZoomIntro } from "@/components/ScrollZoomIntro";
 import { HeroSection } from "@/components/HeroSection";
+import { HowItWorksSection } from "@/components/HowItWorksSection";
 import { ShowRounds } from "@/components/ShowRounds";
-import { PricingSection } from "@/components/PricingSection";
 import { StillHaveQuestions } from "@/components/FAQSection";
 import { LocationSection } from "@/components/LocationSection";
 import { Footer } from "@/components/Footer";
@@ -14,8 +14,8 @@ export default function Home() {
       <Navbar />
       <HeroSection />
       <ScrollZoomIntro />
+      <HowItWorksSection />
       <ShowRounds />
-      <PricingSection />
       <StillHaveQuestions />
       <LocationSection />
       <Footer />

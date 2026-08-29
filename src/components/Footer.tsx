@@ -76,7 +76,7 @@ export function Footer() {
           {/* Social — Instagram, Facebook, YouTube — under the brand block. */}
           <div className="mt-6 flex items-center gap-4">
             <Link
-              href="https://www.instagram.com/"
+              href="https://www.instagram.com/gameshowchallengerooms/"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
@@ -85,7 +85,7 @@ export function Footer() {
               <InstagramIcon />
             </Link>
             <Link
-              href="https://www.facebook.com"
+              href="https://www.facebook.com/people/Game-Show-Challenge-Rooms/61593501426544/"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Facebook"
@@ -94,7 +94,7 @@ export function Footer() {
               <FacebookIcon />
             </Link>
             <Link
-              href="https://www.youtube.com/"
+              href="https://www.youtube.com/@GameShowChallengeRooms/shorts"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="YouTube"
@@ -145,6 +145,10 @@ export function Footer() {
         </p>
         <span className="text-xs font-normal text-white/50">
           © Game Show Challenge Rooms · Hyderabad · All Rights Reserved
+        </span>
+        {/* Legal entity — required on-site for Meta business verification. */}
+        <span className="text-xs font-normal text-white/50">
+          Game Show Challenge Rooms is owned and operated by Vindi LLP
         </span>
       </div>
     </footer>

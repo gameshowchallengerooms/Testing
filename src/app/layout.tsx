@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -431,6 +432,7 @@ export default function RootLayout({
         />
         <SmoothScroll>{children}</SmoothScroll>
       </body>
+      <GoogleAnalytics gaId="G-WLT7B50QM5" />
     </html>
   );
 }

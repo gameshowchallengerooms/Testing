@@ -21,13 +21,6 @@ const HEADLINE_FONT_SIZE = "clamp(40px, min(12.5vw, 10.5dvh), 156px)";
 
 // ─── Stage characters (one CSS-driven moment, compositor-only) ───────────────
 
-const CREW = {
-  camera: { side: "left", src: "/images/show-crew/camera-color.webp" },
-  lighting: { side: "right", src: "/images/show-crew/lighting-color.webp" },
-  director: { side: "left", src: "/images/show-crew/director-color.webp" },
-  host: { side: "right", src: "/images/show-crew/host-color.webp" },
-} as const;
-
 const PAPARAZZI = [
   { side: "left", src: "/images/hero-paparazzi/paparazzi-left.png" },
   { side: "right", src: "/images/hero-paparazzi/paparazzi-right.png" },
@@ -60,30 +53,23 @@ function PaparazziCharacter({
   );
 }
 
-/** The photographers' flash moment. Weak devices get them as a still. */
+/** The photographers' flash moment. Weak devices get them as a still; phones
+ *  (below md) don't get the characters at all, so the headline owns the frame. */
 function PaparazziScene({ still }: { still: boolean }) {
   return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-4 overflow-hidden">
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 z-4 hidden overflow-hidden md:block"
+    >
       <div
         className={cn(
-          "paparazzi-scene paparazzi-scene-active mobile-story-active absolute inset-0",
+          "paparazzi-scene paparazzi-scene-active absolute inset-0",
           still && "paparazzi-scene-still",
         )}
       >
         {PAPARAZZI.map(({ side, src }) => (
           <PaparazziCharacter key={side} side={side} src={src} />
         ))}
-        <div className="mobile-anchor">
-          <Image
-            src={CREW.host.src}
-            alt=""
-            fill
-            sizes="23vw"
-            className="select-none object-contain"
-            draggable={false}
-          />
-          <span className="mobile-anchor-bubble">Your first question is&hellip;</span>
-        </div>
       </div>
     </div>
   );

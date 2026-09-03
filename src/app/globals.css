@@ -566,82 +566,8 @@
   display: none;
 }
 
-.mobile-anchor {
-  display: none;
-}
-
-@media (max-width: 767px) {
-  /* Both wings stay in play on phones — the photographers flank the headline
-     from either edge, just smaller and higher than on desktop. The desktop
-     entrance/exit loops already animate to/from the correct wing, so only the
-     resting geometry changes here. */
-  .paparazzi {
-    top: 31dvh;
-    bottom: auto;
-    width: clamp(7rem, 28vw, 9rem);
-  }
-
-  .paparazzi-left {
-    left: -1vw;
-    right: auto;
-    transform-origin: left center;
-  }
-
-  .paparazzi-right {
-    display: none;
-  }
-
-  .camera-flash {
-    width: clamp(3.75rem, 16vw, 5.5rem);
-  }
-
-  .mobile-anchor {
-    position: absolute;
-    top: 31dvh;
-    right: -1vw;
-    display: block;
-    width: clamp(5.5rem, 23vw, 7rem);
-    aspect-ratio: 4 / 5;
-    opacity: 0;
-    transform: translate3d(112%, 5%, 0) rotate(6deg) scale(0.94);
-    transform-origin: right center;
-    will-change: transform, opacity;
-  }
-
-  .paparazzi-scene-active .mobile-anchor {
-    animation: paparazzi-loop-right var(--paparazzi-cycle)
-      cubic-bezier(0.22, 1, 0.36, 1) 180ms infinite both;
-  }
-
-  /* On phones this pair carries the whole scroll story; the desktop-only crew
-     acts are hidden below. */
-  .mobile-story-active .paparazzi-left {
-    animation: paparazzi-loop-left var(--paparazzi-cycle)
-      cubic-bezier(0.22, 1, 0.36, 1) infinite both;
-  }
-
-  .mobile-story-active .mobile-anchor {
-    animation: paparazzi-loop-right var(--paparazzi-cycle)
-      cubic-bezier(0.22, 1, 0.36, 1) 180ms infinite both;
-  }
-
-  .mobile-anchor-bubble {
-    position: absolute;
-    top: -2.7rem;
-    right: 0;
-    width: max-content;
-    max-width: 9.5rem;
-    border-radius: 0.8rem 0.8rem 0.2rem 0.8rem;
-    background: rgba(255, 255, 255, 0.96);
-    padding: 0.38rem 0.58rem;
-    color: #1c1030;
-    font-size: 0.68rem;
-    font-weight: 750;
-    line-height: 1.15;
-    text-align: center;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
-  }
-}
+/* Phones (below md) don't render the characters at all — see HeroSection's
+   PaparazziScene — so no mobile geometry is needed here. */
 
 @media (prefers-reduced-motion: reduce) {
   .paparazzi {
@@ -650,12 +576,6 @@
 
   .paparazzi-scene-active .paparazzi {
     opacity: 0.58;
-    animation: none;
-    transform: none;
-  }
-
-  .paparazzi-scene-still .mobile-anchor {
-    opacity: 0.9;
     animation: none;
     transform: none;
   }

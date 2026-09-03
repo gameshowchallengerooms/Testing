@@ -8,16 +8,16 @@ import { Cta } from "@/components/ui/cta";
 
 // ─── Copy ────────────────────────────────────────────────────────────────────
 
-const WORDS = ["Hyderabad's", "unique", "game show", "experience."];
+const WORDS = ["Hyderabad's", "unique game", "experience."];
 
 const PARA_TEXT =
   "A live, hosted challenge arena for your whole gang. Split into two teams, take on three rounds of trivia, puzzle, speed and physical challenges, and fight for the championship.";
 const EMPHASIS = new Set(["live,", "three", "championship."]);
 
-// Headline size. Four lines must fit inside one viewport together with the
+// Headline size. The lines must fit inside one viewport together with the
 // setup copy, paragraph, pill and buttons, so each line gets ~10.5dvh; the vw
 // term caps it on narrow phones so the widest lines ("HYDERABAD'S",
-// "EXPERIENCE.") fit.
+// "UNIQUE GAME", "EXPERIENCE.") fit.
 const HEADLINE_FONT_SIZE = "clamp(38px, min(11.4vw, 10.5dvh), 156px)";
 
 // ─── Stage characters (one CSS-driven moment, compositor-only) ───────────────

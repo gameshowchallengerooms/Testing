@@ -9,7 +9,7 @@ import { Cta } from "@/components/ui/cta";
 
 const navLinks = [
   { label: "How It Works", href: "/#how-it-works" },
-  { label: "Game Shows", href: "/#show-rounds" },
+  { label: "Formats", href: "/#show-rounds" },
   { label: "Team Building", href: "/team-building", newTab: true },
   { label: "Location", href: "/#location" },
 ] as const;
@@ -146,7 +146,7 @@ export function Navbar() {
             badge
             className="hidden py-1.5 pl-4 text-base md:inline-flex"
           >
-            Book Your Show
+            Book Your Slot
           </Cta>
 
           {/* Hamburger — mobile only */}
@@ -194,7 +194,7 @@ export function Navbar() {
 
         {/* Compact Book Now CTA */}
         <Cta href="/#tickets" variant="nav" badge className="py-1.5 pl-4 text-base">
-          Book Your Show
+          Book Your Slot
         </Cta>
       </nav>
 
@@ -248,7 +248,7 @@ export function Navbar() {
             onClick={() => setMenuOpen(false)}
             className="mt-4 text-lg"
           >
-            Book Your Show
+            Book Your Slot
           </Cta>
         </nav>
       </div>

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { cva, type VariantProps } from "class-variance-authority";
-import { useLenis } from "lenis/react";
 
 import { cn } from "@/lib/utils";
 
@@ -128,14 +127,10 @@ export function Cta({
   ...props
 }: CtaProps) {
   const classes = cn(ctaVariants({ variant, size, badge, className }));
-  // Lenis instance when smooth scrolling is active (desktop); undefined on touch.
-  const lenis = useLenis();
-
   // In-page hash links ("#tickets") are scrolled manually. The browser and
   // next/link both treat "navigate to the hash we're already on" as a no-op, so
   // the second click on "Book Your Show" after scrolling back up did nothing.
-  // Handling it ourselves always scrolls — and lets Lenis drive the motion so
-  // it doesn't fight the native jump.
+  // Handling it ourselves always scrolls.
   const handleHashClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     (props as CtaLinkProps).onClick?.(e);
     if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
@@ -143,11 +138,7 @@ export function Cta({
     if (!target) return;
     e.preventDefault();
     window.history.replaceState(window.history.state, "", `#${target.id}`);
-    if (lenis) {
-      lenis.scrollTo(target);
-    } else {
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
   };
   const content = (
     <>

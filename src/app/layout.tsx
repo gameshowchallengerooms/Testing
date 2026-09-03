@@ -3,7 +3,6 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
-import { SmoothScroll } from "@/components/SmoothScroll";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -40,128 +39,60 @@ const interTight = localFont({
 const SITE_URL = "https://gameshowchallengerooms.com";
 
 /**
- * Keyword strategy (research-backed, June 2026):
- *  - Brand + category: "game show challenge rooms", "live game show experience"
- *  - Primary intent: "things to do in Hyderabad", "fun activities", "group activities"
- *  - Competing categories we win against: escape rooms, mystery rooms, trivia/quiz nights
- *  - Audience segments (each is a real page section / show format on this site)
- *  - Hyper-local: Gachibowli, HITEC City, Madhapur, Jubilee Hills, Banjara Hills, Kondapur, Secunderabad
+ * Keyword strategy (Sept 2026, research-backed):
+ *  Nobody searches "live game show". Demand sits in activity / experience
+ *  language — "things to do", "fun activities", "indoor activities", "group
+ *  activities", "team outing", "unique experiences" — plus the venue's own
+ *  neighbourhood (Gachibowli / HITEC City corridor). Keep this list in that
+ *  vocabulary; the game-show format is the differentiator, not the category.
  */
 const KEYWORDS = [
   // Brand
   "game show challenge rooms",
   "game show challenge rooms hyderabad",
   "challenge rooms hyderabad",
-  // Category
-  "live game show experience",
-  "live game show hyderabad",
-  "game show hyderabad",
-  "real life game show",
-  "interactive game show",
-  "hosted game show",
-  "tv game show experience",
-  "game show studio hyderabad",
-  // Intent / discovery
-  "best things to do in hyderabad",
-  "things to do in hyderabad",
-  "things to do in hyderabad with friends",
+  // Category — how buyers actually search
   "fun things to do in hyderabad",
+  "things to do in hyderabad with friends",
+  "best things to do in hyderabad",
   "fun activities in hyderabad",
-  "best entertainment in hyderabad",
-  "best places to visit in hyderabad",
   "indoor activities hyderabad",
   "indoor games hyderabad",
-  "weekend activities hyderabad",
-  "weekend entertainment hyderabad",
-  "weekend plans hyderabad",
-  "unique experiences hyderabad",
   "group activities hyderabad",
-  "group games hyderabad",
-  "activities for groups hyderabad",
-  "entertainment in hyderabad",
-  "places to hang out in hyderabad",
+  "unique experiences hyderabad",
+  "unique things to do in hyderabad",
+  "weekend activities hyderabad",
+  "immersive experience hyderabad",
+  "interactive gaming experience hyderabad",
   "fun places in hyderabad",
   "date ideas hyderabad",
-  "things to do near me hyderabad",
-  // Competing categories
+  // Competing categories we win against
+  "escape room alternative hyderabad",
   "escape room hyderabad",
-  "escape room alternative",
-  "mystery room hyderabad",
-  "trivia night hyderabad",
-  "quiz night hyderabad",
   "gaming zone hyderabad",
+  "trivia night hyderabad",
   // Corporate / team building
-  "team building hyderabad",
-  "corporate team building hyderabad",
-  "corporate team building activities",
   "team building activities hyderabad",
-  "team building games hyderabad",
-  "corporate events hyderabad",
-  "office outing hyderabad",
-  "corporate offsite hyderabad",
-  "employee engagement activities hyderabad",
+  "corporate team building hyderabad",
   "team outing hyderabad",
-  "startup team building",
+  "office outing hyderabad",
+  "employee engagement activities hyderabad",
   // Celebrations
-  "birthday party hyderabad",
-  "birthday party games hyderabad",
+  "birthday party ideas hyderabad",
   "birthday party venue hyderabad",
-  "kids birthday party hyderabad",
-  "adult birthday party ideas hyderabad",
   "bachelorette party hyderabad",
   "bachelor party hyderabad",
   "kitty party games hyderabad",
-  "anniversary celebration hyderabad",
-  "farewell party ideas hyderabad",
-  "festive party hyderabad",
-  "diwali party games",
-  // Audiences / formats
-  "kids game show",
-  "family activities hyderabad",
-  "school trip activities hyderabad",
-  "college group activities hyderabad",
-  "virtual game show",
-  "online game show",
-  "game show on zoom",
-  "game show roadshow",
-  // Hyper-local — Gachibowli & the IT/office corridor (where the venue is)
+  // Hyper-local
   "things to do in gachibowli",
-  "things to do in gachibowli with friends",
   "fun activities gachibowli",
-  "entertainment gachibowli",
-  "game show gachibowli",
-  "team building gachibowli",
-  "corporate activities gachibowli",
-  "things to do near my office hyderabad",
-  "office team outing gachibowli",
-  "things to do in nanakramguda",
-  "activities financial district hyderabad",
-  "things to do in manikonda",
-  "things to do in raidurg",
-  "fun things to do hitec city",
   "things to do in hitec city",
   "activities in madhapur",
-  "things to do in kokapet",
-  "things to do in narsingi",
-  "things to do in tellapur",
-  "entertainment jubilee hills",
-  "fun things to do banjara hills",
+  "things to do in nanakramguda",
+  "activities financial district hyderabad",
   "things to do kondapur",
-  "activities secunderabad",
-  // Nearby places & wider region (not just central Hyderabad)
-  "things to do near hyderabad",
-  "places to visit near hyderabad",
-  "weekend getaway near hyderabad",
-  "things to do in cyberabad",
-  "things to do in secunderabad",
-  "things to do in shamshabad",
-  "things to do in patancheru",
-  "things to do in miyapur",
-  "things to do in kukatpally",
-  "things to do in lb nagar",
-  "things to do in uppal",
-  "entertainment near me",
-  "game show near me",
+  "entertainment jubilee hills",
+  "things to do near me hyderabad",
   "fun activities near me",
 ];
 
@@ -169,11 +100,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default:
-      "Game Show Challenge Rooms Hyderabad | Live Game Show Experience for Groups",
+      "Game Show Challenge Rooms | Fun Indoor Group Activity in Hyderabad",
     template: "%s | Game Show Challenge Rooms Hyderabad",
   },
   description:
-    "Step off the couch and onto the show. Game Show Challenge Rooms is Hyderabad's #1 live game show experience — a real host, studio lights and buzzers, for groups of 4–15. Perfect for team building, birthdays, bachelorette parties, kids and corporate outings. Book your show today.",
+    "Looking for fun things to do in Hyderabad with friends, family or your team? Game Show Challenge Rooms is an immersive live challenge experience in Hyderabad — two teams, three rounds of trivia, puzzle, speed and physical challenges, and a host who runs the show. Book on WhatsApp.",
   keywords: KEYWORDS,
   authors: [{ name: "Game Show Challenge Rooms" }],
   creator: "Game Show Challenge Rooms",
@@ -188,23 +119,23 @@ export const metadata: Metadata = {
     locale: "en_IN",
     url: SITE_URL,
     siteName: "Game Show Challenge Rooms",
-    title: "Game Show Challenge Rooms Hyderabad | You're On The Show",
+    title: "Game Show Challenge Rooms | Hyderabad's Most Fun Group Activity",
     description:
-      "All your life you watched it on TV. Now you can be in it. Hyderabad's first live game show experience — host, lights, buzzers and your crew. Great for team building, birthdays and corporate outings. Book your show.",
+      "An immersive live challenge experience in Hyderabad. Trivia, puzzles, speed rounds and physical challenges, with a host keeping the energy up. Perfect for friends, birthdays and team outings.",
     images: [
       {
         url: "/seo/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Game Show Challenge Rooms — Hyderabad's live game show experience",
+        alt: "Game Show Challenge Rooms — Hyderabad's most fun indoor group activity",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Game Show Challenge Rooms Hyderabad | You're On The Show",
+    title: "Game Show Challenge Rooms | Hyderabad's Most Fun Group Activity",
     description:
-      "Hyderabad's first live game show experience — host, lights, buzzers and your crew. Groups of 4–15. Book your show.",
+      "An immersive live challenge experience in Hyderabad. Two teams, three rounds, one champion. Book on WhatsApp.",
     images: ["/seo/og-image.png"],
   },
   robots: {
@@ -241,14 +172,14 @@ export const metadata: Metadata = {
 /** The show formats sold on the page — each becomes a structured Offer so Google
  *  understands the breadth of what we run (corporate, kids, bachelorette, virtual…). */
 const SHOW_FORMATS: { name: string; description: string }[] = [
-  { name: "Classic Showdowns", description: "Buzzer-smashing trivia and brain-teasers where the smartest, fastest team is crowned champion." },
-  { name: "Primetime Showdowns", description: "Our highest-energy format — quick-fire rounds plus 60-second Time Rush skill challenges." },
-  { name: "Corporate Team Building", description: "The office outing everyone will actually talk about — perfect for corporate teams, startups and offsites in Hyderabad." },
-  { name: "Birthday Party Show", description: "A live game show for birthdays, with a Celebration Room to cut the cake afterwards." },
-  { name: "Kids Show", description: "Same thrill with kid-friendly questions for ages 10–15." },
-  { name: "Bachelor / Bachelorette Show", description: "Cheeky questions themed around the big day." },
-  { name: "Virtual Game Show", description: "Face off against anyone, anywhere, live on Zoom." },
-  { name: "Roadshows", description: "We bring the lights, host and props to your venue anywhere in Hyderabad." },
+  { name: "The Classic", description: "A focused 45-minute session of buzzer trivia, puzzle rounds and speed challenges for two teams, run by a live host." },
+  { name: "Prime Time", description: "A 60-minute session with extra physical and team challenges, party-style group games and bigger crowd moments." },
+  { name: "Corporate Team Building", description: "The office outing people actually talk about on Monday — for corporate teams, startups and offsites in Hyderabad." },
+  { name: "Birthday Party Session", description: "A birthday where the whole group plays, with a Celebration Room to cut the cake afterwards." },
+  { name: "Kids Session", description: "The same challenges with kid-friendly rounds for ages 10–15." },
+  { name: "Bachelor / Bachelorette Session", description: "Cheeky, themed rounds built for the big celebration." },
+  { name: "Virtual Challenge Session", description: "Play against anyone, anywhere, live on Zoom." },
+  { name: "Roadshows", description: "We bring the host, lights and challenges to your venue anywhere in Hyderabad." },
 ];
 
 const localBusiness = {
@@ -258,8 +189,8 @@ const localBusiness = {
   legalName: "Vindi LLP",
   alternateName: "Game Show Challenge Rooms Hyderabad",
   description:
-    "Hyderabad's first live game show experience — a real host, studio lights and buzzers, for groups of 4–15 players. Great for team building, birthdays, bachelorette parties, corporate outings and family fun.",
-  slogan: "All your life you watched it on TV. Today, you're on the show.",
+    "An immersive live challenge experience in Hyderabad. Your group splits into two teams and compete in trivia, puzzle, speed and physical challenge rounds run by a live host. One of the most fun indoor activities in Hyderabad for friends, birthdays and team outings.",
+  slogan: "The most fun thing to do in Hyderabad.",
   url: SITE_URL,
   image: `${SITE_URL}/images/logo.png`,
   logo: `${SITE_URL}/images/logo.png`,
@@ -302,14 +233,14 @@ const localBusiness = {
     "Shamshabad",
   ],
   knowsAbout: [
-    "live game show experience",
-    "corporate team building",
-    "birthday party games",
-    "team outings",
-    "trivia and quiz games",
+    "immersive group activities",
+    "indoor activities in Hyderabad",
     "things to do in Hyderabad",
+    "corporate team building",
+    "team outings",
+    "birthday party activities",
+    "trivia and puzzle challenges",
     "weekend activities in Hyderabad",
-    "indoor entertainment",
   ],
   currenciesAccepted: "INR",
   paymentAccepted: "Cash, UPI, Credit Card, Debit Card",
@@ -341,11 +272,6 @@ const localBusiness = {
     "https://www.youtube.com/@GameShowChallengeRooms/shorts",
     "https://maps.app.goo.gl/MZfvdmxwBTa3NPj29",
   ],
-  aggregateRating: {
-    "@type": "AggregateRating",
-    ratingValue: "4.9",
-    reviewCount: "10000",
-  },
   makesOffer: SHOW_FORMATS.map((f) => ({
     "@type": "Offer",
     name: f.name,
@@ -365,7 +291,7 @@ const website = {
     "Challenge Rooms Hyderabad",
   ],
   description:
-    "Hyderabad's #1 live game show experience and one of the best things to do in Hyderabad for groups — team building, birthdays and weekend entertainment.",
+    "Hyderabad's most fun indoor group activity — an immersive live challenge experience in Hyderabad for friends, birthdays, team outings and weekend plans.",
   publisher: { "@id": `${SITE_URL}/#business` },
   inLanguage: "en-IN",
 };
@@ -377,31 +303,31 @@ const faqPage = {
   mainEntity: [
     {
       q: "What is Game Show Challenge Rooms?",
-      a: "It is a private, live-hosted game show experience in Hyderabad for groups of 4–15 people. Your group becomes the contestants, splits into two teams and competes under studio lights using real buzzers.",
+      a: "An immersive, live-hosted challenge experience in Hyderabad for friends, families and teams. Your group splits into two teams and competes in trivia, puzzle, speed and physical challenge rounds, with a host running the show and the scores on the board.",
     },
     {
-      q: "How does this work?",
-      a: "On arrival, you divide into two teams, choose team names and colours, and get a quick briefing. A live host then leads three different game-show rounds. Every round earns Challenge Points, and the highest-scoring team becomes champion.",
+      q: "How does it work?",
+      a: "On arrival you divide into two teams, pick team names and colours, and get a quick briefing. Your host then runs three different challenge rounds. Every round earns Challenge Points, and the highest-scoring team is crowned champion.",
     },
     {
-      q: "How long does a show take?",
+      q: "How long does it take?",
       a: "The Classic includes approximately 45 minutes of gameplay, while Prime Time runs for approximately 60 minutes. Please arrive 15 minutes before your booked slot for check-in and team setup.",
     },
     {
-      q: "What is the price?",
-      a: "Pricing is per person and depends on your group size and the day you pick. Message us on WhatsApp or call us with your group size and preferred date and we'll share the exact price for your show.",
-    },
-    {
       q: "Do I need to book in advance?",
-      a: "Yes — we recommend booking upfront, ideally 1-3 days in advance, as slots fill up fast due to high demand. Spot bookings are only possible if a slot is available, so to be safe please book ahead. Showtimes are subject to availability and city/location.",
+      a: "Yes. Slots fill up fast, especially on weekends, so we recommend booking 1–3 days ahead on WhatsApp. Walk-ins are welcome only if a slot happens to be free.",
     },
     {
       q: "Is there an age limit?",
       a: "We recommend ages 10 and up get the most out of the experience, but we're flexible — especially if there are younger players with older family members. Players 15 and under require adult accompaniment.",
     },
     {
-      q: "Do we need to prepare or bring anything?",
-      a: "No preparation or special game-show knowledge is needed. Come in comfortable clothes with your group; your host explains the rules and keeps the experience moving from start to finish.",
+      q: "Do I need to be fit or good at trivia?",
+      a: "No. The rounds mix brains, speed and light physical challenges, so every kind of player gets a moment to shine. Come in comfortable clothes; your host explains everything and keeps the session moving from start to finish.",
+    },
+    {
+      q: "Is it like an escape room or a gaming zone?",
+      a: "No. There are no locked rooms or arcade machines. It is a hosted, team-versus-team competition in an open arena, so the whole group plays at the same time and the energy stays high throughout.",
     },
   ].map((item) => ({
     "@type": "Question",
@@ -430,7 +356,7 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <SmoothScroll>{children}</SmoothScroll>
+        {children}
       </body>
       <GoogleAnalytics gaId="G-WLT7B50QM5" />
     </html>

@@ -16,31 +16,31 @@ import { Cta } from "@/components/ui/cta";
 const faqItems = [
   {
     q: "What is Game Show Challenge Rooms?",
-    a: "It is a private, live-hosted game show experience in Hyderabad for groups of 4–15 people. Your group becomes the contestants, splits into two teams and competes under studio lights using real buzzers.",
+    a: "An immersive, live-hosted challenge experience in Hyderabad for friends, families and teams. Your group splits into two teams and competes in trivia, puzzle, speed and physical challenge rounds, with a host running the show and the scores on the board.",
   },
   {
-    q: "How does this work?",
-    a: "On arrival, you divide into two teams, choose team names and colours, and get a quick briefing. A live host then leads three different game-show rounds. Every round earns Challenge Points, and the highest-scoring team becomes champion.",
+    q: "How does it work?",
+    a: "On arrival you divide into two teams, pick team names and colours, and get a quick briefing. Your host then runs three different challenge rounds. Every round earns Challenge Points, and the highest-scoring team is crowned champion.",
   },
   {
-    q: "How long does a show take?",
+    q: "How long does it take?",
     a: "The Classic includes approximately 45 minutes of gameplay, while Prime Time runs for approximately 60 minutes. Please arrive 15 minutes before your booked slot for check-in and team setup.",
   },
   {
-    q: "What is the price?",
-    a: "Pricing is per person and depends on your group size and the day you pick. Message us on WhatsApp or call us with your group size and preferred date and we'll share the exact price for your show.",
-  },
-  {
     q: "Do I need to book in advance?",
-    a: "Yes — we recommend booking upfront, ideally 1-3 days in advance, as slots fill up fast due to high demand. Spot bookings are only possible if a slot is available, so to be safe please book ahead. Showtimes are subject to availability and city/location.",
+    a: "Yes. Slots fill up fast, especially on weekends, so we recommend booking 1–3 days ahead on WhatsApp. Walk-ins are welcome only if a slot happens to be free.",
   },
   {
     q: "Is there an age limit?",
     a: "We recommend ages 10 and up get the most out of the experience, but we're flexible — especially if there are younger players with older family members. Players 15 and under require adult accompaniment.",
   },
   {
-    q: "Do we need to prepare or bring anything?",
-    a: "No preparation or special game-show knowledge is needed. Come in comfortable clothes with your group; your host explains the rules and keeps the experience moving from start to finish.",
+    q: "Do I need to be fit or good at trivia?",
+    a: "No. The rounds mix brains, speed and light physical challenges, so every kind of player gets a moment to shine. Come in comfortable clothes; your host explains everything and keeps the session moving from start to finish.",
+  },
+  {
+    q: "Is it like an escape room or a gaming zone?",
+    a: "No. There are no locked rooms or arcade machines. It is a hosted, team-versus-team competition in an open arena, so the whole group plays at the same time and the energy stays high throughout.",
   },
 ];
 
@@ -127,7 +127,7 @@ function FAQContent({
             className="mb-10 text-[28px] font-medium leading-[1.2] tracking-[-2px] text-white md:mb-[60px] md:text-[48px]"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            All the Important Details Before Your Game Show
+            All the Important Details Before Your Visit
           </h2>
 
           {/* Accordion */}
@@ -215,11 +215,11 @@ export function StillHaveQuestions() {
                 className="text-2xl font-semibold tracking-tight text-white md:text-3xl"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Ready to plan your show?
+                Ready to plan your visit?
               </h3>
               <p className="mt-1.5 text-sm text-white/55 md:text-base">
                 Send your group size and preferred date. We&apos;ll confirm the best
-                format, available time and exact price.
+                format and available time.
               </p>
             </div>
 

@@ -44,18 +44,19 @@ export function Footer() {
             className="mb-5 h-12 w-auto"
           />
           <h2 className="mb-4 text-xl font-bold text-white md:text-2xl">
-            Hyderabad&apos;s #1 Live Game Show Experience
+            Hyderabad&apos;s Most Fun Indoor Group Activity
           </h2>
           <p className="max-w-[820px] text-sm leading-relaxed text-white/55">
             Looking for fun things to do in Hyderabad with friends, family or
-            coworkers? Game Show Challenge Rooms is a real live game show — host,
-            studio lights and buzzers — for groups of 4 to 15 players. It&apos;s the
-            perfect indoor activity for{" "}
+            coworkers? Game Show Challenge Rooms is an immersive live challenge
+            experience in Hyderabad — two teams, three rounds of trivia, puzzle,
+            speed and physical challenges, and a host keeping the energy up — for
+            your whole group. It&apos;s the perfect indoor activity for{" "}
             <span className="text-white/75">corporate team building</span>,{" "}
             <span className="text-white/75">birthday parties</span>,{" "}
             <span className="text-white/75">bachelorette and bachelor parties</span>,
             kitty parties, school and college trips, office outings and family
-            celebrations. A fresh alternative to escape rooms, mystery rooms and
+            celebrations. A fresh alternative to escape rooms, gaming zones and
             trivia nights.
           </p>
           <p className="mt-4 max-w-[820px] text-sm leading-relaxed text-white/45">
@@ -66,11 +67,11 @@ export function Footer() {
             bring to your venue.
           </p>
           <p className="mt-4 max-w-[820px] text-sm leading-relaxed text-white/45">
-            If you&apos;re searching for the best things to do in Hyderabad, the best
-            entertainment in Hyderabad, or fun weekend activities and unique places to
-            hang out, this is it. Step under the studio lights, smash the buzzer and
-            become the star of your own live game show — an unforgettable group outing
-            you can&apos;t get anywhere else in the city.
+            If you&apos;re searching for unique things to do in Hyderabad, weekend
+            activities, group activities or a team outing in Hyderabad, this is
+            it. Step into the arena, take on the challenges and walk out
+            as champions — a group experience you can&apos;t get anywhere else in the
+            city.
           </p>
 
           {/* Social — Instagram, Facebook, YouTube — under the brand block. */}
@@ -141,7 +142,7 @@ export function Footer() {
       {/* Closing line + copyright — the footer's final note, full width. */}
       <div className="mt-6 flex w-full max-w-[1280px] flex-col items-center gap-2 border-t border-white/10 pt-7 text-center">
         <p className="text-sm font-medium text-white/70">
-          Lights, buzzers, glory — we&apos;ll see you under the studio lights. 🎬
+          Lights, buzzers, glory — we&apos;ll see you in the arena. 🎬
         </p>
         <span className="text-xs font-normal text-white/50">
           © Game Show Challenge Rooms · Hyderabad · All Rights Reserved

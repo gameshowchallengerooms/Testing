@@ -4,7 +4,7 @@ import { Reveal } from "@/components/Reveal";
 import { Cta } from "@/components/ui/cta";
 
 const experienceFacts = [
-  { value: "4–15", label: "players" },
+  { value: "3", label: "rounds" },
   { value: "45–60", label: "minutes" },
   { value: "2", label: "teams" },
   { value: "1", label: "live host" },
@@ -13,8 +13,8 @@ const experienceFacts = [
 const steps = [
   {
     icon: Clock3,
-    title: "Book your time",
-    text: "Tell us your group size and preferred date. We’ll confirm the available slot, show format and exact price before you arrive.",
+    title: "Book your slot",
+    text: "Send us your group size and preferred date on WhatsApp. We’ll confirm your slot and the format that suits your group.",
     accent: "var(--gs-blue-bright)",
   },
   {
@@ -26,7 +26,7 @@ const steps = [
   {
     icon: Swords,
     title: "Play three rounds",
-    text: "Compete in a rotating mix of strategy, trivia, speed and team challenges. Every round earns Challenge Points.",
+    text: "Take on a rotating mix of trivia, puzzle, speed and physical challenges. Every round earns Challenge Points.",
     accent: "var(--gs-magenta-bright)",
   },
   {
@@ -87,20 +87,20 @@ export function HowItWorksSection() {
             <Reveal>
               <p className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.25em] text-white/48">
                 <span className="h-px w-9 bg-gradient-to-r from-gs-blue-bright to-gs-magenta-bright" />
-                Your first show, explained
+                Your first visit, explained
               </p>
             </Reveal>
 
             <Reveal delay={70}>
               <h2 className="mt-5 max-w-3xl text-4xl font-black leading-[0.98] tracking-[-0.05em] text-white sm:text-5xl lg:text-6xl">
-                Walk in as a group. Leave as game-show champions.
+                Walk in as a group. Walk out as champions.
               </h2>
             </Reveal>
 
             <Reveal delay={120}>
               <p className="mt-6 max-w-2xl text-base leading-7 text-white/66 sm:text-lg sm:leading-8">
-                This is a private, hosted group experience—not an arcade game or an
-                escape room. Everyone plays together, the host runs the show, and we
+                This is a hosted group activity for your gang—not an arcade or an escape
+                room. Everyone plays together, the host runs every round, and we
                 handle every detail from the first team name to the final score.
               </p>
             </Reveal>
@@ -141,10 +141,10 @@ export function HowItWorksSection() {
               <div className="mt-8 flex flex-col gap-4 border-t border-white/10 pt-7 sm:flex-row sm:items-center sm:justify-between">
                 <p className="flex items-center gap-2 text-sm font-semibold text-white/72">
                   <Sparkles size={17} className="text-gs-gold" aria-hidden="true" />
-                  No preparation or special knowledge needed.
+                  No preparation needed. Any fitness level, ages 10 and up.
                 </p>
                 <Cta href="#show-rounds" variant="secondary" className="uppercase tracking-[0.1em]">
-                  Compare the shows
+                  Compare the formats
                 </Cta>
               </div>
             </Reveal>

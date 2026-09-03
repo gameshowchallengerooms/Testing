@@ -90,7 +90,7 @@ export function TeamBuildingSection() {
               >
                 unforgettable
               </span>{" "}
-              team building event
+              team building activity
             </h2>
           </Reveal>
 
@@ -100,7 +100,7 @@ export function TeamBuildingSection() {
               <span className="font-semibold text-white">
                 exciting, engaging, immersive
               </span>{" "}
-              live game show that turns any work crew into one team. We&apos;ve hosted
+              hosted challenge experience that turns any work crew into one team. We&apos;ve hosted
               corporate teams, startups, non-profits, sports clubs and college groups —
               and every single one walks out buzzing.
             </p>
@@ -199,12 +199,12 @@ export function TeamBuildingSection() {
                 Planning an office outing?
               </h3>
               <p className="mt-1 text-sm text-white/85 md:text-base">
-                Tell us your group size and date — we&apos;ll build the perfect show for
-                your team.
+                Tell us your group size and date — we&apos;ll build the perfect session
+                for your team.
               </p>
             </div>
             <Cta href="/#tickets" variant="contrast" size="lg">
-              Book Your Show
+              Book Your Slot
               <ArrowUpRight size={18} />
             </Cta>
           </div>

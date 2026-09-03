@@ -49,21 +49,88 @@ const AVATARS = [
   "/images/6XVmyesSGqTBk7i6vi9Nai70Q.png",
 ];
 
+// NOTE: sample testimonials written as placeholders. Swap the names and quotes
+// for real customer reviews (Google / Instagram) before relying on them.
 const featured: Testimonial = {
   name: "Ananya Reddy",
   role: "Birthday Group · Hyderabad",
   avatar: AVATARS[0],
   rating: 5,
   quote:
-    "Went to Game Show Challenge Rooms to celebrate my birthday and had the most amazing time of my life! Our host was hilarious and kept the energy sky-high the whole way through. Our two teams, the buzzers, the lights — you genuinely feel like you're on a real TV game show. Hands down the best group outing in the city.",
+    "Booked this for my birthday instead of the usual dinner and it was the best call. Our host had the whole room screaming within five minutes. Two teams, buzzers, puzzles, a physical round that had us crying with laughter — nobody sat out for a second. Easily the most fun thing we've done in Hyderabad.",
   accent: "var(--gs-blue)",
 };
+
+const moreTestimonials: Omit<Testimonial, "avatar" | "accent">[] = [
+  {
+    name: "Rahul Varma",
+    role: "Office Team Outing · HITEC City",
+    rating: 5,
+    quote:
+      "We've done bowling, escape rooms, the lot. This is the first team outing where the quiet folks were the ones winning rounds. The host kept 14 of us fully engaged for an hour. Monday was all trash talk.",
+  },
+  {
+    name: "Sneha & Karthik",
+    role: "Friends Group · Kondapur",
+    rating: 5,
+    quote:
+      "Came in expecting a quiz night, got a full-on competition. Speed rounds, puzzles, a buzzer battle at the end that came down to one point. We've already booked again.",
+  },
+  {
+    name: "Priya Nair",
+    role: "Bachelorette Party · Jubilee Hills",
+    rating: 5,
+    quote:
+      "Perfect bachelorette plan. The themed rounds about the bride had everyone in bits, and the host made her feel like the star of the whole thing. Way more fun than another brunch.",
+  },
+  {
+    name: "Arjun Mehta",
+    role: "College Friends · Gachibowli",
+    rating: 5,
+    quote:
+      "Eight of us, two teams, zero mercy. The physical challenges are what make it — it's not just sitting and answering questions. Great energy, great host, good value for a group.",
+  },
+  {
+    name: "The Rao Family",
+    role: "Family Outing · Banjara Hills",
+    rating: 5,
+    quote:
+      "Three generations played together and my 11-year-old beat his uncles in the speed round. The host adjusted the questions so everyone had a shot. We'll be back for Diwali.",
+  },
+];
+
+function Initials({ name, accent }: { name: string; accent: string }) {
+  const initials = name
+    .replace(/^The /, "")
+    .split(/\s|&/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+  return (
+    <span
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+      style={{ background: `linear-gradient(135deg, ${accent}, var(--gs-magenta))` }}
+      aria-hidden="true"
+    >
+      {initials}
+    </span>
+  );
+}
+
+const CARD_ACCENTS = [
+  "var(--gs-blue)",
+  "var(--gs-violet)",
+  "var(--gs-magenta)",
+  "var(--gs-gold)",
+  "var(--gs-mint)",
+];
 
 const stats = [
   { end: 4.9, decimals: 1, suffix: "", label: "Average rating" },
   { end: 10, decimals: 0, suffix: "K+", label: "Players hosted" },
   { end: 1200, decimals: 0, suffix: "+", label: "Champions crowned" },
-  { end: 3, decimals: 0, suffix: "", label: "Live game shows" },
+  { end: 2, decimals: 0, suffix: "", label: "Formats to pick from" },
 ];
 
 function Stars({ rating, className }: { rating: number; className?: string }) {
@@ -187,6 +254,30 @@ export function TestimonialsSection() {
               </blockquote>
             </div>
           </figure>
+        </div>
+
+        {/* More voices */}
+        <div className="mx-auto mt-8 grid max-w-[1200px] gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {moreTestimonials.map((t, i) => {
+            const accent = CARD_ACCENTS[i % CARD_ACCENTS.length];
+            return (
+              <Reveal key={t.name} delay={i * 80} className="h-full">
+                <figure className="flex h-full flex-col gap-4 rounded-3xl border border-white/10 bg-gs-surface-card p-6 transition-colors duration-300 hover:border-white/25">
+                  <Stars rating={t.rating} className="flex gap-1" />
+                  <blockquote className="flex-1 text-[15px] leading-relaxed text-white/80">
+                    &ldquo;{t.quote}&rdquo;
+                  </blockquote>
+                  <figcaption className="flex items-center gap-3 border-t border-white/10 pt-4">
+                    <Initials name={t.name} accent={accent} />
+                    <div>
+                      <p className="text-sm font-semibold text-white">{t.name}</p>
+                      <p className="text-xs text-white/50">{t.role}</p>
+                    </div>
+                  </figcaption>
+                </figure>
+              </Reveal>
+            );
+          })}
         </div>
 
       </div>

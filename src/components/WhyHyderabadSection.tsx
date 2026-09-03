@@ -7,22 +7,22 @@ const reasons = [
   {
     icon: Mic2,
     chapter: "The format",
-    title: "A real hosted show",
-    text: "Not an arcade, not an escape room — an actual live game show with a host, lights and music. The only one of its kind in Hyderabad.",
+    title: "Not an arcade, not an escape room",
+    text: "A live, hosted challenge experience. Trivia, puzzles, speed rounds and physical challenges, all run by a host who keeps the energy up. Nothing else like it in Hyderabad.",
     glow: "var(--gs-blue)",
   },
   {
     icon: Users,
     chapter: "The crew",
     title: "Made for groups",
-    text: "Built for groups of 4 to 15 people. Whatever the occasion, your whole crew plays together — nobody sits on the sidelines.",
+    text: "Built for groups. Friends, families, birthday crews and office teams all play together — nobody sits on the sidelines.",
     glow: "var(--gs-magenta)",
   },
   {
     icon: Sparkles,
     chapter: "The feeling",
     title: "Everyone plays, nobody watches",
-    text: "Unlike a movie, a meal or bowling, every single person is in the spotlight and part of the action from start to finish.",
+    text: "Unlike a movie, a meal or bowling, every single person is in the action from the first buzzer to the final score.",
     glow: "var(--gs-red)",
   },
 ];
@@ -46,7 +46,7 @@ export function WhyHyderabadSection() {
           <Reveal>
             <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-white/80 backdrop-blur">
               <MapPin size={14} className="text-gs-red" />
-              Proudly in Hyderabad
+              Proudly in Gachibowli, Hyderabad
             </span>
           </Reveal>
 
@@ -71,9 +71,9 @@ export function WhyHyderabadSection() {
 
           <Reveal delay={140}>
             <p className="mx-auto mt-4 max-w-[640px] text-base text-white/60 md:text-lg">
-              Dinners, malls and movies are forgettable. Stepping under the lights as the
-              star of your own live game show is the story your group will be telling for
-              months.
+              Dinners, malls and movies are forgettable. An hour in the arena, competing
+              with your crew under the lights, is the story your group will be telling
+              for months.
             </p>
           </Reveal>
         </div>

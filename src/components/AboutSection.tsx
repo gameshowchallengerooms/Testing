@@ -91,7 +91,7 @@ export function AboutSection() {
         </h2>
 
         <WordReveal
-          text="Game Show Challenge Rooms is the #1 new game show experience for everyone to enjoy! Get ready for one of the most fun and unforgettable events your crew has ever experienced!"
+          text="Game Show Challenge Rooms is an immersive live challenge experience in Hyderabad. Think of it as the most fun thing your group can do indoors: two teams, three rounds, one champion."
           className={cn(
             "font-[var(--font-display,var(--font-sans))] font-medium text-white",
             "text-[24px] md:text-[38px]",
@@ -101,7 +101,7 @@ export function AboutSection() {
         />
 
         <WordReveal
-          text="Face-off against your friends, family, coworkers, teammates or schoolmates in our custom arenas – all facilitated by our live game show hosts. It’s time to play!"
+          text="Take on trivia, puzzle, speed and physical challenges against your friends, family or coworkers, with a live host running every round. Nobody watches. Everyone plays."
           className={cn(
             "font-[var(--font-display,var(--font-sans))] font-medium text-white",
             "text-[24px] md:text-[38px]",

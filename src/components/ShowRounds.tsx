@@ -26,15 +26,15 @@ const shows: Show[] = [
   {
     label: "The Classic",
     tag: "The original.",
-    value: "The pure live game show experience.",
-    bestFor: "Best for first-timers, families and friendly competition.",
+    value: "The essential challenge experience.",
+    bestFor: "Best for first-timers, families and friendly rivalry.",
     pitch:
-      "Your group splits into two teams and plays a focused 45-minute show with buzzers, rotating challenges, live scoring and a host guiding every round.",
+      "Your group splits into two teams and plays a focused 45-minute session: buzzer trivia, puzzle rounds and speed challenges, with live scoring and a host driving every moment.",
     features: [
-      "Live game show host",
-      "Three hosted game-show rounds",
-      "Team-based competition",
-      "Scores, fun twists & winner moments",
+      "Live host from start to finish",
+      "Three hosted challenge rounds",
+      "Trivia, puzzle & speed challenges",
+      "Live scores & winner moments",
       "Approx. 45 minutes of play",
     ],
     image: "/images/shows/the-classic.webp",
@@ -49,15 +49,15 @@ const shows: Show[] = [
   {
     label: "Prime Time",
     tag: "Most popular.",
-    value: "Where the game show meets the party.",
+    value: "Where the challenge meets the party.",
     bestFor: "Best for birthdays, celebrations and high-energy groups.",
     pitch:
-      "Everything in the live game show, expanded into a 60-minute celebration with extra group games, bigger crowd moments and more time under the lights.",
+      "Everything in The Classic, expanded into a 60-minute session with extra physical and team challenges, bigger crowd moments and more time in the arena.",
     features: [
-      "Live host & full game show",
-      "House-party style group games",
-      "More social, high-energy format",
-      "Lively moments & big group fun",
+      "Live host & the full challenge line-up",
+      "Extra physical & team challenges",
+      "Party-style group games",
+      "Bigger moments, more rivalry",
       "Approx. 60 minutes of play",
     ],
     image: "/images/shows/prime-time.webp",
@@ -89,7 +89,7 @@ function HostBadge() {
           Hosted live
         </p>
         <p className="mt-0.5 text-sm font-semibold text-white md:text-base">
-          Your host. Your spotlight.
+          Your host runs the show.
         </p>
       </div>
     </div>
@@ -191,7 +191,7 @@ function ShowPanel({ show, index }: { show: Show; index: number }) {
               variant="secondary"
               className={`min-h-12 uppercase tracking-[0.08em] hover:bg-white hover:text-black ${show.accentBorder} ${show.accentSurface}`}
             >
-              Book Your Show
+              Book Your Slot
               <ArrowUpRight size={18} strokeWidth={2.5} aria-hidden="true" />
             </Cta>
           </div>
@@ -216,15 +216,15 @@ export function ShowRounds() {
           <div>
             <p className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.25em] text-white/45">
               <span className="h-px w-9 bg-gradient-to-r from-gs-show-classic-base via-gs-show-prime-base to-gs-gold-deep" />
-              Pick your show format
+              Pick your format
             </p>
             <h2 className="mt-5 max-w-4xl text-5xl font-black tracking-[-0.055em] text-white sm:text-6xl lg:text-7xl">
               Two ways to play
             </h2>
             <p className="mt-5 max-w-2xl text-base leading-7 text-white/62 sm:text-lg sm:leading-8">
-              Both options are private and hosted live. Choose The Classic for the
-              essential 45-minute game-show experience, or Prime Time for a longer,
-              more social 60-minute celebration.
+              Both formats are hosted live and built for your whole gang.
+              Choose The Classic for the essential 45-minute experience, or Prime
+              Time for a longer, more social 60-minute session.
             </p>
           </div>
           <HostBadge />

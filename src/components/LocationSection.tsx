@@ -21,7 +21,7 @@ const MAP_EMBED_URL = MAPS_KEY
   : `https://maps.google.com/maps?q=${LAT},${LNG}&z=17&hl=en&output=embed`;
 
 const facts = [
-  { icon: Users, label: "Groups of 4–15 players" },
+  { icon: Users, label: "Birthdays, team outings & weekend plans" },
   { icon: Clock, label: "Open 7 days a week" },
 ];
 
@@ -141,7 +141,7 @@ export function LocationSection() {
                 variant="secondary"
                 className="uppercase tracking-[0.12em]"
               >
-                Book Your Show
+                Book Your Slot
               </Cta>
             </div>
           </Reveal>

@@ -14,13 +14,13 @@ const audiences = [
   {
     icon: Briefcase,
     title: "Team Building",
-    text: "Break the ice and bond your team like never before.",
+    text: "The office outing people actually talk about on Monday.",
     accent: "var(--gs-blue)",
   },
   {
     icon: Cake,
     title: "Birthday Parties",
-    text: "Make their big day genuinely unforgettable.",
+    text: "A birthday where the whole group plays, not just watches.",
     accent: "var(--gs-magenta)",
   },
   {
@@ -32,13 +32,13 @@ const audiences = [
   {
     icon: Trophy,
     title: "Sports & Club Groups",
-    text: "Settle the score off the field, team vs. team.",
+    text: "Settle the score off the field, team versus team.",
     accent: "var(--gs-mint)",
   },
   {
     icon: Heart,
     title: "Friends & Family",
-    text: "The perfect plan when everyone wants to have fun.",
+    text: "The weekend plan when everyone wants to actually do something.",
     accent: "var(--gs-violet)",
   },
   {
@@ -57,7 +57,7 @@ export function ForWhomSection() {
           <div className="mb-4 flex items-center gap-4">
             <span className="block h-[2px] w-[60px] bg-white/50" />
             <span className="font-sans text-base font-normal text-white/80">
-              For Whom?
+              Perfect for
             </span>
           </div>
         </Reveal>
@@ -67,7 +67,7 @@ export function ForWhomSection() {
             className="max-w-[820px] text-3xl font-medium leading-tight tracking-tight text-white md:text-[52px] md:leading-[1.08]"
             style={{ fontFamily: "var(--font-display)", letterSpacing: "-2px" }}
           >
-            Whether it&apos;s a couple of friends or{" "}
+            Best with{" "}
             <span
               style={{
                 background: "linear-gradient(90deg, var(--gs-blue), var(--gs-magenta))",
@@ -76,10 +76,17 @@ export function ForWhomSection() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              up to 15 people
+              6 or more
             </span>
-            , we have a show for you.
+            . From a group of friends to the whole office, there&apos;s a format for you.
           </h2>
+        </Reveal>
+
+        <Reveal delay={100}>
+          <p className="mt-4 max-w-[640px] text-base text-white/60 md:text-lg">
+            The bigger the group, the bigger the rivalry. Bring 6 or more and the arena
+            really comes alive. Smaller group? Message us and we&apos;ll sort it out.
+          </p>
         </Reveal>
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

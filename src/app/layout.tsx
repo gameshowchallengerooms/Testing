@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
@@ -192,7 +192,7 @@ const localBusiness = {
     "An immersive live challenge experience in Hyderabad. Your group splits into two teams and compete in trivia, puzzle, speed and physical challenge rounds run by a live host. One of the most fun indoor activities in Hyderabad for friends, birthdays and team outings.",
   slogan: "The most fun thing to do in Hyderabad.",
   url: SITE_URL,
-  image: `${SITE_URL}/images/logo.png`,
+  image: [`${SITE_URL}/seo/og-image.png`, `${SITE_URL}/images/logo.png`],
   logo: `${SITE_URL}/images/logo.png`,
   email: "gameshowchallengerooms@gmail.com",
   telephone: "+91-90001-87731",
@@ -341,6 +341,13 @@ const jsonLd = {
   "@graph": [localBusiness, website, faqPage],
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#000000",
+  colorScheme: "dark",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -348,7 +355,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="en-IN"
       className={`${inter.variable} ${gamestoriiRegular.variable} ${interDisplay.variable} ${interTight.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-black text-white">

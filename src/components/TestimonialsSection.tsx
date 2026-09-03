@@ -177,7 +177,7 @@ export function TestimonialsSection() {
           className="mx-auto max-w-[820px] text-center text-3xl font-medium leading-tight tracking-tight text-white md:text-[56px] md:leading-[1.05]"
           style={{ fontFamily: "var(--font-display)", letterSpacing: "-2px" }}
         >
-          Loved by thousands of{" "}
+          Loved by groups across{" "}
           <span
             style={{
               background: "linear-gradient(90deg, var(--gs-blue), var(--gs-magenta))",
@@ -186,7 +186,7 @@ export function TestimonialsSection() {
               WebkitTextFillColor: "transparent",
             }}
           >
-            champions
+            Hyderabad
           </span>
         </h2>
 

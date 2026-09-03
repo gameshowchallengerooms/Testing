@@ -67,8 +67,8 @@ export function LocationSection() {
               className="text-3xl font-medium leading-tight tracking-tight text-white md:text-[48px] md:leading-[1.06]"
               style={{ fontFamily: "var(--font-display)", letterSpacing: "-1.5px" }}
             >
-              Your stage is{" "}
-              <span className="text-gs-">ready &amp; waiting</span>
+              Find us in{" "}
+              <span className="text-gs-">Gachibowli, Hyderabad</span>
             </h2>
           </Reveal>
 

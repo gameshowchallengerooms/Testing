@@ -45,7 +45,11 @@ function ResponsivePoster({ className }: { className: string }) {
     <picture>
       <source media="(min-width: 640px)" srcSet={desktopPosterSrcSet} />
       <source media="(max-width: 639px)" srcSet={mobilePosterSrcSet} />
-      <img {...mobilePosterProps} alt="" className={className} />
+      <img
+        {...mobilePosterProps}
+        alt="How a Game Show Challenge Rooms session works in Hyderabad: two teams, three hosted rounds of trivia, puzzle, speed and physical challenges, and one champion team"
+        className={className}
+      />
     </picture>
   );
 }
@@ -59,7 +63,12 @@ export function ScrollZoomIntro() {
           New in Hyderabad
           <span className="h-px w-6 bg-gs-gold/50" />
         </span>
-        <span className="mb-6 text-sm font-medium text-white/70 sm:text-base">Introducing</span>
+        <h2 className="mb-6 text-sm font-medium text-white/70 sm:text-base">
+          Introducing
+          <span className="sr-only">
+            {" "}Game Show Challenge Rooms — Hyderabad&apos;s live challenge experience for groups
+          </span>
+        </h2>
         <Image
           src="/images/logo-transparent.webp"
           alt="Game Show Challenge Rooms"

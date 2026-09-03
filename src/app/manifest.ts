@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Game Show Challenge Rooms Hyderabad",
     short_name: "Challenge Rooms",
     description:
-      "Hyderabad's #1 live game show experience — host, lights, buzzers and your crew. The best thing to do in Hyderabad for groups, team building, birthdays and weekends.",
+      "Hyderabad's most fun indoor group activity — an immersive live challenge experience for friends, birthdays, team outings and weekend plans.",
     start_url: "/",
     display: "standalone",
     background_color: "#000000",

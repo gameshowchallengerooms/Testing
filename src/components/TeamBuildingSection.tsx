@@ -75,7 +75,7 @@ export function TeamBuildingSection() {
           </Reveal>
 
           <Reveal delay={70}>
-            <h2
+            <h1
               className="text-3xl font-medium leading-tight tracking-tight text-white md:text-[52px] md:leading-[1.06]"
               style={{ fontFamily: "var(--font-display)", letterSpacing: "-2px" }}
             >
@@ -91,7 +91,7 @@ export function TeamBuildingSection() {
                 unforgettable
               </span>{" "}
               team building activity
-            </h2>
+            </h1>
           </Reveal>
 
           <Reveal delay={130}>

@@ -190,7 +190,7 @@ const localBusiness = {
   alternateName: "Game Show Challenge Rooms Hyderabad",
   description:
     "An immersive live challenge experience in Hyderabad. Your group splits into two teams and compete in trivia, puzzle, speed and physical challenge rounds run by a live host. One of the most fun indoor activities in Hyderabad for friends, birthdays and team outings.",
-  slogan: "The most fun thing to do in Hyderabad.",
+  slogan: "Hyderabad's unique game show experience.",
   url: SITE_URL,
   image: [`${SITE_URL}/seo/og-image.png`, `${SITE_URL}/images/logo.png`],
   logo: `${SITE_URL}/images/logo.png`,

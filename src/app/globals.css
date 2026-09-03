@@ -794,3 +794,57 @@
     opacity: 0.02;
   }
 }
+
+/* Champions wall: two endless photo strips. Each track holds the tile list
+   twice, so sliding by exactly half its width loops seamlessly. */
+@keyframes wall-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.wall-marquee {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 6%,
+    black 94%,
+    transparent
+  );
+}
+
+.wall-track {
+  animation: wall-scroll 70s linear infinite;
+  will-change: transform;
+}
+
+.wall-track-reverse {
+  animation-direction: reverse;
+  animation-duration: 82s;
+}
+
+.wall-marquee:hover .wall-track {
+  animation-play-state: paused;
+}
+
+@media (max-width: 767px) {
+  .wall-track {
+    animation-duration: 48s;
+  }
+  .wall-track-reverse {
+    animation-duration: 56s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wall-track {
+    animation: none;
+  }
+  .wall-marquee {
+    overflow-x: auto;
+    mask-image: none;
+  }
+}

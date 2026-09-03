@@ -57,7 +57,7 @@ export function TeamBuildingSection() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 50% 40% at 85% 10%, rgba(124,92,252,0.14), transparent 60%), radial-gradient(ellipse 50% 40% at 10% 90%, rgba(20,126,255,0.12), transparent 60%)",
+            "radial-gradient(ellipse 60% 40% at 50% 0%, rgba(233,185,73,0.07), transparent 60%)",
         }}
         aria-hidden="true"
       />
@@ -80,16 +80,7 @@ export function TeamBuildingSection() {
               style={{ fontFamily: "var(--font-display)", letterSpacing: "-2px" }}
             >
               Hyderabad&apos;s most{" "}
-              <span
-                style={{
-                  background: "linear-gradient(90deg, var(--gs-blue), var(--gs-magenta))",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                unforgettable
-              </span>{" "}
+              <span className="text-gs-gold">unforgettable</span>{" "}
               team building activity
             </h1>
           </Reveal>
@@ -124,7 +115,7 @@ export function TeamBuildingSection() {
                       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
                       style={{ background: "rgba(124,92,252,0.18)" }}
                     >
-                      <Icon size={17} className="text-gs-violet-bright" />
+                      <Icon size={17} className="text-gs-gold" />
                     </span>
                     <span className="text-sm font-medium text-white/85">
                       {e.label}
@@ -161,10 +152,9 @@ export function TeamBuildingSection() {
               const Icon = a.icon;
               return (
                 <Reveal key={a.title} delay={i * 100} className="h-full">
-                  <div className="group flex h-full flex-col gap-3 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-gs-surface to-gs-surface-deep p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-white/25">
+                  <div className="group flex h-full flex-col gap-3 overflow-hidden rounded-xl border border-white/10 bg-gs-surface-card p-6 transition-colors duration-300 hover:border-white/20">
                     <span
-                      className="flex h-11 w-11 items-center justify-center rounded-2xl text-white"
-                      style={{ background: "linear-gradient(135deg, var(--gs-blue), var(--gs-magenta))" }}
+                      className="flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-gs-gold"
                     >
                       <Icon size={20} />
                     </span>
@@ -185,12 +175,12 @@ export function TeamBuildingSection() {
         {/* CTA banner */}
         <Reveal delay={100}>
           <div
-            className="mt-16 flex flex-col items-center gap-5 overflow-hidden rounded-3xl p-8 text-center md:flex-row md:justify-between md:p-10 md:text-left"
-            style={{
-              background:
-                "var(--gs-gradient-brand)",
-            }}
+            className="relative mt-16 flex flex-col items-center gap-5 overflow-hidden rounded-sm border border-white/10 bg-gs-surface-sunken p-8 text-center md:flex-row md:justify-between md:p-10 md:text-left"
           >
+            <span
+              className="pointer-events-none absolute inset-y-0 left-0 w-[3px] bg-gs-gold"
+              aria-hidden="true"
+            />
             <div>
               <h3
                 className="text-2xl font-bold text-white md:text-3xl"
@@ -198,12 +188,12 @@ export function TeamBuildingSection() {
               >
                 Planning an office outing?
               </h3>
-              <p className="mt-1 text-sm text-white/85 md:text-base">
+              <p className="mt-1 text-sm text-white/60 md:text-base">
                 Tell us your group size and date — we&apos;ll build the perfect session
                 for your team.
               </p>
             </div>
-            <Cta href="/#tickets" variant="contrast" size="lg">
+            <Cta href="/#tickets" variant="primary" size="lg">
               Book Your Slot
               <ArrowUpRight size={18} />
             </Cta>

@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { ScrollZoomIntro } from "@/components/ScrollZoomIntro";
 import { HeroSection } from "@/components/HeroSection";
+import { ChampionsWallSection } from "@/components/ChampionsWallSection";
 import { HowItWorksSection } from "@/components/HowItWorksSection";
 import { ShowRounds } from "@/components/ShowRounds";
 import { ForWhomSection } from "@/components/ForWhomSection";
@@ -12,9 +13,10 @@ import { WhatsAppChat } from "@/components/WhatsAppChat";
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen bg-black">
+    <main className="relative min-h-screen bg-background">
       <Navbar />
       <HeroSection />
+      <ChampionsWallSection />
       <ScrollZoomIntro />
       <HowItWorksSection />
       <ShowRounds />

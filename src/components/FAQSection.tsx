@@ -199,15 +199,14 @@ function FAQContent({
  *  (carries the #tickets anchor every "Book Your Show" button links to). */
 export function StillHaveQuestions() {
   return (
-    <section id="tickets" className="w-full bg-black px-5 py-10 md:px-10">
+    <section id="tickets" className="w-full bg-background px-5 py-10 md:px-10">
       <div className="mx-auto w-full" style={{ maxWidth: 1400 }}>
         <Reveal delay={120}>
           {/* Anthracite panel with a single precise accent edge — BMW-style
               restraint instead of a saturated gradient. */}
           <div className="relative flex flex-col items-center gap-6 overflow-hidden rounded-sm border border-white/10 bg-gs-surface-sunken p-8 text-center md:flex-row md:justify-between md:p-10 md:text-left">
             <span
-              className="pointer-events-none absolute inset-y-0 left-0 w-[3px]"
-              style={{ background: "linear-gradient(180deg, var(--gs-blue-bright), var(--gs-violet))" }}
+              className="pointer-events-none absolute inset-y-0 left-0 w-[3px] bg-gs-gold"
               aria-hidden="true"
             />
             <div>

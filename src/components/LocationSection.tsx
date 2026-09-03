@@ -4,6 +4,7 @@ import Link from "next/link";
 import { MapPin, Navigation, Clock, Users, Mail, Phone } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { Cta } from "@/components/ui/cta";
+import { BookingCta } from "@/components/BookingDialog";
 
 const ADDRESS =
   "4th Floor, Survey No. 1, Khajaguda - Nanakramguda Rd, Khajaguda, Hyderabad, Telangana 500104";
@@ -39,23 +40,14 @@ export function LocationSection() {
   return (
     <section
       id="location"
-      className="relative overflow-hidden bg-gs- px-5 py-20 md:px-10 md:py-28"
+      className="relative overflow-hidden bg-background px-5 py-20 md:px-10 md:py-28"
     >
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 55% 45% at 12% 8%, rgba(252,25,237,0.13), transparent 62%)",
-        }}
-        aria-hidden="true"
-      />
-
       <div className="relative mx-auto grid max-w-[1200px] items-stretch gap-8 lg:grid-cols-[1fr_1.3fr]">
         {/* Left: details */}
         <div className="flex flex-col justify-center">
           <Reveal>
             <div className="mb-4 flex items-center gap-4">
-              <span className="block h-px w-[60px] bg-gs-" />
+              <span className="block h-px w-[60px] bg-gs-gold" />
               <span className="font-sans text-xs font-semibold uppercase tracking-[0.24em] text-white/60">
                 Find Us
               </span>
@@ -68,13 +60,13 @@ export function LocationSection() {
               style={{ fontFamily: "var(--font-display)", letterSpacing: "-1.5px" }}
             >
               Find us in{" "}
-              <span className="text-gs-">Gachibowli, Hyderabad</span>
+              <span className="text-gs-gold">Gachibowli, Hyderabad</span>
             </h2>
           </Reveal>
 
           <Reveal delay={130}>
             <p className="mt-4 flex items-start gap-3 text-base leading-relaxed text-white/70">
-              <MapPin size={20} className="mt-0.5 shrink-0 text-gs-" />
+              <MapPin size={20} className="mt-0.5 shrink-0 text-gs-gold" />
               {ADDRESS}
             </p>
           </Reveal>
@@ -89,7 +81,7 @@ export function LocationSection() {
                     key={f.label}
                     className="flex items-center gap-2 rounded-sm border border-white/12 bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium text-white/70"
                   >
-                    <Icon size={14} className="text-gs-" />
+                    <Icon size={14} className="text-gs-gold" />
                     {f.label}
                   </span>
                 );
@@ -101,7 +93,7 @@ export function LocationSection() {
           <Reveal delay={210}>
             <div className="mt-7">
               <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/45">
-                <Navigation size={13} className="text-gs-" />
+                <Navigation size={13} className="text-gs-gold" />
                 Easy to reach
               </p>
               <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
@@ -136,13 +128,9 @@ export function LocationSection() {
                 <Navigation size={16} />
                 Get Directions
               </Cta>
-              <Cta
-                href="#tickets"
-                variant="secondary"
-                className="uppercase tracking-[0.12em]"
-              >
+              <BookingCta variant="secondary" className="uppercase tracking-[0.12em]">
                 Book Your Slot
-              </Cta>
+              </BookingCta>
             </div>
           </Reveal>
 
@@ -153,14 +141,14 @@ export function LocationSection() {
                 href="tel:+919000187731"
                 className="flex items-center gap-2 text-sm font-medium text-white/80 transition-colors hover:text-white"
               >
-                <Phone size={16} className="text-gs-" />
+                <Phone size={16} className="text-gs-gold" />
                 +91 90001 87731
               </Link>
               <Link
                 href="mailto:gameshowchallengerooms@gmail.com"
                 className="flex items-center gap-2 text-sm font-medium text-white/80 transition-colors hover:text-white"
               >
-                <Mail size={16} className="text-gs-" />
+                <Mail size={16} className="text-gs-gold" />
                 gameshowchallengerooms@gmail.com
               </Link>
             </div>

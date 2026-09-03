@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Clock3, Flag, Sparkles, Swords, UsersRound } from "lucide-react";
+import { Clock3, Flag, Swords, UsersRound } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { Cta } from "@/components/ui/cta";
 
@@ -15,19 +15,19 @@ const steps = [
     icon: Clock3,
     title: "Book your slot",
     text: "Send us your group size and preferred date on WhatsApp. We’ll confirm your slot and the format that suits your group.",
-    accent: "var(--gs-blue-bright)",
+    accent: "var(--gs-gold)",
   },
   {
     icon: UsersRound,
     title: "Choose your teams",
     text: "At the venue, your group splits into two teams, picks names and colours, and gets a quick briefing from the host.",
-    accent: "var(--gs-violet-bright)",
+    accent: "var(--gs-gold)",
   },
   {
     icon: Swords,
     title: "Play three rounds",
     text: "Take on a rotating mix of trivia, puzzle, speed and physical challenges. Every round earns Challenge Points.",
-    accent: "var(--gs-magenta-bright)",
+    accent: "var(--gs-gold)",
   },
   {
     icon: Flag,
@@ -43,15 +43,10 @@ export function HowItWorksSection() {
       id="how-it-works"
       className="relative isolate overflow-hidden bg-gs-surface-black px-5 py-20 text-white md:px-10 md:py-28"
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_15%_15%,rgba(20,126,255,0.15),transparent_34%),radial-gradient(circle_at_85%_72%,rgba(252,25,237,0.12),transparent_32%)]"
-      />
-
       <div className="mx-auto max-w-[1280px]">
         <div className="grid items-center gap-12 lg:grid-cols-[0.92fr_1.08fr] lg:gap-16">
           <Reveal direction="right" emphasis="bold">
-            <div className="relative overflow-hidden rounded-[28px] border border-white/12 bg-gs-surface-deep shadow-[0_30px_100px_-55px_rgba(69,166,255,0.8)]">
+            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gs-surface-deep shadow-[0_30px_80px_-40px_rgba(0,0,0,0.8)]">
               <div className="relative aspect-[4/3] overflow-hidden">
                 <Image
                   src="/images/shows/elite-edition.webp"
@@ -86,7 +81,7 @@ export function HowItWorksSection() {
           <div>
             <Reveal>
               <p className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.25em] text-white/48">
-                <span className="h-px w-9 bg-gradient-to-r from-gs-blue-bright to-gs-magenta-bright" />
+                <span className="h-px w-9 bg-gs-gold" />
                 Your first visit, explained
               </p>
             </Reveal>
@@ -111,13 +106,10 @@ export function HowItWorksSection() {
 
                 return (
                   <Reveal key={step.title} delay={150 + index * 60} className="h-full">
-                    <article className="flex h-full gap-4 rounded-2xl border border-white/10 bg-white/[0.035] p-5 transition-colors duration-300 hover:border-white/22 hover:bg-white/[0.055]">
+                    <article className="flex h-full gap-4 rounded-xl border border-white/10 bg-gs-surface-card p-5 transition-colors duration-300 hover:border-white/20">
                       <span
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10"
-                        style={{
-                          background: `color-mix(in srgb, ${step.accent} 12%, transparent)`,
-                          color: step.accent,
-                        }}
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04]"
+                        style={{ color: step.accent }}
                       >
                         <Icon size={20} strokeWidth={2.3} aria-hidden="true" />
                       </span>
@@ -139,11 +131,10 @@ export function HowItWorksSection() {
 
             <Reveal delay={390}>
               <div className="mt-8 flex flex-col gap-4 border-t border-white/10 pt-7 sm:flex-row sm:items-center sm:justify-between">
-                <p className="flex items-center gap-2 text-sm font-semibold text-white/72">
-                  <Sparkles size={17} className="text-gs-gold" aria-hidden="true" />
+                <p className="text-sm font-semibold text-white/72">
                   No preparation needed. Any fitness level, ages 10 and up.
                 </p>
-                <Cta href="#show-rounds" variant="secondary" className="uppercase tracking-[0.1em]">
+                <Cta href="#show-rounds" variant="secondary">
                   Compare the formats
                 </Cta>
               </div>

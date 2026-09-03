@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Star, Quote } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
+import { cn } from "@/lib/utils";
 import { useCountUp } from "@/hooks/useCountUp";
 
 function StatItem({
@@ -37,31 +38,31 @@ function StatItem({
 interface Testimonial {
   name: string;
   role: string;
-  avatar: string;
+  /** A real group photo from the arena (see /images/players). */
+  photo: string;
+  photoAlt: string;
+  /** `object-position` tweak so faces survive the crop. */
+  photoPosition?: string;
   rating: number;
   quote: string;
   accent: string;
 }
-
-const AVATARS = [
-  "/images/pGEpsxpGy4MIjqcG471RdJ7f6Y.png",
-  "/images/yty5EEX6I11lbzFXsM3fcTIx0.png",
-  "/images/6XVmyesSGqTBk7i6vi9Nai70Q.png",
-];
 
 // NOTE: sample testimonials written as placeholders. Swap the names and quotes
 // for real customer reviews (Google / Instagram) before relying on them.
 const featured: Testimonial = {
   name: "Ananya Reddy",
   role: "Birthday Group · Hyderabad",
-  avatar: AVATARS[0],
+  photo: "/images/players/laughing-desk.webp",
+  photoAlt: "Two players laughing at the team desk mid-round",
+  photoPosition: "object-[40%_42%]",
   rating: 5,
   quote:
     "Booked this for my birthday instead of the usual dinner and it was the best call. Our host had the whole room screaming within five minutes. Two teams, buzzers, puzzles, a physical round that had us crying with laughter — nobody sat out for a second. Easily the most fun thing we've done in Hyderabad.",
-  accent: "var(--gs-blue)",
+  accent: "var(--gs-gold)",
 };
 
-const moreTestimonials: Omit<Testimonial, "avatar" | "accent">[] = [
+const moreTestimonials: Omit<Testimonial, "accent" | "photo" | "photoAlt" | "photoPosition">[] = [
   {
     name: "Rahul Varma",
     role: "Office Team Outing · HITEC City",
@@ -109,8 +110,8 @@ function Initials({ name, accent }: { name: string; accent: string }) {
     .join("");
   return (
     <span
-      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
-      style={{ background: `linear-gradient(135deg, ${accent}, var(--gs-magenta))` }}
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-sm font-bold text-white"
+      style={{ color: accent }}
       aria-hidden="true"
     >
       {initials}
@@ -118,13 +119,7 @@ function Initials({ name, accent }: { name: string; accent: string }) {
   );
 }
 
-const CARD_ACCENTS = [
-  "var(--gs-blue)",
-  "var(--gs-violet)",
-  "var(--gs-magenta)",
-  "var(--gs-gold)",
-  "var(--gs-mint)",
-];
+const CARD_ACCENTS = ["var(--gs-gold)"];
 
 const stats = [
   { end: 4.9, decimals: 1, suffix: "", label: "Average rating" },
@@ -148,20 +143,8 @@ function Stars({ rating, className }: { rating: number; className?: string }) {
 }
 
 export function TestimonialsSection() {
-  const activeAccent = featured.accent;
-
   return (
-    <section className="relative overflow-hidden bg-black py-20 md:py-28">
-      {/* Ambient stage glow */}
-      <div
-        className="animate-spotlight-pulse pointer-events-none absolute left-1/2 top-0 -z-0 h-[500px] w-[900px] -translate-x-1/2 blur-3xl"
-        style={{
-          background:
-            "radial-gradient(ellipse at center, rgba(20,126,255,0.18) 0%, rgba(252,25,237,0.12) 45%, transparent 70%)",
-        }}
-        aria-hidden="true"
-      />
-
+    <section className="relative overflow-hidden bg-background py-20 md:py-28">
       <div className="relative mx-auto max-w-[1400px] px-5 md:px-10">
         {/* Header */}
         <Reveal>
@@ -178,21 +161,12 @@ export function TestimonialsSection() {
           style={{ fontFamily: "var(--font-display)", letterSpacing: "-2px" }}
         >
           Loved by groups across{" "}
-          <span
-            style={{
-              background: "linear-gradient(90deg, var(--gs-blue), var(--gs-magenta))",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            Hyderabad
-          </span>
+          <span className="text-gs-gold">Hyderabad</span>
         </h2>
 
         {/* Stats bar */}
         <Reveal delay={120}>
-          <div className="mx-auto mt-10 grid max-w-[900px] grid-cols-2 gap-px overflow-hidden rounded-3xl border border-white/10 bg-white/10 md:grid-cols-4">
+          <div className="mx-auto mt-10 grid max-w-[900px] grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 md:grid-cols-4">
             {stats.map((s) => (
               <StatItem
                 key={s.label}
@@ -207,29 +181,18 @@ export function TestimonialsSection() {
 
         {/* Featured spotlight testimonial */}
         <div className="relative mx-auto mt-14 max-w-[900px]">
-          {/* glowing gradient ring */}
-          <div
-            className="absolute -inset-[1.5px] rounded-[2rem] opacity-80"
-            style={{
-              background: `linear-gradient(120deg, ${activeAccent}, var(--gs-magenta), transparent)`,
-            }}
-            aria-hidden="true"
-          />
-          <figure className="relative flex flex-col gap-6 rounded-[2rem] bg-gs-surface-card p-8 md:flex-row md:items-center md:gap-10 md:p-12">
+          <figure className="relative flex flex-col gap-6 rounded-2xl border border-white/10 bg-gs-surface-card p-8 md:flex-row md:items-center md:gap-10 md:p-12">
             <div className="flex shrink-0 flex-col items-center gap-4 md:w-[200px]">
-              <span
-                className="block h-28 w-28 overflow-hidden rounded-full p-[3px] md:h-36 md:w-36"
-                style={{
-                  background: `linear-gradient(135deg, ${activeAccent}, var(--gs-magenta))`,
-                }}
-              >
-                <Image
-                  src={featured.avatar}
-                  alt={featured.name}
-                  width={144}
-                  height={144}
-                  className="h-full w-full rounded-full object-cover"
-                />
+              <span className="block h-28 w-28 rounded-full border-2 border-gs-gold/60 p-[3px] md:h-36 md:w-36">
+                <span className="relative block h-full w-full overflow-hidden rounded-full">
+                  <Image
+                    src={featured.photo}
+                    alt={featured.photoAlt}
+                    fill
+                    sizes="144px"
+                    className={cn("object-cover", featured.photoPosition)}
+                  />
+                </span>
               </span>
               <div className="text-center">
                 <p className="text-base font-semibold text-white">
@@ -243,8 +206,7 @@ export function TestimonialsSection() {
             <div className="relative flex-1">
               <Quote
                 size={48}
-                className="mb-3 opacity-30"
-                style={{ color: activeAccent }}
+                className="mb-3 text-gs-gold opacity-60"
               />
               <blockquote
                 className="text-lg font-medium leading-relaxed text-white md:text-2xl md:leading-[1.5]"
@@ -262,7 +224,7 @@ export function TestimonialsSection() {
             const accent = CARD_ACCENTS[i % CARD_ACCENTS.length];
             return (
               <Reveal key={t.name} delay={i * 80} className="h-full">
-                <figure className="flex h-full flex-col gap-4 rounded-3xl border border-white/10 bg-gs-surface-card p-6 transition-colors duration-300 hover:border-white/25">
+                <figure className="flex h-full flex-col gap-4 rounded-xl border border-white/10 bg-gs-surface-card p-6 transition-colors duration-300 hover:border-white/20">
                   <Stars rating={t.rating} className="flex gap-1" />
                   <blockquote className="flex-1 text-[15px] leading-relaxed text-white/80">
                     &ldquo;{t.quote}&rdquo;

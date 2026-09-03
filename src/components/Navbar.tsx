@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Cta } from "@/components/ui/cta";
+import { BookingCta } from "@/components/BookingDialog";
 
 const navLinks = [
   { label: "How It Works", href: "/#how-it-works" },
@@ -140,14 +141,13 @@ export function Navbar() {
           </div>
 
           {/* Book Now CTA — hidden on mobile, shown from md up */}
-          <Cta
-            href="/#tickets"
+          <BookingCta
             variant="nav"
             badge
             className="hidden py-1.5 pl-4 text-base md:inline-flex"
           >
             Book Your Slot
-          </Cta>
+          </BookingCta>
 
           {/* Hamburger — mobile only */}
           <Cta
@@ -193,9 +193,9 @@ export function Navbar() {
         </Link>
 
         {/* Compact Book Now CTA */}
-        <Cta href="/#tickets" variant="nav" badge className="py-1.5 pl-4 text-base">
+        <BookingCta variant="nav" badge className="py-1.5 pl-4 text-base">
           Book Your Slot
-        </Cta>
+        </BookingCta>
       </nav>
 
       {/* Mobile menu overlay */}
@@ -241,15 +241,14 @@ export function Navbar() {
             </Link>
           ))}
 
-          <Cta
-            href="/#tickets"
+          <BookingCta
             badge
             size="lg"
             onClick={() => setMenuOpen(false)}
             className="mt-4 text-lg"
           >
             Book Your Slot
-          </Cta>
+          </BookingCta>
         </nav>
       </div>
     </>

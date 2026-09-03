@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 import { ArrowDown, Star } from "lucide-react";
 import { useLowPowerMode } from "@/hooks/useLowPowerMode";
 import { Cta } from "@/components/ui/cta";
-import { WhatsAppGlyph, whatsappHref } from "@/components/WhatsAppChat";
 
 // ─── Copy ────────────────────────────────────────────────────────────────────
 
@@ -170,32 +169,19 @@ export function HeroSection() {
             </p>
           </div>
 
-          <div className="hero-enter hero-enter-7 inline-flex max-w-[min(92vw,30rem)] items-center gap-2.5 rounded-full border border-gs-gold/60 bg-gs-gold/10 px-5 py-2.5 backdrop-blur-md">
+          <div className="hero-enter hero-enter-7 inline-flex max-w-[min(92vw,30rem)] items-center gap-2.5 rounded-full border border-white/15 bg-black/35 px-5 py-2.5 backdrop-blur-md">
             <Star size={15} className="shrink-0 fill-gs-gold text-gs-gold" />
             <span className="text-sm font-semibold text-white">
               <span className="text-gs-gold">Friends, cousins or office gang</span> · 45–60 minutes · hosted live
             </span>
           </div>
 
-          {/* Leads come from WhatsApp, so it is the primary action above the fold. */}
           <div className="hero-enter hero-enter-7 flex w-full max-w-[min(92vw,30rem)] flex-col gap-3 sm:w-auto sm:max-w-none sm:flex-row sm:justify-center">
-            <Cta
-              href={whatsappHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Chat with us on WhatsApp to book"
-              variant="solid"
-              size="lg"
-              className="bg-gs-whatsapp text-sm uppercase tracking-[0.12em] shadow-[0_10px_28px_-14px_rgba(37,211,102,0.7)] hover:bg-gs-whatsapp"
-            >
-              <WhatsAppGlyph size={18} />
-              Chat on WhatsApp
-            </Cta>
             <Cta
               href="#how-it-works"
               variant="secondary"
               size="lg"
-              className="text-sm uppercase tracking-[0.12em] backdrop-blur-md"
+              className="text-sm tracking-[0.02em] backdrop-blur-md"
             >
               See how it works
               <ArrowDown size={16} strokeWidth={2.5} aria-hidden="true" />

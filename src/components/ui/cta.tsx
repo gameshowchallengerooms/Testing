@@ -23,27 +23,27 @@ const ctaVariants = cva(
   {
     variants: {
       variant: {
-        /** The headline action ("Book Your Show"). Brand gradient. */
+        /** The headline action ("Book Your Show"). Solid stage gold, dark ink. */
         primary:
-          "bg-[image:var(--gs-gradient-brand)] text-white shadow-[0_10px_30px_-12px_rgba(124,92,252,0.75)] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-14px_rgba(252,25,237,0.7)]",
+          "bg-(--gs-gold) text-(--gs-surface-black) shadow-[0_8px_24px_-12px_rgba(0,0,0,0.6)] hover:bg-(--gs-gold-deep)",
         /** Second action beside a primary. Outlined, fills faintly on hover. */
         secondary:
           "border border-(--gs-line-strong) bg-transparent text-white hover:border-(--gs-line-hover) hover:bg-(--gs-veil-hover)",
         /** Single flat-brand action where a gradient would be too loud. */
         solid:
-          "bg-(--gs-blue) text-white shadow-[0_10px_28px_-14px_rgba(20,126,255,0.7)] hover:bg-(--gs-blue-bright)",
+          "bg-(--gs-blue) text-white shadow-[0_8px_24px_-12px_rgba(0,0,0,0.6)] hover:bg-(--gs-blue-bright)",
         /** On top of a coloured/gradient panel, where gradient-on-gradient fails. */
         contrast:
           "bg-black/30 text-white backdrop-blur-sm hover:bg-black/50",
         /** On top of imagery — solid white chip. */
         light:
-          "bg-white text-(--gs-surface-sunken) shadow-lg hover:bg-white/90",
+          "bg-(--gs-text) text-(--gs-surface-sunken) shadow-lg hover:bg-(--gs-text)/90",
         /** Low-emphasis / tertiary. */
         ghost:
           "bg-(--gs-veil) text-white hover:bg-(--gs-veil-hover)",
         /** Inside the nav chrome, where a full gradient pill overpowers the bar.
             Black pill; the brand shows through the arrow badge only. */
-        nav: "bg-black text-white hover:opacity-90",
+        nav: "bg-(--gs-surface-black) text-white hover:opacity-90",
       },
       size: {
         sm: "px-4 py-2 text-xs",
@@ -75,13 +75,15 @@ function CtaBadge({ variant }: { variant: CtaVariantProps["variant"] }) {
       aria-hidden="true"
       className={cn(
         "flex h-8 w-8 items-center justify-center rounded-full transition-transform duration-300 group-hover/cta:rotate-45",
-        // On the gradient the badge is a dark scrim; elsewhere it picks up brand blue.
-        variant === "primary" || variant === "contrast"
-          ? "bg-black/35"
-          : "bg-(--gs-blue)"
+        // On gold the badge is a dark disc; elsewhere it is the gold accent with dark ink.
+        variant === "primary"
+          ? "bg-(--gs-surface-black) text-white"
+          : variant === "contrast"
+            ? "bg-black/35 text-white"
+            : "bg-(--gs-gold) text-(--gs-surface-black)"
       )}
     >
-      <ArrowUpRight className="text-white" size={18} strokeWidth={2.5} />
+      <ArrowUpRight size={18} strokeWidth={2.5} />
     </span>
   );
 }

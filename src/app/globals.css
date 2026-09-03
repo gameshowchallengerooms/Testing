@@ -56,30 +56,30 @@
 }
 
 :root {
-  --background: #000000;
-  --foreground: #ffffff;
-  --card: #1a1a1a;
-  --card-foreground: #ffffff;
-  --popover: #1a1a1a;
-  --popover-foreground: #ffffff;
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  --secondary: #1f1f1f;
-  --secondary-foreground: #ffffff;
-  --muted: #262626;
-  --muted-foreground: #a3a3a3;
-  --accent: #262626;
-  --accent-foreground: #ffffff;
-  --destructive: #ef4444;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.15);
-  --ring: rgba(255, 255, 255, 0.3);
-  --chart-1: #3b82f6;
-  --chart-2: #a855f7;
-  --chart-3: #ec4899;
-  --chart-4: #f97316;
-  --chart-5: #22c55e;
-  --radius: 0.625rem;
+  --background: #0d0c0a;
+  --foreground: #f2ede3;
+  --card: #1a1815;
+  --card-foreground: #f2ede3;
+  --popover: #1a1815;
+  --popover-foreground: #f2ede3;
+  --primary: #e9b949;
+  --primary-foreground: #14120e;
+  --secondary: #201d19;
+  --secondary-foreground: #f2ede3;
+  --muted: #26221d;
+  --muted-foreground: #a39d92;
+  --accent: #26221d;
+  --accent-foreground: #f2ede3;
+  --destructive: #e05252;
+  --border: rgba(242, 237, 227, 0.1);
+  --input: rgba(242, 237, 227, 0.15);
+  --ring: rgba(242, 237, 227, 0.3);
+  --chart-1: #e9b949;
+  --chart-2: #5b8fd6;
+  --chart-3: #d9704f;
+  --chart-4: #7fae8c;
+  --chart-5: #b48ad4;
+  --radius: 0.5rem;
 
   /* ═══════════════════════════════════════════════════════════════════════
      BRAND TOKENS — THE single source of truth for colour across the site.
@@ -87,95 +87,97 @@
      hardcode a hex value; use var(--gs-*) or the Tailwind aliases below.
      ═══════════════════════════════════════════════════════════════════════ */
 
-  /* ── Core brand ramp (the stage-light palette) ────────────────────────── */
-  --gs-blue: #147eff;
-  --gs-blue-bright: #45a6ff;
-  --gs-violet: #7c5cfc;
-  --gs-violet-bright: #9b6bff;
-  --gs-magenta: #fc19ed;
-  --gs-magenta-bright: #ff45f1;
-  --gs-pink: #ff6bf3;
-  --gs-gold: #ffd23f;
-  --gs-gold-deep: #ffb020;
-  --gs-mint: #22d3a5;
-  --gs-orange: #ff7a1a;
-  --gs-red: #ff2e4d;
-  --gs-star: #ffb020;
+  /* ── Core brand ramp ──────────────────────────────────────────────────────
+     One warm accent (stage gold) does the work. The cool colours are kept
+     for the places where a photo is actually lit that colour, and are tuned
+     down from neon to something a print designer would pick. */
+  --gs-blue: #4f86d8;
+  --gs-blue-bright: #7fa9e6;
+  --gs-violet: #8d7bb8;
+  --gs-violet-bright: #ab9bd0;
+  --gs-magenta: #d9704f;
+  --gs-magenta-bright: #e58a6c;
+  --gs-pink: #e8a58f;
+  --gs-gold: #e9b949;
+  --gs-gold-deep: #d4a235;
+  --gs-mint: #7fae8c;
+  --gs-orange: #d9704f;
+  --gs-red: #e05252;
+  --gs-star: #e9b949;
   --gs-whatsapp: #25d366;
   --gs-whatsapp-deep: #20bd5a;
 
-  /* Soft ends of the headline sweep gradient (light blue → light pink). */
-  --gs-sky: #9fc4ff;
-  --gs-sky-bright: #1fa2ff;
-  --gs-magenta-soft: #ff35e5;
-  --gs-pink-soft: #ffa8f0;
+  /* Soft ends of the headline sweep (kept for the scroll-fill paragraph). */
+  --gs-sky: #cfd8e6;
+  --gs-sky-bright: #7fa9e6;
+  --gs-magenta-soft: #e9b949;
+  --gs-pink-soft: #f2ede3;
 
-  /* ── Brand gradients ──────────────────────────────────────────────────── */
+  /* ── Brand gradients ──────────────────────────────────────────────────────
+     Flat by design: a single warm tone reads as a brand, a rainbow reads as a
+     template. */
   --gs-gradient-brand: linear-gradient(
-    135deg,
-    var(--gs-blue) 0%,
-    var(--gs-violet) 50%,
-    var(--gs-magenta) 100%
+    180deg,
+    var(--gs-gold) 0%,
+    var(--gs-gold-deep) 100%
   );
   --gs-gradient-hero: linear-gradient(
     90deg,
-    var(--gs-blue) 0%,
-    var(--gs-violet) 50%,
-    var(--gs-magenta) 100%
+    var(--gs-gold) 0%,
+    var(--gs-gold-deep) 100%
   );
   --gs-gradient-pricing: linear-gradient(
-    135deg,
-    var(--gs-violet) 0%,
-    var(--gs-pink) 50%,
-    var(--gs-gold) 100%
+    180deg,
+    var(--gs-gold) 0%,
+    var(--gs-gold-deep) 100%
   );
 
-  /* ── Surfaces (dark stage set, lightest → darkest) ────────────────────── */
-  --gs-surface-raised: #222222;
-  --gs-surface: #1a1a1a;
-  --gs-surface-sunken: #16181c;
-  --gs-surface-deep: #0d0f13;
-  --gs-surface-deeper: #0a0a0c;
-  --gs-surface-black: #07080b;
-  /* Near-black card fills used by the testimonial + screen-frame panels. */
-  --gs-surface-card: #0e0e10;
-  --gs-surface-panel: #141416;
-  --gs-surface-screen: #080b14;
+  /* ── Surfaces (warm stage set, lightest → darkest) ────────────────────── */
+  --gs-surface-raised: #24211c;
+  --gs-surface: #1c1916;
+  --gs-surface-sunken: #171512;
+  --gs-surface-deep: #12100e;
+  --gs-surface-deeper: #0f0d0b;
+  --gs-surface-black: #0d0c0a;
+  /* Card fills used by the testimonial + screen-frame panels. */
+  --gs-surface-card: #151310;
+  --gs-surface-panel: #1a1714;
+  --gs-surface-screen: #0f0e0c;
 
   /* ── Lines & scrims ───────────────────────────────────────────────────── */
-  --gs-line: rgba(255, 255, 255, 0.12);
-  --gs-line-strong: rgba(255, 255, 255, 0.2);
-  --gs-line-hover: rgba(255, 255, 255, 0.45);
-  --gs-veil: rgba(255, 255, 255, 0.04);
-  --gs-veil-hover: rgba(255, 255, 255, 0.08);
+  --gs-line: rgba(242, 237, 227, 0.12);
+  --gs-line-strong: rgba(242, 237, 227, 0.2);
+  --gs-line-hover: rgba(242, 237, 227, 0.45);
+  --gs-veil: rgba(242, 237, 227, 0.04);
+  --gs-veil-hover: rgba(242, 237, 227, 0.08);
 
   /* ── Text ─────────────────────────────────────────────────────────────── */
-  --gs-text: #ffffff;
-  --gs-text-muted: rgba(255, 255, 255, 0.7);
-  --gs-text-subtle: rgba(255, 255, 255, 0.45);
+  --gs-text: #f2ede3;
+  --gs-text-muted: rgba(242, 237, 227, 0.7);
+  --gs-text-subtle: rgba(242, 237, 227, 0.45);
 
   /* ── Chrome ───────────────────────────────────────────────────────────── */
-  --gs-nav-bg: rgba(30, 30, 30, 0.6);
-  --gs-nav-bg-solid: rgba(30, 30, 30, 0.8);
-  --gs-nav-pill: rgba(40, 40, 40, 0.8);
+  --gs-nav-bg: rgba(28, 25, 22, 0.6);
+  --gs-nav-bg-solid: rgba(28, 25, 22, 0.85);
+  --gs-nav-pill: rgba(40, 36, 32, 0.8);
   --gs-card-bg: var(--gs-surface);
-  --gs-card-border: rgba(255, 255, 255, 0.08);
+  --gs-card-border: rgba(242, 237, 227, 0.08);
 
   /* ── Show accents (per-tier, referenced by ShowRounds) ────────────────── */
   --gs-show-classic: var(--gs-blue-bright);
-  --gs-show-classic-base: #2e9bff;
-  --gs-show-prime: #a579ff;
-  --gs-show-prime-base: var(--gs-violet-bright);
+  --gs-show-classic-base: var(--gs-blue);
+  --gs-show-prime: var(--gs-gold);
+  --gs-show-prime-base: var(--gs-gold-deep);
 
   /* Deep image-wash tints that let each show card's photo fade into its panel. */
-  --gs-wash-classic: #071b31;
-  --gs-wash-classic-deep: #07121f;
-  --gs-wash-prime: #1d0c38;
-  --gs-wash-prime-deep: #120b22;
+  --gs-wash-classic: #0e1a2a;
+  --gs-wash-classic-deep: #0f1319;
+  --gs-wash-prime: #1f1610;
+  --gs-wash-prime-deep: #14110d;
 
   /* Host avatar plate. */
-  --gs-avatar-from: #2a2140;
-  --gs-avatar-to: #191b20;
+  --gs-avatar-from: #2a241c;
+  --gs-avatar-to: #1a1714;
 
   /* ── Button geometry — the ONE shape rule for every CTA on the site ───── */
   --gs-btn-radius: 9999px;
@@ -231,6 +233,7 @@
   }
   body {
     @apply bg-[var(--background)] text-[var(--foreground)];
+    -webkit-font-smoothing: antialiased;
     font-family: var(--font-sans);
   }
   html {
@@ -297,8 +300,8 @@
   transform-origin: top center;
   background: linear-gradient(
     to bottom,
-    rgba(255, 210, 63, 0.35) 0%,
-    rgba(255, 210, 63, 0.08) 45%,
+    rgba(233, 185, 73, 0.3) 0%,
+    rgba(233, 185, 73, 0.07) 45%,
     transparent 75%
   );
   clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
@@ -310,8 +313,8 @@
   transform-origin: top center;
   background: linear-gradient(
     to bottom,
-    rgba(20, 126, 255, 0.32) 0%,
-    rgba(20, 126, 255, 0.08) 45%,
+    rgba(242, 237, 227, 0.22) 0%,
+    rgba(242, 237, 227, 0.06) 45%,
     transparent 75%
   );
   clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
@@ -324,8 +327,8 @@
   transform-origin: top center;
   background: linear-gradient(
     to bottom,
-    rgba(252, 25, 237, 0.22) 0%,
-    rgba(252, 25, 237, 0.05) 50%,
+    rgba(233, 185, 73, 0.16) 0%,
+    rgba(233, 185, 73, 0.04) 50%,
     transparent 78%
   );
   clip-path: polygon(44% 0, 56% 0, 92% 100%, 8% 100%);
@@ -517,8 +520,8 @@
   background: radial-gradient(
     circle,
     rgba(255, 255, 255, 1) 0 8%,
-    rgba(191, 226, 255, 0.9) 13%,
-    rgba(124, 92, 252, 0.38) 37%,
+    rgba(255, 244, 220, 0.9) 13%,
+    rgba(233, 185, 73, 0.3) 37%,
     transparent 70%
   );
   filter: blur(2px);
@@ -532,7 +535,7 @@
     transparent 0deg 9deg,
     rgba(255, 255, 255, 0.95) 10deg 13deg,
     transparent 14deg 43deg,
-    rgba(159, 196, 255, 0.9) 44deg 48deg,
+    rgba(255, 236, 190, 0.9) 44deg 48deg,
     transparent 49deg 89deg
   );
   clip-path: polygon(
@@ -549,8 +552,8 @@
   border-radius: 999px;
   box-shadow:
     0 0 12px rgba(255, 255, 255, 0.95),
-    0 0 34px rgba(31, 162, 255, 0.8),
-    0 0 60px rgba(255, 53, 229, 0.55);
+    0 0 34px rgba(255, 236, 190, 0.7),
+    0 0 60px rgba(233, 185, 73, 0.45);
 }
 
 .paparazzi-scene-still .paparazzi {
@@ -715,11 +718,9 @@
    strong ~15:1 contrast with off-white text while being far easier to read for
    sustained copy. */
 .sketchpad {
-  background-color: #0c0d12;
+  background-color: #12100e;
   background-image:
-    radial-gradient(ellipse 90% 55% at 50% -5%, rgba(124, 92, 252, 0.28), transparent 62%),
-    radial-gradient(ellipse 70% 55% at 12% 100%, rgba(54, 207, 255, 0.16), transparent 65%),
-    radial-gradient(ellipse 70% 55% at 88% 100%, rgba(252, 25, 237, 0.16), transparent 65%);
+    radial-gradient(ellipse 90% 55% at 50% -5%, rgba(233, 185, 73, 0.1), transparent 62%);
   isolation: isolate;
 }
 
@@ -853,7 +854,7 @@
 /* Gradient-stroked highlights for the title underline + finale. */
 .ink-champ {
   stroke: url(#grad-champ);
-  -webkit-filter: drop-shadow(0 0 4px rgba(124, 92, 252, 0.45));
+  -webkit-filter: drop-shadow(0 0 4px rgba(233, 185, 73, 0.4));
 }
 
 .ink-finale {

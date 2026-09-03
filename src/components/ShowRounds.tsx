@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ArrowUpRight, Check, Mic, Sparkles } from "lucide-react";
+import { ArrowUpRight, Check, Mic } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { Cta } from "@/components/ui/cta";
 
@@ -19,7 +19,6 @@ interface Show {
   accentSurface: string;
   accentGlow: string;
   imageWash: string;
-  popular?: boolean;
 }
 
 const shows: Show[] = [
@@ -41,9 +40,9 @@ const shows: Show[] = [
     imageAlt:
       "A live host leading two teams in a fast-paced buzzer challenge under blue studio lights",
     accentText: "text-gs-show-classic",
-    accentBorder: "border-gs-show-classic-base/45",
+    accentBorder: "border-white/10",
     accentSurface: "bg-gs-show-classic-base/10",
-    accentGlow: "shadow-[0_24px_100px_-48px_rgba(46,155,255,0.85)]",
+    accentGlow: "shadow-[0_30px_80px_-40px_rgba(0,0,0,0.8)]",
     imageWash: "from-gs-wash-classic/95 via-gs-wash-classic-deep/32 to-transparent",
   },
   {
@@ -64,11 +63,10 @@ const shows: Show[] = [
     imageAlt:
       "A lively group laughing and playing party-style game show challenges under purple lights",
     accentText: "text-gs-show-prime",
-    accentBorder: "border-gs-show-prime-base/50",
+    accentBorder: "border-white/10",
     accentSurface: "bg-gs-show-prime-base/10",
-    accentGlow: "shadow-[0_24px_100px_-48px_rgba(155,107,255,0.95)]",
+    accentGlow: "shadow-[0_30px_80px_-40px_rgba(0,0,0,0.8)]",
     imageWash: "from-gs-wash-prime/95 via-gs-wash-prime-deep/32 to-transparent",
-    popular: true,
   },
 ];
 
@@ -79,7 +77,7 @@ function HostBadge() {
           the repo (the old `host-face.png` path 404'd on every page load), and a
           stand-in face would misrepresent a real person. */}
       <div
-        className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-white/75 bg-[linear-gradient(140deg,var(--gs-avatar-from),var(--gs-avatar-to))] shadow-[0_0_0_4px_rgba(255,255,255,0.08)] md:h-14 md:w-14"
+        className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-white/75 bg-[linear-gradient(140deg,var(--gs-avatar-from),var(--gs-avatar-to))] md:h-14 md:w-14"
         aria-hidden="true"
       >
         <Mic className="h-5 w-5 text-gs-gold md:h-6 md:w-6" strokeWidth={2.2} />
@@ -106,10 +104,8 @@ function ShowPanel({ show, index }: { show: Show; index: number }) {
       whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-      className={`group relative overflow-hidden rounded-[28px] border bg-gs-surface-deep ${show.accentBorder} ${show.accentGlow}`}
+      className={`group relative overflow-hidden rounded-2xl border bg-gs-surface-deep ${show.accentBorder} ${show.accentGlow}`}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.045),transparent_34%,transparent_70%,rgba(255,255,255,0.025))]" />
-
       <div className="relative grid lg:min-h-[650px] lg:grid-cols-2">
         <div
           className={`relative min-h-[360px] overflow-hidden sm:min-h-[470px] lg:min-h-full ${
@@ -132,12 +128,6 @@ function ShowPanel({ show, index }: { show: Show; index: number }) {
             >
               {show.tag}
             </span>
-            {show.popular ? (
-              <span className="flex items-center gap-1.5 rounded-full border border-white/20 bg-black/55 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-white backdrop-blur-md sm:text-xs">
-                <Sparkles size={13} aria-hidden="true" />
-                Crowd favourite
-              </span>
-            ) : null}
           </div>
 
           <div className="absolute bottom-7 left-5 right-5 sm:bottom-9 sm:left-8 sm:right-8 lg:hidden">
@@ -188,8 +178,8 @@ function ShowPanel({ show, index }: { show: Show; index: number }) {
                 the shared CTA so it matches every other button on the site. */}
             <Cta
               href="#tickets"
-              variant="secondary"
-              className={`min-h-12 uppercase tracking-[0.08em] hover:bg-white hover:text-black ${show.accentBorder} ${show.accentSurface}`}
+              variant="primary"
+              className="min-h-12"
             >
               Book Your Slot
               <ArrowUpRight size={18} strokeWidth={2.5} aria-hidden="true" />
@@ -208,14 +198,11 @@ export function ShowRounds() {
       data-show-rounds
       className="relative isolate overflow-hidden bg-gs-surface-black px-4 py-24 text-white sm:px-6 md:py-32 lg:px-10"
     >
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_12%_10%,rgba(46,155,255,0.12),transparent_31%),radial-gradient(circle_at_88%_45%,rgba(155,107,255,0.11),transparent_30%),radial-gradient(circle_at_35%_92%,rgba(255,178,62,0.08),transparent_32%)]" />
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:linear-gradient(to_bottom,black,transparent_80%)]" />
-
       <div className="mx-auto max-w-[1280px]">
         <div className="grid items-end gap-8 border-b border-white/10 pb-10 lg:grid-cols-[1fr_auto] lg:pb-12">
           <div>
             <p className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.25em] text-white/45">
-              <span className="h-px w-9 bg-gradient-to-r from-gs-show-classic-base via-gs-show-prime-base to-gs-gold-deep" />
+              <span className="h-px w-9 bg-gs-gold" />
               Pick your format
             </p>
             <h2 className="mt-5 max-w-4xl text-5xl font-black tracking-[-0.055em] text-white sm:text-6xl lg:text-7xl">

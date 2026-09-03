@@ -15,13 +15,13 @@ const audiences = [
     icon: Briefcase,
     title: "Team Building",
     text: "The office outing people actually talk about on Monday.",
-    accent: "var(--gs-blue)",
+    accent: "var(--gs-gold)",
   },
   {
     icon: Cake,
     title: "Birthday Parties",
     text: "A birthday where the whole group plays, not just watches.",
-    accent: "var(--gs-magenta)",
+    accent: "var(--gs-gold)",
   },
   {
     icon: GraduationCap,
@@ -33,19 +33,19 @@ const audiences = [
     icon: Trophy,
     title: "Sports & Club Groups",
     text: "Settle the score off the field, team versus team.",
-    accent: "var(--gs-mint)",
+    accent: "var(--gs-gold)",
   },
   {
     icon: Heart,
     title: "Friends & Family",
     text: "The weekend plan when everyone wants to actually do something.",
-    accent: "var(--gs-violet)",
+    accent: "var(--gs-gold)",
   },
   {
     icon: PartyPopper,
     title: "Bachelor(ette) Parties",
     text: "Cheeky, themed rounds built for the big celebration.",
-    accent: "var(--gs-orange)",
+    accent: "var(--gs-gold)",
   },
 ];
 
@@ -68,16 +68,7 @@ export function ForWhomSection() {
             style={{ fontFamily: "var(--font-display)", letterSpacing: "-2px" }}
           >
             Best with{" "}
-            <span
-              style={{
-                background: "linear-gradient(90deg, var(--gs-blue), var(--gs-magenta))",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              6 or more
-            </span>
+            <span className="text-gs-gold">6 or more</span>
             . From a group of friends to the whole office, there&apos;s a format for you.
           </h2>
         </Reveal>
@@ -94,17 +85,9 @@ export function ForWhomSection() {
             const Icon = a.icon;
             return (
               <Reveal key={a.title} delay={(i % 3) * 90} className="h-full">
-                <div className="group relative flex h-full flex-col gap-4 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-gs-surface to-gs-surface-deep p-7 transition-all duration-300 hover:-translate-y-1.5 hover:border-white/25">
+                <div className="group relative flex h-full flex-col gap-4 overflow-hidden rounded-xl border border-white/10 bg-gs-surface-card p-7 transition-colors duration-300 hover:border-white/20">
                   <span
-                    className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                    style={{
-                      background: `radial-gradient(120% 60% at 50% 0%, ${a.accent}1f, transparent 60%)`,
-                    }}
-                    aria-hidden="true"
-                  />
-                  <span
-                    className="relative flex h-12 w-12 items-center justify-center rounded-2xl text-white"
-                    style={{ background: `${a.accent}26` }}
+                    className="relative flex h-12 w-12 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04]"
                   >
                     <Icon size={22} style={{ color: a.accent }} />
                   </span>

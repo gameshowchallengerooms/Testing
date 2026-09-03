@@ -80,7 +80,7 @@ export function WhatsAppChat() {
       aria-hidden={!visible}
       tabIndex={visible ? 0 : -1}
       className={cn(
-        "fixed bottom-5 right-5 z-50 flex items-center gap-3 rounded-full bg-gs-whatsapp py-3.5 pl-3.5 pr-4 text-white shadow-[0_10px_30px_rgba(37,211,102,0.45)] transition-all duration-300 hover:bg-[var(--gs-whatsapp-deep)] md:bottom-7 md:right-7",
+        "fixed bottom-5 right-5 z-50 flex items-center gap-3 rounded-full bg-gs-whatsapp py-3.5 pl-3.5 pr-4 text-white shadow-[0_10px_30px_rgba(0,0,0,0.45)] transition-all duration-300 hover:bg-[var(--gs-whatsapp-deep)] md:bottom-7 md:right-7",
         visible
           ? "translate-y-0 opacity-100"
           : "pointer-events-none translate-y-4 opacity-0"

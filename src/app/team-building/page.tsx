@@ -105,7 +105,7 @@ const jsonLd = {
 
 export default function TeamBuildingPage() {
   return (
-    <main className="relative min-h-screen bg-black">
+    <main className="relative min-h-screen bg-background">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

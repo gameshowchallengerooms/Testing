@@ -56,9 +56,9 @@ function ResponsivePoster({ className }: { className: string }) {
 
 export function ScrollZoomIntro() {
   return (
-    <section className="relative w-full bg-black">
+    <section className="relative w-full bg-background">
       <div className="mx-auto flex max-w-6xl flex-col items-center px-4 pb-16 pt-20 text-center sm:px-6 md:pt-24">
-        <span className="mb-3 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-gs-gold sm:text-xs">
+        <span className="mb-3 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-gs-gold sm:text-xs">
           <span className="h-px w-6 bg-gs-gold/50" />
           New in Hyderabad
           <span className="h-px w-6 bg-gs-gold/50" />
@@ -82,7 +82,7 @@ export function ScrollZoomIntro() {
         <p className="mb-10 max-w-3xl text-base leading-relaxed text-white/75 sm:text-lg sm:leading-8">
           {POSTER_COPY}
         </p>
-        <figure className="w-full overflow-hidden rounded-[1.75rem] border border-white/20 shadow-[0_32px_100px_rgba(14,8,40,0.45)] sm:rounded-[2.25rem]">
+        <figure className="w-full overflow-hidden rounded-xl border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.5)] sm:rounded-2xl">
           <ResponsivePoster className="h-auto w-full" />
           <figcaption className="sr-only">{POSTER_COPY}</figcaption>
         </figure>

@@ -42,6 +42,12 @@ const ROW_ONE_PHOTOS: WallPhoto[] = [
   { src: `${P}/group-wide.webp`, alt: "Players lined up in front of the Challenge Rooms wall", crops: [{ aspect: "aspect-[2/1]" }, { aspect: "aspect-square", position: "object-[30%_50%]" }] },
   { src: `${P}/buzzer-desk.webp`, alt: "A team leaning over the glowing buzzer desk", crops: [{ aspect: "aspect-[3/4]" }, { aspect: "aspect-[4/5]", position: "object-[50%_55%]" }] },
   { src: `${P}/live-scoreboard.webp`, alt: "The arena's live scoreboard screen", crops: [{ aspect: "aspect-[3/4]", position: "object-[50%_45%]" }, { aspect: "aspect-[4/5]", position: "object-[50%_42%]" }] },
+  { src: `${P}/champions-logo-wall-cheque.webp`, alt: "Champions holding the trophy and giant cheque in front of the logo wall", crops: [{ aspect: "aspect-[3/4]", position: "object-[50%_45%]" }, { aspect: "aspect-square", position: "object-[50%_55%]" }] },
+  { src: `${P}/desk-trio-buzzer.webp`, alt: "Three players at the buzzer desk under pink lights", crops: [{ aspect: "aspect-[4/5]", position: "object-[50%_40%]" }, { aspect: "aspect-[4/3]", position: "object-[50%_35%]" }] },
+  { src: `${P}/red-wall-group-flowers.webp`, alt: "A group lined up in front of the red Game Show wall", crops: [{ aspect: "aspect-[3/4]", position: "object-[50%_60%]" }, { aspect: "aspect-square", position: "object-[50%_65%]" }] },
+  { src: `${P}/green-light-challenge.webp`, alt: "Two players mid-challenge under green lights", crops: [{ aspect: "aspect-[4/5]", position: "object-[50%_50%]" }, { aspect: "aspect-square", position: "object-[55%_50%]" }] },
+  { src: `${P}/arena-group-cheque.webp`, alt: "A big group with the giant cheque in the arena", crops: [{ aspect: "aspect-[3/4]", position: "object-[50%_55%]" }, { aspect: "aspect-[4/3]", position: "object-[50%_60%]" }] },
+  { src: `${P}/desk-green-light.webp`, alt: "Two players at the desk under green lights", crops: [{ aspect: "aspect-[3/4]", position: "object-[50%_45%]" }, { aspect: "aspect-square", position: "object-[45%_45%]" }] },
 ];
 
 const ROW_TWO_PHOTOS: WallPhoto[] = [
@@ -52,6 +58,11 @@ const ROW_TWO_PHOTOS: WallPhoto[] = [
   { src: `${P}/lobby.webp`, alt: "Groups gathering in the lobby before a show", crops: [{ aspect: "aspect-[4/5]", position: "object-[70%_55%]" }, { aspect: "aspect-[3/4]", position: "object-[50%_55%]" }] },
   { src: `${P}/host-and-player.webp`, alt: "The host facing a smiling player on the arena floor", crops: [{ aspect: "aspect-[3/4]", position: "object-[50%_45%]" }, { aspect: "aspect-square", position: "object-[50%_42%]" }] },
   { src: `${P}/pile-up.webp`, alt: "A team collapsing in laughter during a physical round", crops: [{ aspect: "aspect-[3/4]", position: "object-[50%_55%]" }, { aspect: "aspect-square", position: "object-[50%_60%]" }] },
+  { src: `${P}/red-wall-trophy-cheque.webp`, alt: "Winners posing with the trophy and cheque by the red wall", crops: [{ aspect: "aspect-[4/3]", position: "object-[50%_55%]" }, { aspect: "aspect-square", position: "object-[50%_60%]" }] },
+  { src: `${P}/three-players-blue.webp`, alt: "Three players celebrating under blue lights", crops: [{ aspect: "aspect-[3/4]", position: "object-[50%_45%]" }, { aspect: "aspect-[4/5]", position: "object-[50%_40%]" }] },
+  { src: `${P}/desk-pink-pair.webp`, alt: "Two players thinking hard at the desk under pink lights", crops: [{ aspect: "aspect-[4/5]", position: "object-[50%_45%]" }, { aspect: "aspect-square", position: "object-[50%_45%]" }] },
+  { src: `${P}/trophy-cheque-arena.webp`, alt: "A team lifting the trophy and cheque in the arena", crops: [{ aspect: "aspect-[3/4]", position: "object-[50%_45%]" }, { aspect: "aspect-square", position: "object-[45%_50%]" }] },
+  { src: `${P}/arena-celebration-wide.webp`, alt: "A team celebrating across the arena floor", crops: [{ aspect: "aspect-[2/1]" }, { aspect: "aspect-[4/3]", position: "object-[60%_50%]" }] },
 ];
 
 /** First crop of every photo, then the second crop of every photo. */

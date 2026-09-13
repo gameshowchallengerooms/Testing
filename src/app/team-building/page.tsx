@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
-import { Navbar } from "@/components/Navbar";
-import { TeamBuildingSection } from "@/components/TeamBuildingSection";
-import { TestimonialsSection } from "@/components/TestimonialsSection";
+
 import { Footer } from "@/components/Footer";
+import { Navbar } from "@/components/Navbar";
+import { TeamBuildingHype } from "@/components/TeamBuildingHype";
 import { WhatsAppChat } from "@/components/WhatsAppChat";
 
 const SITE_URL = "https://gameshowchallengerooms.com";
 const PAGE_URL = `${SITE_URL}/team-building`;
 
-const TITLE = "Team Building Activities in Hyderabad | Game Show Challenge Rooms";
+const TITLE = "Hyderabad's Biggest Team Building Activity | Game Show Challenge Rooms";
 const DESCRIPTION =
-  "Looking for team building activities in Hyderabad? Game Show Challenge Rooms is a hosted, team-versus-team challenge experience in Gachibowli for corporate outings, offsites, startups, birthdays and festive parties. Book on WhatsApp.";
+  "A live, hosted game show for your whole team in Gachibowli, Hyderabad. Two teams, buzzers, lights and an hour of laughing. Food arranged, GST invoice included, full refund if you don't love it. Book on WhatsApp.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -24,8 +24,6 @@ export const metadata: Metadata = {
     "employee engagement activities hyderabad",
     "team building gachibowli",
     "team building hitec city",
-    "birthday party venue hyderabad",
-    "diwali party games hyderabad",
   ],
   alternates: { canonical: "/team-building" },
   openGraph: {
@@ -40,7 +38,7 @@ export const metadata: Metadata = {
         url: "/seo/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Game Show Challenge Rooms — team building activities in Hyderabad",
+        alt: "Game Show Challenge Rooms — team building in Hyderabad",
       },
     ],
   },
@@ -68,18 +66,7 @@ const jsonLd = {
         "Gachibowli",
         "HITEC City",
         "Financial District",
-        "Madhapur",
-        "Kondapur",
       ],
-      audience: {
-        "@type": "BusinessAudience",
-        audienceType: "Corporate teams, startups, offsites, schools and colleges",
-      },
-      availableChannel: {
-        "@type": "ServiceChannel",
-        serviceUrl: PAGE_URL,
-        servicePhone: "+91-90001-87731",
-      },
     },
     {
       "@type": "BreadcrumbList",
@@ -89,34 +76,18 @@ const jsonLd = {
         { "@type": "ListItem", position: 2, name: "Team Building", item: PAGE_URL },
       ],
     },
-    {
-      "@type": "WebPage",
-      "@id": `${PAGE_URL}#webpage`,
-      url: PAGE_URL,
-      name: TITLE,
-      description: DESCRIPTION,
-      isPartOf: { "@id": `${SITE_URL}/#website` },
-      about: { "@id": `${SITE_URL}/#business` },
-      breadcrumb: { "@id": `${PAGE_URL}#breadcrumb` },
-      inLanguage: "en-IN",
-    },
   ],
 };
 
 export default function TeamBuildingPage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-gs-surface-black">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Navbar />
-      {/* Header clearance — the navbar is fixed/overlaid on the home hero, so on
-          this standalone page we add top padding to clear it. */}
-      <div className="pt-24 md:pt-28">
-        <TeamBuildingSection />
-        <TestimonialsSection />
-      </div>
+      <TeamBuildingHype />
       <Footer />
       <WhatsAppChat />
     </main>

@@ -47,4 +47,8 @@ next-env.d.ts
 
 # Local temp files
 temp/
+tmp/
+Testing/
+_hero.mjs
+.agents/
 .env*

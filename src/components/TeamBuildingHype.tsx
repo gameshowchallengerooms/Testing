@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { Reveal } from "@/components/Reveal";
+import { TeamBenefitsSection } from "@/components/TeamBenefitsSection";
 import { Cta } from "@/components/ui/cta";
 import { BookingCta } from "@/components/BookingDialog";
 import { SCHOOLS_VISITED, TEAMS_FROM } from "@/lib/team-building";
@@ -108,13 +109,13 @@ function TeamsFrom() {
   return (
     <section
       aria-labelledby="teams-from-heading"
-      className="bg-(--gs-pink-soft) px-5 py-12 text-gs-surface-black md:px-10 md:py-16"
+      className="border-y border-(--gs-line) bg-gs-surface-black px-5 py-12 md:px-10 md:py-16"
     >
       <div className="mx-auto max-w-[1200px]">
         <Reveal>
           <h2
             id="teams-from-heading"
-            className="text-center text-xs font-bold uppercase tracking-[0.28em] text-gs-surface-black/60"
+            className="text-center text-xs font-bold uppercase tracking-[0.28em] text-white/50"
           >
             Teams from these companies have played here
           </h2>
@@ -134,7 +135,7 @@ function TeamsFrom() {
                 height={company.height}
                 unoptimized
                 className={cn(
-                  "w-auto opacity-90 transition-opacity hover:opacity-100",
+                  "w-auto opacity-85 brightness-0 invert transition-opacity hover:opacity-100",
                   company.sizeClass
                 )}
               />
@@ -142,7 +143,7 @@ function TeamsFrom() {
           ))}
         </ul>
         <Reveal delay={200}>
-          <p className="mt-9 text-center text-sm text-gs-surface-black/55">
+          <p className="mt-9 text-center text-sm text-white/45">
             Plus startups and offices across Gachibowli, HITEC City and the
             Financial District.
           </p>
@@ -384,13 +385,13 @@ function Audiences() {
   return (
     <section
       aria-labelledby="audiences-heading"
-      className="bg-(--gs-pink-soft) px-5 pb-20 pt-6 md:px-10 md:pb-28 md:pt-8"
+      className="bg-gs-surface-black px-5 pb-20 pt-6 md:px-10 md:pb-28 md:pt-8"
     >
       <div className="mx-auto max-w-[1200px]">
         <Reveal>
           <h2
             id="audiences-heading"
-            className="max-w-[820px] text-4xl font-black leading-[0.98] tracking-[-0.05em] text-gs-surface-black sm:text-5xl lg:text-6xl"
+            className="max-w-[820px] text-4xl font-black leading-[0.98] tracking-[-0.05em] text-white sm:text-5xl lg:text-6xl"
           >
             Built for every kind of gang.
           </h2>
@@ -504,7 +505,7 @@ function MarqueeRow({ photos, reverse = false }: { photos: StripPhoto[]; reverse
 
 function PhotoStrip() {
   return (
-    <section aria-label="Photos from the arena" className="bg-(--gs-pink-soft) py-8">
+    <section aria-label="Photos from the arena" className="bg-gs-surface-black py-8">
       <div className="flex flex-col gap-3">
         <MarqueeRow photos={STRIP_TOP} />
         <MarqueeRow photos={STRIP_BOTTOM} reverse />
@@ -521,7 +522,7 @@ function FinalCta() {
   return (
     <section
       aria-labelledby="promise-heading"
-      className="bg-(--gs-pink-soft) px-5 pb-24 pt-4 md:px-10 md:pb-32"
+      className="bg-gs-surface-black px-5 pb-24 pt-4 md:px-10 md:pb-32"
     >
       <Reveal>
         <div className="relative mx-auto max-w-[1200px] overflow-hidden rounded-[32px] bg-[linear-gradient(135deg,var(--gs-violet)_0%,var(--gs-blue)_100%)] px-6 py-14 text-center shadow-[0_30px_60px_-30px_rgba(79,134,216,0.6)] md:px-16 md:py-20">
@@ -561,6 +562,7 @@ export function TeamBuildingHype() {
       <Hero />
       <TeamsFrom />
       <Promises />
+      <TeamBenefitsSection />
       <PhotoStrip />
       <Audiences />
       <FinalCta />

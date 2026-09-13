@@ -100,7 +100,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default:
-      "Game Show Challenge Rooms | Fun Indoor Group Activity in Hyderabad",
+      "Game Show Challenge Rooms | Hyderabad's Unique Game Experience",
     template: "%s | Game Show Challenge Rooms Hyderabad",
   },
   description:
@@ -119,7 +119,7 @@ export const metadata: Metadata = {
     locale: "en_IN",
     url: SITE_URL,
     siteName: "Game Show Challenge Rooms",
-    title: "Game Show Challenge Rooms | Hyderabad's Most Fun Group Activity",
+    title: "Game Show Challenge Rooms | Hyderabad's Unique Game Experience",
     description:
       "An immersive live challenge experience in Hyderabad. Trivia, puzzles, speed rounds and physical challenges, with a host keeping the energy up. Perfect for friends, birthdays and team outings.",
     images: [
@@ -127,13 +127,13 @@ export const metadata: Metadata = {
         url: "/seo/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Game Show Challenge Rooms — Hyderabad's most fun indoor group activity",
+        alt: "Game Show Challenge Rooms — Hyderabad's unique game experience",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Game Show Challenge Rooms | Hyderabad's Most Fun Group Activity",
+    title: "Game Show Challenge Rooms | Hyderabad's Unique Game Experience",
     description:
       "An immersive live challenge experience in Hyderabad. Two teams, three rounds, one champion. Book on WhatsApp.",
     images: ["/seo/og-image.png"],
